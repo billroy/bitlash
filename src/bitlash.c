@@ -48,6 +48,7 @@ void doCommand(char *cmd) {
 			initTaskList();		// stop the infernal machine
 #ifdef SOFTWARE_SERIAL_TX
 			resetOutput();
+			return;
 #endif
 
 #ifdef TINY85
@@ -63,7 +64,6 @@ void doCommand(char *cmd) {
 				delay(500);
 				flash(errorcode2, 200);			
 				delay(200);
-				return;
 			}
 #endif
 
