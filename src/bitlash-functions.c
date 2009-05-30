@@ -99,6 +99,14 @@ prog_char aliasdict[] PROGMEM = {
 #endif
 
 
+int get_free_memory(void) {
+int ret;
+	// from http://forum.pololu.com/viewtopic.php?f=10&t=989&view=unread#p4218
+	extern int __bss_end;
+	return ((int)&ret) - ((int)&__bss_end);
+}
+
+
 // Deadbeef random number generator
 static uint32_t deadbeef_seed = 0xbeefcafe;
 static uint32_t deadbeef_beef = 0xdeadbeef;
@@ -175,7 +183,6 @@ numvar ret=0;
 // TODO: these work but are disabled pending resolution of the linker bug
 		case f_syms:	ret = symcount;								break;
 
-		case f_flash:	flash(arg1,arg2);							break;
 		case f_min:		ret = (arg1 < arg2) ? arg1 : arg2;			break;
 		case f_max:		ret = (arg1 > arg2) ? arg1 : arg2;			break;
 		case f_beep:	beep(arg1, arg2, arg3);						break;
@@ -230,6 +237,7 @@ numvar ret=0;
 
 
 #if defined(AVROPENDOUS_BUILD) || defined(TINY85)
+	case f_flash:	flash(arg1,arg2);								break;
 	case f_move:	usbMouse(arg1, arg2, buttons, 0);				break;
 	case f_buttons:	ret = buttons; buttons = arg1;					break;
 	case f_wheel:	usbMouse(0, 0, buttons, arg1);					break;	

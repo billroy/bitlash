@@ -200,8 +200,8 @@ void eraseentry(char *id) {
 }
 
 // parsestring helpers
-void countByte(byte c) { expval++; }
-void saveByte(byte c) { eewrite(expval++, c); }
+void countByte(char c) { expval++; }
+void saveByte(char c) { eewrite(expval++, c); }
 
 
 // write id:value, unless value is empty, in which case we erase the id

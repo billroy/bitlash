@@ -49,6 +49,8 @@ void doCommand(char *cmd) {
 #ifdef SOFTWARE_SERIAL_TX
 			resetOutput();
 #endif
+
+#ifdef TINY85
 			for (;;) {
 				// Error: SOS
 				flash(1,1000);
@@ -63,6 +65,8 @@ void doCommand(char *cmd) {
 				delay(200);
 				return;
 			}
+#endif
+
 		}
 	}
 
@@ -76,7 +80,7 @@ void doCommand(char *cmd) {
 }
 
 
-
+#ifdef TINY85
 void flash(unsigned int count, int ontime) {
 	delay(ontime);
 	while (count--) {
@@ -86,7 +90,7 @@ void flash(unsigned int count, int ontime) {
 		delay(ontime);
 	}
 }
-
+#endif
 
 
 #ifdef TINY85
@@ -95,6 +99,7 @@ void initBitlash(void) {
 	doCommand(kludge((int)startup));
 }
 #else
+
 void initBitlash(unsigned long baud) {
 	beginSerial(baud);
 	displayBanner();
@@ -109,8 +114,9 @@ void initBitlash(unsigned long baud) {
 
 
 
-#ifdef ARDUINO_BUILD
-// Here is a simple bitlash integration.
+#if 0
+//
+// Here is sample code a simple bitlash integration.
 //
 void setup(void) {
 

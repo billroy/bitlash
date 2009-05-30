@@ -65,7 +65,7 @@
 //
 #ifdef HIGH		// this detects the Arduino build environment
 
-#define ARDUINO_BUILD
+#define ARDUINO_BUILD 1
 #define ARDUINO_VERSION 15
 
 // Arduino version: 11 - enable by hand if needed; see bitlash-serial.h
@@ -183,6 +183,7 @@ void beginEthernet(unsigned long baud) {
 //	TINY85 BUILD OPTIONS
 //
 #if defined(__AVR_ATtiny85__)
+choke me here;
 #define TINY85 1
 #define MINIMUM_FREE_RAM 20
 #define NUMPINS 6
@@ -244,10 +245,10 @@ void connectBitlash(void);
 /////////////////////////////////////////////
 // bitlash.c
 //
-#ifdef TINY85
-void initBitlash(void);
-#else
+#ifdef ARDUINO_BUILD
 void initBitlash(unsigned long baud);	// start up and set baud rate
+#else
+void initBitlash(void);
 #endif
 void runBitlash(void);					// call this in loop(), frequently
 void doCommand(char *);					// execute a command from your sketch
@@ -255,10 +256,11 @@ void doCommand(char *);					// execute a command from your sketch
 void flash(unsigned int, int);
 
 
-#ifndef ARDUINO_BUILD
 /////////////////////////////////////////////
 // bitlash-arduino.c
 //
+//#ifndef ARDUINO_BUILD
+#if 0
 void digitalWrite(uint8_t, uint8_t);
 int digitalRead(uint8_t);
 int analogRead(uint8_t);
@@ -420,7 +422,7 @@ void primec(void);
 char fetchc(void);
 void getsym(void);
 prog_char *getmsg(byte);
-void parsestring(void (*)(byte));
+void parsestring(void (*)(char));
 void msgp(byte);
 void msgpl(byte);
 numvar getnum(void);

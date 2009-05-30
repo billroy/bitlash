@@ -29,8 +29,11 @@
 #include "bitlash.h"
 
 #include "avr/eeprom.h"
+
+#ifdef TINY85
 #undef eeread
 #define eeread(addr) eeprom_read_byte((unsigned char *) addr)
+#endif
 
 // Interpreter globals
 char *fetchptr;		// pointer to current char in input buffer
@@ -465,7 +468,7 @@ void parseid(void) {
 
 
 // Parse a "quoted string" from the input.
-void parsestring(void (*charFunc)(byte)) {
+void parsestring(void (*charFunc)(char)) {
 
 	for (;;) {
 		if (!fetchc()) {				// end of input before string terminator

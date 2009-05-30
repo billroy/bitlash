@@ -27,4 +27,6 @@
 
 ***/
 
-
+void initBitlash(unsigned long baud);	// start up and set baud rate
+void runBitlash(void);					// call this in loop(), frequently
+void doCommand(char *);					// execute a command from your sketch
