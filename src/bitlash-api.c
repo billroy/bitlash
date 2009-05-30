@@ -1,5 +1,5 @@
 /***
-	bitlash.c
+	bitlash-api.c
 
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.

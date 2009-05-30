@@ -1,10 +1,10 @@
 /***
-	bitlash2.cpp
+	bitlash2.h
 
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.
 
-	This is the Bitlash2 library for Arduino 0015.
+	This is the Bitlash2 library for Arduino 0014.
 
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
@@ -26,18 +26,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 ***/
-#include "WProgram.h"
 
-#include "src/bitlash-arduino.c"
-#include "src/bitlash-cmdline.c"
-#include "src/bitlash-eeprom.c"
-#include "src/bitlash-eh1.c"
-#include "src/bitlash-error.c"
-#include "src/bitlash-functions.c"
-#include "src/bitlash-interpreter.c"
-#include "src/bitlash-parser.c"
-#include "src/bitlash-program.c"
-#include "src/bitlash-serial.c"
-#include "src/bitlash-taskmgr.c"
-#include "src/bitlash.c"
-#include "src/eeprom.c"
+void initBitlash(unsigned long baud);	// start up and set baud rate
+void runBitlash(void);					// call this in loop(), frequently
+void doCommand(char *);					// execute a command from your sketch

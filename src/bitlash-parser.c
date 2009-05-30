@@ -294,7 +294,7 @@ numvar x,y;
 prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
 prog_char reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
 #else
-prog_char reservedwords[] PROGMEM = { "boot\0help\0if\0ls\0peep\0print\0ps\0rm\0run\0stop\0switch\0,while\0" };
+prog_char reservedwords[] PROGMEM = { "boot\0help\0if\0ls\0peep\0print\0ps\0rm\0run\0stop\0switch\0while\0" };
 prog_char reservedwordtypes[] PROGMEM = { s_boot, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_rm, s_run, s_stop, s_switch, s_while };
 #endif
 

@@ -66,7 +66,9 @@
 #ifdef HIGH		// this detects the Arduino build environment
 
 #define ARDUINO_BUILD 1
-#define ARDUINO_VERSION 15
+#define ARDUINO_VERSION 14
+//#define ARDUINO_VERSION 15 	// no go: bizarre interrupt handler conflict in HardwareSerial.cpp vs. wiring_serial.c
+
 
 // Arduino version: 11 - enable by hand if needed; see bitlash-serial.h
 //#define ARDUINO_VERSION 11
@@ -243,7 +245,7 @@ void connectBitlash(void);
 
 
 /////////////////////////////////////////////
-// bitlash.c
+// bitlash-api.c
 //
 #ifdef ARDUINO_BUILD
 void initBitlash(unsigned long baud);	// start up and set baud rate
@@ -447,6 +449,12 @@ extern byte inchar;		// Current parser character
 #if !defined(TINY85)
 extern unumvar symcount;
 #endif
+
+#ifdef PARSER_TRACE
+extern char trace;
+void tb(void);
+#endif
+
 
 // Expression result
 extern char exptype;				// type of expression: s_nval [or s_sval]
