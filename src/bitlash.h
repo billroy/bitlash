@@ -36,7 +36,6 @@
 #include "ctype.h"
 #include "setjmp.h"
 #include <avr/wdt.h>
-#include "usbdrv.h"
 
 #ifndef byte
 #define byte uint8_t
@@ -64,21 +63,19 @@
 //
 ////////////////////////////////////////////////////
 //
-#ifdef HIGH		// this detects Arduino 0011 and 0012
+#ifdef HIGH		// this detects the Arduino build environment
 
 #define ARDUINO_BUILD
-// Enable one of these build targets
-// Arduino version: 12
-#define ARDUINO_V12
+#define ARDUINO_VERSION 15
 
-// Arduino version: 11 - enable by hand if needed
-//#define ARDUINO_V11
+// Arduino version: 11 - enable by hand if needed; see bitlash-serial.h
+//#define ARDUINO_VERSION 11
 
 #include "WProgram.h"
 #include "WConstants.h"
-#include "EEPROM.h"
-#define eeread EEPROM.read
-#define eewrite EEPROM.write
+//#include "EEPROM.h"
+//#define eeread EEPROM.read
+//#define eewrite EEPROM.write
 
 // Enable Software Serial tx support for Arduino
 // this enables "setbaud(4, 4800); print #4:..."
@@ -86,6 +83,8 @@
 //
 #define SOFTWARE_SERIAL_TX 1
 #define HARDWARE_SERIAL_TX 1
+
+#define MINIMUM_FREE_RAM 50
 
 #else
 #define HIGH 1
@@ -183,13 +182,16 @@ void beginEthernet(unsigned long baud) {
 //
 //	TINY85 BUILD OPTIONS
 //
-#if 1 || defined(__AVR_ATtiny85__)
+#if defined(__AVR_ATtiny85__)
 #define TINY85 1
 #define MINIMUM_FREE_RAM 20
 #define NUMPINS 6
 #undef HARDWARE_SERIAL_TX
 #undef SOFTWARE_SERIAL_TX
 //#define SOFTWARE_SERIAL_TX 1
+
+#include "usbdrv.h"
+
 #endif		// tiny85
 
 
@@ -216,7 +218,7 @@ void beginSerial(unsigned long baud) { ; }
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
-#if ARDUINO_BUILD
+#ifdef ARDUINO_BUILD
 typedef long int numvar;
 typedef unsigned long int unumvar;
 #else
@@ -252,6 +254,8 @@ void doCommand(char *);					// execute a command from your sketch
 
 void flash(unsigned int, int);
 
+
+#ifndef ARDUINO_BUILD
 /////////////////////////////////////////////
 // bitlash-arduino.c
 //
@@ -266,6 +270,7 @@ void delayMicroseconds(unsigned int);
 #define clockCyclesToMicroseconds(a) ( (a) / clockCyclesPerMicrosecond() )
 #define INPUT 0
 #define OUTPUT 1
+#endif
 
 
 /////////////////////////////////////////////
@@ -354,7 +359,7 @@ extern char startup[];
 // bitlash-serial.c
 //
 void printInteger(numvar);
-void printHex(numvar);
+void printHex(unumvar);
 void spb(char c);
 void sp(char *);
 void speol(void);
@@ -362,6 +367,11 @@ void speol(void);
 #ifdef SOFTWARE_SERIAL_TX
 void resetOutput(void);
 int setBaud(byte, unsigned long);
+#endif
+
+#ifdef ARDUINO_BUILD
+void chkbreak(void);
+void cmd_print(void);
 #endif
 
 
@@ -376,6 +386,7 @@ void snooze(unumvar);
 void showTaskList(void);
 extern byte background;
 extern byte curtask;
+extern byte suspendBackground;
 
 
 /////////////////////////////////////////////
@@ -429,6 +440,10 @@ extern numvar symval;		// value of current numeric expression
 #else
 extern byte sym;			// current input symbol
 extern byte inchar;		// Current parser character
+#endif
+
+#if !defined(TINY85)
+extern unumvar symcount;
 #endif
 
 // Expression result

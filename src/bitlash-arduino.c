@@ -21,10 +21,7 @@
 */
 #include "bitlash.h"
 
-#ifdef ARDUINO_BUILD
-	This is the Arduino Lite stand-in code.
-	Do you really want to build it on Arduino?
-#endif
+#ifndef ARDUINO_BUILD
 
 #ifdef TINY85
 #define PINMASK 7
@@ -209,3 +206,4 @@ int analogRead(uint8_t pin) {
 	return ADC;
 }
 
+#endif

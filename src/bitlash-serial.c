@@ -251,7 +251,7 @@ void beginSoftSerial(unsigned long baud) {
 #endif // SOFTWARE_SERIAL_RX
 
 
-#if defined(ARDUINO_V12) || defined(AVROPENDOUS_BUILD)
+#if (defined(ARDUINO_BUILD) && (ARDUINO_VERSION >= 12)) || defined(AVROPENDOUS_BUILD)
 // From Arduino 0011/wiring_serial.c
 // These apparently were removed from wiring_serial.c in 0012
 

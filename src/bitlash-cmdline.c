@@ -39,13 +39,11 @@ char lbuf[LBUFLEN];
 
 // Help text
 //
-prog_char helptext[] PROGMEM = {
 #ifdef ARDUINO_BUILD
-	"http://bitlash.net\r\nSee LICENSE for license, README for howto\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0"
+prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license, README for howto\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
 #else
-	"http://bitlash.net\r\n\0"
+prog_char helptext[] PROGMEM = { "http://bitlash.net\r\n\0" };
 #endif
-};
 
 void showdict(prog_char *addr) {
 byte c;
@@ -65,7 +63,8 @@ void displayBanner(void);
 void cmd_help(void) {
 	displayBanner();
 	showdict(helptext);
-	showdict(reservedwords);
+	// TODO: extern this puppy
+	//showdict(reservedwords);
 	msgp(M_functions);
 #ifdef LONG_ALIASES
 	showdict(aliasdict);

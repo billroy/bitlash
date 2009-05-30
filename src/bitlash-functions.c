@@ -218,9 +218,9 @@ numvar ret=0;
 #ifdef ARDUINO_BUILD
 		case f_aw:		analogWrite(arg1, arg2);					break;
 		case f_con:		ret = constrain(arg1, arg2, arg3);			break;
-		case f_map:		ret = map(arg1, arg2, arg3, arg4, arg5);	break;
+		//case f_map:		ret = map(arg1, arg2, arg3, arg4, arg5);	break;
 		case f_pulsein:	ret = pulseIn(arg1, arg2, arg3);			break;	// 3 args only
-		case f_rand2:	ret = random(arg1, arg2);					break;
+		//case f_rand2:	ret = random(arg1, arg2);					break;
 		case f_shiftout: 
 			pinMode(arg1, OUTPUT);
 			pinMode(arg2, OUTPUT);

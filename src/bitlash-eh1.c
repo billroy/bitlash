@@ -26,6 +26,8 @@
 ***/
 #include "bitlash.h"
 
+#ifdef TINY85
+
 void initStick(void) {
 	DDRB = (unsigned char) (1 << BIT_LED) | (1 << BIT_LED2);   	// make the LED an output, all others inputs
 
@@ -88,4 +90,5 @@ void usbMouse(int8_t x, int8_t y, uint8_t buttons, int8_t dwheel) {
 void usbKeystroke(uint8_t key) { ; }
 
 
+#endif
 
