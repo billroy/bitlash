@@ -1,10 +1,10 @@
 /***
-	bitlash2.cpp
+	bitlash.cpp
 
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.
 
-	This is the Bitlash2 library for Arduino 0014.
+	This is the Bitlash library for Arduino 0014.
 
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net

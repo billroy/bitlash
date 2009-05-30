@@ -1,10 +1,10 @@
 /***
-	bitlash2.h
+	bitlash.h
 
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.
 
-	This is the Bitlash2 library for Arduino 0014.
+	This is the Bitlash library for Arduino 0014.
 
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
@@ -27,6 +27,35 @@
 
 ***/
 
+///////////////////////
+//	Start Bitlash, and give it cycles to do stuff
+//
 void initBitlash(unsigned long baud);	// start up and set baud rate
 void runBitlash(void);					// call this in loop(), frequently
+
+
+///////////////////////
+//	Pass a command to Bitlash for interpretation
+//
 void doCommand(char *);					// execute a command from your sketch
+
+
+///////////////////////
+//	Access to Numeric Variables
+//
+//	NOTE: access to variables a..z is via an index 0..25, not the variable names.  Got it?
+//
+typedef long int numvar;					// bitlash returns things of type numvar
+typedef unsigned long int unumvar;			// sometimes unsigned interpretation is best (like millis)
+
+numvar getVar(unsigned char);				// return value of bitlash variable.  id is [0..25] for [a..z]
+void assignVar(unsigned char, numvar);		// assign value to variable.  id is [0..25] for [a..z]
+numvar incVar(unsigned char);				// increment variable.  id is [0..25] for [a..z]
+
+
+///////////////////////
+//	Access to the Bitlash EEPROM key:value store
+//
+// Lookup key in EEPROM and return the location of its value
+int getValue(char *key);			// return location of macro value in EEPROM or -1
+

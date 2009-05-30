@@ -1,2 +1,6 @@
-.DS_Store
-examples/bitlash2-demo/applet
+*/.DS_Store
+examples/bitlash-demo/applet
+examples/bitlash-demo/.DS_Store
+examples/bitlash-clock/applet
+examples/bitlash-clock/.DS_Store
+bitlash.o
