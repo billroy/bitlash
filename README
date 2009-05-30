@@ -1,0 +1,5 @@
+See the file "readme.pdf" included with this distribution, 
+or visit Bitlash online at http://bitlash.net.
+
+Quick Start: Paste the contents of 'bitlash.cpp' into a blank Arduino 0012 sketch window, 
+click Upload, and connect at 57600.  Type help and press enter.
