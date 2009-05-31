@@ -185,7 +185,6 @@ void beginEthernet(unsigned long baud) {
 //	TINY85 BUILD OPTIONS
 //
 #if defined(__AVR_ATtiny85__)
-choke me here;
 #define TINY85 1
 #define MINIMUM_FREE_RAM 20
 #define NUMPINS 6

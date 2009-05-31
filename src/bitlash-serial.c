@@ -59,12 +59,13 @@ void chkpin(char pin) {
 int setBaud(byte pin, unsigned long baud) {
 	chkpin(pin);
 
-#ifndef SOFTWARE_SERIAL_TX
+//#ifndef SOFTWARE_SERIAL_TX
 	if (pin == DEFAULT_OUTPIN) {
 		beginSerial(baud);
 		return 0;
 	}
-#endif
+//#endif
+
 #ifdef SANGUINO
 	else if (pin == SANGUINO_ALTERNATE_SERIAL) {
 		Serial1.begin(baud);
