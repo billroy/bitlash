@@ -66,9 +66,17 @@
 #ifdef HIGH		// this detects the Arduino build environment
 
 #define ARDUINO_BUILD 1
-#define ARDUINO_VERSION 14
-//#define ARDUINO_VERSION 15 	// no go: bizarre interrupt handler conflict in HardwareSerial.cpp vs. wiring_serial.c
+//#define ARDUINO_VERSION 14	// working
+#define ARDUINO_VERSION 15 		// working
+//#define ARDUINO_VERSION 16	// working, release pending
 
+// the serial support, she is changing all the time
+#if ARDUINO_VERSION >= 15
+#define beginSerial Serial.begin
+#define serialAvailable Serial.available
+#define serialRead Serial.read
+#define serialWrite Serial.print
+#endif
 
 // Arduino version: 11 - enable by hand if needed; see bitlash-serial.h
 //#define ARDUINO_VERSION 11
