@@ -44,7 +44,7 @@
 byte outpin = DEFAULT_OUTPIN;	// output pin
 
 #ifndef NUMPINS
-#define NUMPINS 32				// will change for mega32/sanguino/... (can't find define)
+#define NUMPINS 32				// default to Arduino Diecimila/168..328
 #endif
 int bittime[NUMPINS];			// bit times (1000000/baud) per pin, 0 = uninitialized
 
@@ -66,8 +66,8 @@ int setBaud(byte pin, unsigned long baud) {
 	}
 //#endif
 
-#ifdef SANGUINO
-	else if (pin == SANGUINO_ALTERNATE_SERIAL) {
+#ifdef ALTERNATE_OUTPIN
+	else if (pin == ALTERNATE_OUTPIN) {
 		Serial1.begin(baud);
 		return 0;
 	}
@@ -88,8 +88,8 @@ void setOutput(byte pin) {
 	// skip soft baud check for the hardware uart
 	if (outpin != DEFAULT_OUTPIN)
 #endif
-#ifdef SANGUINO
-	if (outpin != SANGUINO_ALTERNATE_SERIAL)
+#ifdef ALTERNATE_OUTPIN
+	if (outpin != ALTERNATE_OUTPIN)
 #endif
 
 	// set the softserial baud if it's not already set
@@ -126,8 +126,8 @@ void spb(char c) {
 #ifdef HARDWARE_SERIAL_TX
 	if (outpin == DEFAULT_OUTPIN) { serialWrite(c); return; }
 #endif
-#ifdef SANGUINO
-	if (outpin == SANGUINO_ALTERNATE_SERIAL) { Serial1.print(c); return; }
+#ifdef ALTERNATE_OUTPIN
+	if (outpin == ALTERNATE_OUTPIN) { Serial1.print(c); return; }
 #endif
 #ifdef SOFTWARE_SERIAL_TX
 	whackabyte(c);
@@ -241,7 +241,7 @@ void beginSoftSerial(unsigned long baud) {
 	}
 #endif
 	else unexpected(M_number);
-	// todo: handle a0..7; pin out of range; extend for Sanguino
+	// todo: handle a0..7; pin out of range; extend for Sanguino, Mega, ...
 }
 
 // aliases for the rest of the interpreter

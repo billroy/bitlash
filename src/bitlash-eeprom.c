@@ -49,6 +49,9 @@
 #elif defined(SANGUINO)
 #define ENDDB 2047
 #define ENDEEPROM 2047
+#elif defined(MEGA)
+#define ENDDB 4095
+#define ENDEEPROM 4095
 #else
 #define ENDEEPROM 511
 #define ENDDB 511

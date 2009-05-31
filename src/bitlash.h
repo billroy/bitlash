@@ -170,13 +170,53 @@ void beginEthernet(unsigned long baud) {
 #define serialRead Serial.read
 #define serialWrite Serial.print
 
+// Sanguino has 24 digital and 8 analog io pins
+#define NUMPINS (24+8)
+
 // Sanguino primary serial tx output is on pin 9 (rx on 8)
 // Sanguino alternate hardware serial port tx output is on pin 11 (rx on 10)
 #define SANGUINO_DEFAULT_SERIAL 9
 #define SANGUINO_ALTERNATE_SERIAL 11
 #define DEFAULT_OUTPIN SANGUINO_DEFAULT_SERIAL
+#define ALTERNATE_OUTPIN SANGUINO_ALTERNATE_SERIAL
 
 #endif	// defined (644)
+
+
+///////////////////////////////////////////////////////
+//
+// MEGA BUILD
+//
+//	Note: These are speculative and untested.  Feedback welcome.
+//
+///////////////////////////////////////////////////////
+//
+// MEGA is auto-enabled to build for the Arduino Mega
+// if the '1280 define is present
+//
+#if defined(__AVR_ATmega1280__)
+#define MEGA 1
+
+#define beginSerial Serial.begin
+#define serialAvailable Serial.available
+#define serialRead Serial.read
+#define serialWrite Serial.print
+
+// MEGA has 54 digital and 16 analog pins
+#define NUMPINS (54+16)
+
+// Mega primary serial tx output is on pin 1 (rx on 0)
+// Mega alternate hardware serial port tx output is on pin 18 (rx on 19)
+// TODO: Support for hardware serial uart2 and uart3
+// TODO: There may be buggy interactions with pins 17/16 and 15/14 due to interrupt handlers
+//
+#define MEGA_DEFAULT_SERIAL 1
+#define MEGA_ALTERNATE_SERIAL 18
+#define DEFAULT_OUTPIN MEGA_DEFAULT_SERIAL
+#define ALTERNATE_OUTPIN MEGA_ALTERNATE_SERIAL
+
+#endif	// defined (1280)
+
 
 
 
