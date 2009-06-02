@@ -173,10 +173,12 @@ void beginEthernet(unsigned long baud) {
 //char serialRead(void) { return Serial.read(); }
 //void serialWrite(char c) { return Serial.print(c); }
 
+#ifndef beginSerial
 #define beginSerial Serial.begin
 #define serialAvailable Serial.available
 #define serialRead Serial.read
 #define serialWrite Serial.print
+#endif
 
 // Sanguino has 24 digital and 8 analog io pins
 #define NUMPINS (24+8)
