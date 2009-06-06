@@ -43,7 +43,7 @@
 #define ENDEEPROM 511
 #define ENDDB 511
 
-#elif defined(__AVR_ATmega328P__)
+#elif defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
 #define ENDEEPROM 1023
 #define ENDDB 1023
 #elif defined(SANGUINO)

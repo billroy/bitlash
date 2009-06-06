@@ -40,6 +40,13 @@ void pinMode(byte pin, byte mode) {
 	if (pin < 8) reg = &DDRD;
 	else if (pin < 16) { reg = &DDRB; pin -= 8; }
 	else if (pin < 24) { reg = &DDRC; pin -= 16; }
+
+#if NUMPINS > 24
+	// Enable port f and e for the atmega32u8 and friends
+	else if (pin < 32) { reg = &DDRF; pin -= 24; }
+	else if (pin < 40) { reg = &DDRE; pin -= 32; }
+#endif
+
 	else return;
 	if (mode) *reg |= (1 << pin);
 	else *reg &= ~(1 << pin);

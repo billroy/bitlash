@@ -266,6 +266,25 @@ void beginSerial(unsigned long baud) { ; }
 #endif	// defined '162
 
 
+///////////////////////////////////////////////////////
+//
+//	AVRopendous2-DIP BUILD OPTIONS
+//
+#elif defined(__AVR_ATmega32U4__)
+#define AVROPENDOUS_BUILD
+#define MINIMUM_FREE_RAM 50
+#define NUMPINS 40
+#undef HARDWARE_SERIAL_TX
+#undef SOFTWARE_SERIAL_TX
+void beginSerial(unsigned long baud) { ; }
+#define serialAvailable usbAvailable
+#define serialRead usbRead
+#define serialWrite usbWrite
+#include <util/delay.h>
+#endif	// defined '32U4
+
+
+
 
 
 
