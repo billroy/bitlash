@@ -318,9 +318,9 @@ void cmd_print(void) {
 #endif
 
 		// Special handling for quoted strings
-		if (sym == s_quote) {
-			// parse it and push it out the output hole (spb)
-			spb(inchar);		// shovel out the first char, which was in the lookahead
+		if (sym == s_quote) {	// parse it and push it out the output hole (spb)
+			--fetchptr;
+			primec();
 			parsestring(&spb);	// munch through the string (incl. closing quote) spewing it via spb
 			getsym();			// and prime up the next symbol after for the comma check
 		} 

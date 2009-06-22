@@ -50,11 +50,6 @@ int value = 0;
 void doMacroCall(int);
 #endif
 
-#ifndef STARTDB
-#define STARTDB 0
-#define ENDDB 511
-#define EMPTY 255
-#endif
 
 void nukeeeprom(void) {
 	initTaskList();		// stop any currently running background tasks

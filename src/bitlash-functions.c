@@ -265,13 +265,13 @@ numvar ret=0;
 			// Replace this with your code.  Return a value.  Upload to Arduino.
 			// Then you can reference usr(x) in an expression to run your code and use the result.
 			// 
-			//ret = (arg1-32) * 5 / 9;	// convert fahrenheit to celsius: print usr(72) => 22
+			ret = (arg1-32) * 5 / 9;	// convert fahrenheit to celsius: print usr(72) => 22
 
 			// Second example: return Tiny85 temperature sensor
 			//ret = analogRead(_BV(REFS1) | 0xf);		// read Tiny85 built-in temperature sensor
 
 			// testing
-			ret = vsptr;
+			//ret = vsptr;
 
 			break;
 		//

@@ -467,23 +467,27 @@ void parseid(void) {
 }
 
 
+#define ASC_QUOTE		0x22
+#define ASC_BKSLASH		0x5C
+
+
 // Parse a "quoted string" from the input.
 void parsestring(void (*charFunc)(char)) {
 
 	for (;;) {
-		if (!fetchc()) {				// end of input before string terminator
-			unexpected(M_eof);			// does not return
-		}
-		else if (inchar == '"') {				// found the string terminator
+
+		if (!fetchc()) unexpected(M_eof);		// get next else end of input before string terminator
+		
+		if (inchar == ASC_QUOTE) {				// found the string terminator
 			fetchc();							// consume it so's we move along
 			break;								// done with the big loop
 		}
-		else if (inchar == '\\') {				// bkslash escape conventions per K&R C
+		else if (inchar == ASC_BKSLASH) {		// bkslash escape conventions per K&R C
 			switch (fetchc()) {
 
 				// pass-thrus
-				case '"':	break;	// just a dbl quote, move along
-				case '\'':	break;	// just a backslash, move along
+				case ASC_QUOTE:				break;	// just a dbl quote, move along
+				case ASC_BKSLASH:			break;	// just a backslash, move along
 
 				// minor translations
 				case 'n': 	inchar = '\n';	break;
