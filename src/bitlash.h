@@ -67,8 +67,8 @@
 
 #define ARDUINO_BUILD 1
 //#define ARDUINO_VERSION 14	// working
-#define ARDUINO_VERSION 15 		// working
-//#define ARDUINO_VERSION 16	// working, release pending
+//#define ARDUINO_VERSION 15 	// working
+#define ARDUINO_VERSION 16		// working, released
 
 // the serial support, she is changing all the time
 #if ARDUINO_VERSION >= 15
@@ -270,7 +270,7 @@ void beginSerial(unsigned long baud) { ; }
 //
 //	AVRopendous2-DIP BUILD OPTIONS
 //
-#elif defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega32U4__)
 #define AVROPENDOUS_BUILD
 #define MINIMUM_FREE_RAM 50
 #define NUMPINS 40
@@ -379,6 +379,20 @@ int findend(int);
 void eeputs(int);
 
 void defineMacro(void);
+
+#define EMPTY ((uint8_t)255)
+#define STARTDB 0
+#define FAIL ((int)-1)
+
+
+////////////////////////
+//
+// EEPROM database begin/end offset
+//
+// Use the predefined constant from the avr-gcc support file
+//
+#define ENDDB E2END
+#define ENDEEPROM E2END
 
 
 #ifdef TINY85

@@ -32,32 +32,6 @@
 /***
 	This is a tiny attribute-value pair database for small EEPROM devices.
 ***/
-#define EMPTY ((uint8_t)255)
-#define STARTDB 0
-#define FAIL ((int)-1)
-
-// TODO: use E2END to define endeeprom/enddb
-
-#ifdef TINY85
-
-#define ENDEEPROM 511
-#define ENDDB 511
-
-#elif defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)
-#define ENDEEPROM 1023
-#define ENDDB 1023
-#elif defined(SANGUINO)
-#define ENDDB 2047
-#define ENDEEPROM 2047
-#elif defined(MEGA)
-#define ENDDB 4095
-#define ENDEEPROM 4095
-#else
-#define ENDEEPROM 511
-#define ENDDB 511
-#endif
-
-
 
 // terrible horrible eeprom addressing kludge
 // we steal a high bit to distinguish eeprom addresses
