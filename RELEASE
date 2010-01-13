@@ -1,5 +1,10 @@
 Bitlash Release Notes
 
+1.0
+- Fixed filenames in the examples/ folder to remove '-'
+- Updated copyright date in signon banner
+- Doc set update: see http://bitlash.net
+
 1.0rc2
 - Fixed bug which botched handling of escaped characters in string constants.
 

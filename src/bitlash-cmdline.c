@@ -40,7 +40,7 @@ char lbuf[LBUFLEN];
 // Help text
 //
 #ifdef ARDUINO_BUILD
-prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license, README for howto\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
+prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
 #else
 prog_char helptext[] PROGMEM = { "http://bitlash.net\r\n\0" };
 #endif
@@ -232,9 +232,9 @@ prog_char banner[] PROGMEM = {
 // Ruler:     1                   2         3         4         5         6         7         8         9        10
 //   12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 #ifdef ARDUINO_BUILD
-	"print \"bitlash here! v1.0rc2 (c) 2009 Bill Roy -type HELP-\",free,\"bytes free\""
+	"print \"bitlash here! v1.0 (c) 2010 Bill Roy -type HELP-\",free,\"bytes free\""
 #else
-	"print \"bitlash here! v1.0rc2 (c) 2009 Bill Roy\""
+	"print \"bitlash here! v1.0 (c) 2010 Bill Roy\""
 #endif
 };
 

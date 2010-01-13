@@ -1,14 +1,1 @@
 See the Bitlash documentation online at http://bitlash.net.
-
-Quick Start: 
-
-As of Arduino version 0015 and later, Bitlash is provided as an Arduino Library.
-
-To install Bitlash, unzip the download and copy or move the bitlash distribution folder
-into your Arduino application's "hardware/libraries" directory as "/hartdware/libraries/bitlash". 
-(You will need to rename the resulting folder to simply Òbitlash" to remove the version number.)
-
-To use Bitlash, open, compile, and upload the "bitlash-demo.pde" sketch, which you will find 
-in the hardware/libraries/bitlash/examples/bitlash-demo folder. 
-
-Then connect via the serial port at 57600 baud and off you go.
