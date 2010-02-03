@@ -1,5 +1,8 @@
 Bitlash Release Notes
 
+1.1
+- User Functions (addBitlashFunction)
+
 1.0
 - Fixed filenames in the examples/ folder to remove '-'
 - Updated copyright date in signon banner

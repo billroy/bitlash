@@ -459,7 +459,11 @@ void parseid(void) {
 #ifdef LONG_ALIASES
 	else if (findindex(idbuf, (prog_char *) aliasdict, 0)) sym = s_nfunct;
 #endif
-	
+
+#ifdef USER_FUNCTIONS
+	else if (find_user_function(idbuf)) sym = s_nfunct;
+#endif
+
 	// macro ref or def?
 	else if ((symval=findKey(idbuf)) >= 0) sym = s_macro;
 

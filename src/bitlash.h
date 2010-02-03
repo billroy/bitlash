@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009 Bill Roy
+	Copyright (C) 2008, 2009, 2010 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -426,8 +426,8 @@ extern numvar lastval;
 /////////////////////////////////////////////
 // bitlash-functions.c
 //
-void getfunction(char);
-int get_free_memory(void);
+void getfunction(byte);
+numvar get_free_memory(void);
 void beep(unumvar, unumvar, unumvar);
 
 extern prog_char functiondict[] PROGMEM;
@@ -452,7 +452,7 @@ void speol(void);
 
 #ifdef SOFTWARE_SERIAL_TX
 void resetOutput(void);
-int setBaud(byte, unsigned long);
+numvar setBaud(numvar, unumvar);
 #endif
 
 #ifdef ARDUINO_BUILD
@@ -479,9 +479,8 @@ extern byte suspendBackground;
 // eeprom.c
 // they must live off piste due to aggressive compiler inlining.
 //
-void eewrite(int addr, byte value);
-byte eeread(int addr);
-
+void eewrite(int, byte) __attribute__((noinline));
+byte eeread(int) __attribute__((noinline));
 
 /////////////////////////////////////////////
 // bitlash-interpreter.c

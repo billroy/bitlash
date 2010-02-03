@@ -1,5 +1,6 @@
 */.DS_Store
 examples/bitlashdemo/applet
+examples/*/applet
 examples/bitlashdemo/.DS_Store
 examples/bitlashclock/applet
 examples/bitlashclock/.DS_Store

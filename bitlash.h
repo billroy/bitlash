@@ -59,3 +59,10 @@ numvar incVar(unsigned char);				// increment variable.  id is [0..25] for [a..z
 // Lookup key in EEPROM and return the location of its value
 int getValue(char *key);			// return location of macro value in EEPROM or -1
 
+
+///////////////////////
+//	Add a user function to Bitlash
+//
+typedef void (*bitlash_function)(void);
+void addBitlashFunction(char *, signed char, void (*)());
+
