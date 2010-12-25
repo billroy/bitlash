@@ -109,7 +109,7 @@ tokenhandler tokenhandlers[TOKENTYPES] = {
 prog_char chartypes[] PROGMEM = {    		//0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 	np(3,4), np(4,4),  np(4,4), np(4,4),  np(4,0), np(0,4),  np(4,0), np(4,4),	//0  NUL SOH STX ETX EOT ENQ ACK BEL BS  HT  LF  VT  FF  CR  SO  SI
 	np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),	//1  DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US
-	np(0,8), np(7,7),  np(7,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,7),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
+	np(0,8), np(7,7),  np(4,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,7),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
 	np(1,1), np(1,1),  np(1,1), np(1,1),  np(1,1), np(8,7),  np(8,8), np(8,4),	//3   0   1   2   3   4   5   6   7   8   9   :   ;   <   =   >   ?
 	np(4,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),	//4   @   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O
 	np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,4),  np(4,4), np(7,2),	//5   P   Q   R   S   T   U   V   W   X   Y   Z   [   \   ]   ^   _
@@ -662,10 +662,6 @@ byte thesym = sym;
 			getsym();
 			break;
 
-//		case s_dollars:		// $n - argument value
-//			vpush(getarg(getnum()));
-//			break;
-
 		case s_arg:			// arg(n) - argument value
 			if (sym != s_lparen) expectedchar(s_lparen);
 			getsym(); 		// eat '('
@@ -705,8 +701,6 @@ byte thesym = sym;
 			break;
 
 		default: 
-			printInteger(thesym);speol();
-			printInteger(thesymval);speol();
 			unexpected(M_number);
 	}
 

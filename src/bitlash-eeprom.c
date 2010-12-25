@@ -260,7 +260,9 @@ int start = STARTDB;
 		if (start == FAIL) return;
 
 		eeputs(start);
-		msgp(M_defmacro);
+		//msgp(M_defmacro);
+		spb('=');
+		spb('"');
 		start = findend(start);
 		eeputs(start);
 		spb('"');
