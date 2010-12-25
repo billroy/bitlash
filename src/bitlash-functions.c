@@ -26,6 +26,13 @@
 ***/
 #include "bitlash.h"
 
+// syntactic sugar for func_handlers()
+extern numvar getarg(numvar);
+#define arg1 getarg(1)
+#define arg2 getarg(2)
+#define arg3 getarg(3)
+#define arg4 getarg(4)
+#define arg5 getarg(5)
 
 ///////////////////////
 // FUNCTION HANDLERS
@@ -42,16 +49,16 @@ void beep(unumvar pin, unumvar frequency, unumvar duration) {
 	delay(duration);
 }
 #else
-void beep(unumvar pin, unumvar frequency, unumvar duration) {
-	unsigned long cycles = ((unsigned long)frequency * (unsigned long)duration) / 1000UL;
-	unsigned long halfperiod = (500000UL / (unsigned long) frequency) - 7UL;	// 7 fudge
+numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
+	unsigned long cycles = ((unsigned long) arg2 * (unsigned long) arg3) / 1000UL;
+	unsigned long halfperiod = (500000UL / (unsigned long) arg2) - 7UL;	// 7 fudge
 
 	// todo: check for break in here?  This could go 32 seconds...
-	pinMode(pin, OUTPUT);
+	pinMode(arg1, OUTPUT);
 	while (cycles--) {
-		digitalWrite(pin, HIGH);
+		digitalWrite(arg1, HIGH);
 		delayMicroseconds(halfperiod);
-		digitalWrite(pin, LOW);
+		digitalWrite(arg1, LOW);
 		delayMicroseconds(halfperiod-1);
 	}
 }
@@ -73,7 +80,7 @@ numvar ret;
 //
 static uint32_t deadbeef_seed = 0xbeefcafe;
 static uint32_t deadbeef_beef = 0xdeadbeef;
-unumvar dbrandom(unumvar arg1) {
+numvar func_random(void) {
 unumvar ret;
 	deadbeef_seed = (deadbeef_seed << 7) ^ ((deadbeef_seed >> 25) + deadbeef_beef);
 	ret = ((numvar) deadbeef_seed & 0x7fff) % arg1;
@@ -105,53 +112,32 @@ void dbseed(uint32_t x) {
 //		>print inb(0x53)
 //		2
 //
-unumvar inb(unumvar port) {
-	return *(volatile byte *) port;
-}
-
-void outb(unumvar port, unumvar value) {
-	*(volatile byte *) port = (byte) value;
-}
-
-/////////////////////////////
-// abs() and sign() replacements
-//
-// 34 bytes for these
-//
-numvar myabs(numvar num) { return num < 0 ? -num : num; }
-numvar mysign(numvar num) {
-	//return num < 0 ? -1 : num > 0 ? 1 : 0;
-	if (num < 0) return -1;
-	if (num > 0) return 1;
+numvar func_inb(void) { return *(volatile byte *) arg1; }
+numvar func_outb(void) { *(volatile byte *) arg1 = (byte) arg2; }
+numvar func_abs(void) { return arg1 < 0 ? -arg1 : arg1; }
+numvar func_sign(void) {
+	if (arg1 < 0) return -1;
+	if (arg1 > 0) return 1;
 	return 0;
 }
-numvar mymin(numvar num1, numvar num2) {
-	return (num1 < num2) ? num1 : num2;
+numvar func_min(void) { return (arg1 < arg2) ? arg1 : arg2; }
+numvar func_max() { return (arg1 > arg2) ? arg1 : arg2; }
+numvar func_constrain(void) {
+	if (arg1 < arg2) return arg2;
+	if (arg1 > arg3) return arg3;
+	return arg1;
 }
-numvar mymax(numvar num1, numvar num2) {
-	return (num1 > num2) ? num1 : num2;
-}
-numvar myconstrain(numvar val, numvar lo, numvar hi) {
-	if (val < lo) return lo;
-	if (val > hi) return hi;
-	return val;
-}
-
-// 6 byte signature fix for millis -> unumvar
-unumvar millisUnumvar(void) { return (unumvar) millis(); }
-
-numvar myar(numvar pin) { return analogRead(pin); }
-void myaw(numvar pin, numvar value) { analogWrite(pin, value); }
-
-numvar mydr(numvar pin) { return digitalRead(pin); }
-void mydw(numvar pin, numvar value) { digitalWrite(pin, value); }
-
-numvar myer(numvar pin) { return eeread(pin); }
-void myew(numvar pin, numvar value) { eewrite(pin, value); }
-
-void mypinmode(numvar pin, numvar mode) { pinMode(pin, mode); }
-unumvar mypulsein(numvar pin, numvar value, numvar timeout) { return pulseIn(pin, value, timeout); }
-
+numvar func_ar(void) { return analogRead(arg1); }
+numvar func_aw(void) { analogWrite(arg1, arg2); return 0; }
+numvar func_dr(void) { return digitalRead(arg1); }
+numvar func_dw(void) { digitalWrite(arg1, arg2); return 0; }
+numvar func_er(void) { return eeread(arg1); }
+numvar func_ew(void) { eewrite(arg1, arg2); return 0; }
+numvar func_pinmode(void) { pinMode(arg1, arg2); return 0; }
+numvar func_pulsein(void) { return pulseIn(arg1, arg2, arg3); }
+numvar func_snooze(void) { snooze(arg1); return 0; }
+numvar func_delay(void) { delay(arg1); return 0; }
+numvar func_setBaud(void) { setBaud(arg1, arg2); return 0; }
 
 //////////
 // Function name dictionary
@@ -196,44 +182,32 @@ prog_char functiondict[] PROGMEM = {
 //
 // this must be 1:1 with the symbols above, which in turn must be in alpha order
 //
-typedef void (*bitlash_function)(void);
-typedef struct {
-	signed char argsig;				// <0 means no return value
-	bitlash_function func_ptr;		// pointer to the implementing function
-} functab_entry;
+typedef numvar (*bitlash_function)(void);
 
-functab_entry function_table[] PROGMEM = {
-	{ /* f_abs,		*/		1,		(bitlash_function) myabs },
-	{ /* f_ar,		*/		1,		(bitlash_function) myar },
-	{ /* f_aw,		*/		-2,		(bitlash_function) myaw },
-	{ /* f_baud,	*/		2,		(bitlash_function) setBaud },
-	{ /* f_beep,	*/		-3, 	(bitlash_function) beep },
-	{ /* f_con,		*/		3,		(bitlash_function) myconstrain },
-	{ /* f_delay,	*/		-1,		(bitlash_function) delay },
-	{ /* f_dr		*/		 1,		(bitlash_function) mydr },
-	{ /* f_dw,		*/		-2, 	(bitlash_function) mydw },
-	{ /* f_er,		*/		1,		(bitlash_function) myer },
-	{ /* f_ew,		*/		-2,		(bitlash_function) myew },
-	{ /* f_free,	*/		0,		(bitlash_function) get_free_memory },
-	{ /* f_inb,		*/		1,		(bitlash_function) inb },
-	{ /* f_max,		*/		2,  	(bitlash_function) mymax },
-	{ /* f_millis,	*/		0,		(bitlash_function) millisUnumvar },
-	{ /* f_min,		*/		2,		(bitlash_function) mymin },
-	{ /* f_outb,	*/		-2, 	(bitlash_function) outb },
-	{ /* f_pinmode,	*/		-2, 	(bitlash_function) mypinmode },
-	{ /* f_pulsein, */		3,		(bitlash_function) mypulsein },
-	{ /* f_random,	*/		1,		(bitlash_function) dbrandom },
-	{ /* f_sign,	*/		1,		(bitlash_function) mysign },
-	{ /* f_snooze,	*/		-1,		(bitlash_function) snooze }		// last one no comma!
-};
-
-// Increase MAXARGS if you add a function requiring more than 3 arguments
-// 	Be cautious, though, since the arg block lives on the stack (since function calls nest, right?)
-//	I deprecated map() to avoid going to 5, for example, since
-//	each slot you add eats stack in getfunction() to the tune of:
-// 		sizeof(numvar) * depth of nesting of function calls
-//
-#define MAXARGS 3	// NOTE: this is hardcoded for an optimization; read below for more repairs if you change it
+bitlash_function function_table[] PROGMEM = {
+	func_abs ,
+	func_ar ,
+	func_aw ,
+	func_setBaud ,
+	func_beep ,
+	func_constrain ,
+	func_delay ,
+	func_dr ,
+	func_dw ,
+	func_er ,
+	func_ew ,
+	get_free_memory ,
+	func_inb ,
+	func_max ,
+	(bitlash_function) millis ,
+	func_min ,
+	func_outb ,
+	func_pinmode ,
+	func_pulsein ,
+	func_random ,
+	func_sign ,
+	func_snooze 		// last one no comma!
+ 	};
 
 
 // Enable USER_FUNCTIONS to include the add_bitlash_function() extension mechanism
@@ -247,7 +221,6 @@ functab_entry function_table[] PROGMEM = {
 
 typedef struct {
 	char *name;					// pointer to the name
-	signed char argsig;			// argument count; <0 means no return value
 	bitlash_function func_ptr;	// pointer to the implementing function
 } user_functab_entry;
 
@@ -264,16 +237,10 @@ user_functab_entry user_functions[MAX_USER_FUNCTIONS];		// the table
 //		Note: Since the user table is searched last, attempting to redefine an 
 //		existing function will fail silently, leading to interesting debugging experience.
 //
-//	argsig:	argument signature: number of arguments, times -1 if no return value
-//		eg: millis is 0		[void millis(void)]
-//		eg: delay is -1  	[void delay(howlong)]
-//		eg: dr is 1			[numvar dr(numvar pin)]
-//		eg: dw is -2		[void dw(numvar pin, numvar value)]  takes 2, returns none is -2
-//
 //	func_ptr: pointer to the implementing C function
 //
 //	if it weren't built-in, you could add millis() like this:
-//		addBitlashFunction("millis", 0, (bitlash_function) millis);
+//		addBitlashFunction("millis", (bitlash_function) millis);
 //
 // Bitlash uses the typedefs "numvar" and "unumvar" for signed and unsigned values within the
 // bitlash calculation engine.  The engine can be configured for 16- or 32-bit calculations
@@ -292,9 +259,9 @@ user_functab_entry user_functions[MAX_USER_FUNCTIONS];		// the table
 //
 void addBitlashFunction(char *name, signed char argsig, bitlash_function func_ptr) {
 	if (bf_install_count >= MAX_USER_FUNCTIONS-1) overflow(M_functions);
-	if (myabs(argsig) > MAXARGS) overflow(M_functions); 
+//	if (myabs(argsig) > MAXARGS) overflow(M_functions); 
 	user_functions[bf_install_count].name = name;
-	user_functions[bf_install_count].argsig = argsig;
+//	user_functions[bf_install_count].argsig = argsig;
 	user_functions[bf_install_count].func_ptr = func_ptr;	
 	bf_install_count++;
 }
@@ -326,75 +293,28 @@ char find_user_function(char *id) {
 //
 void getfunction(byte entry) {
 
-// Function argument storage
-byte argct = 0;
-signed char nargs, absnargs;
-void (*fp)();
-numvar args[MAXARGS];
+//bitlash_function (*fp)();
+bitlash_function fp;
+
+sp("\n@getfunc");
 
 #ifdef USER_FUNCTIONS
 	// Detect and handle a user function: its id has the high bit set
 	// we set nargs and fp and fall through to masquerade as a built-in
 	if (entry & USER_FUNCTION_FLAG) {
-		nargs = user_functions[entry & 0x7f].argsig;
-		fp = 	user_functions[entry & 0x7f].func_ptr;
+		fp = (bitlash_function) user_functions[entry & 0x7f].func_ptr;
 	}
 	else
 #endif
-	{
-		// built-in function: get argument count and return type; nargs < 0 means noret
-		nargs = pgm_read_byte(&function_table[entry].argsig);
-		fp = (void (*)()) pgm_read_word(&function_table[entry].func_ptr);
-	}
+	// built-in function
+	fp = (bitlash_function) pgm_read_word(&function_table[entry]);
 
-	// separate the arg count from the return value flag
-	absnargs = (nargs < 0) ? -nargs : nargs;
-
-	// Parse argument list
-	if (sym == s_lparen) {
-		getsym();		// eat arglist '('
-		while ((sym != s_rparen) && (argct < absnargs)) {
-			args[argct++] = getnum();
-			if (sym == s_comma) getsym();	// eat arglist ',' and go around
-			else break;
-		}
-		if (sym != s_rparen) expected(M_rparen);
-		if (argct != absnargs) expected(M_number);
-		getsym();	// eat arglist ')'
-	}
-	else if (absnargs) expectedchar('(');	// noargs: may omit ()
-
-	// looks yucky but saves 80 bytes to do the indexing just once
-	numvar arg1 = args[0];
-	numvar arg2 = args[1];
-	numvar arg3 = args[2];
-	//numvar arg4 = args[3];
-	//numvar arg5 = args[4];
-
-	// there are days...
-	typedef void (*func_0args_noretval)(void);
-	typedef void (*func_1args_noretval)(unumvar);
-	typedef void (*func_2args_noretval)(unumvar, unumvar);
-	typedef void (*func_3args_noretval)(unumvar, unumvar, unumvar);
-	typedef unumvar (*func_0args_retval)(void);
-	typedef unumvar (*func_1args_retval)(unumvar);
-	typedef unumvar (*func_2args_retval)(unumvar, unumvar);
-	typedef unumvar (*func_3args_retval)(unumvar, unumvar, unumvar);
-
-
-	// Return value pushed at the bottom of the switch
-	numvar ret=0;
-	switch(nargs) {
-		case -1:	(*(func_1args_noretval)fp)(arg1);				break;
-		case -2:	(*(func_2args_noretval)fp)(arg1, arg2);			break;
-		case -3:	(*(func_3args_noretval)fp)(arg1, arg2, arg3);	break;
-		case 0:		ret = (*(func_0args_retval)fp)();				break;	// for now, 0 means noarg + retval
-		case 1:		ret = (*(func_1args_retval)fp)(arg1);			break;
-		case 2:		ret = (*(func_2args_retval)fp)(arg1,arg2);		break;
-		case 3:		ret = (*(func_3args_retval)fp)(arg1,arg2,arg3);	break;
-		default: 	unexpected(M_id);
-	}
-	vpush(ret);
+	parsearglist();			// parse the arguments
+sp("@gf-call");
+	numvar ret = (*fp)();	// call the function 
+sp("@gf-aftercall");
+	releaseargblock();		// peel off the arguments
+	vpush(ret);				// and push the return value
 }
 
 

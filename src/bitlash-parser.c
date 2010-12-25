@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009 Bill Roy
+	Copyright (C) 2008, 2009, 2010 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -54,9 +54,9 @@ char idbuf[IDLEN+1];
 
 prog_char strings[] PROGMEM = { 
 #ifdef TINY85
-	"exp \0unexp \0mssng \0str\0 uflow \0oflow \0\0\0\0exp\0op\0\0eof\0var\0num\0)\0\0eep\0:=\"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\n\0\0"
+	"exp \0unexp \0mssng \0str\0 uflow \0oflow \0\0\0\0exp\0op\0\0eof\0var\0num\0)\0\0eep\0:=\"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\n\0\0\0"
 #else
-	"expected \0unexpected \0missing \0string\0 underflow\0 overflow\0^C\0^B\0^U\0exp\0op\0:xby+-*/\0eof\0var\0number\0)\0saved\0eeprom\0:=\"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\nFunctions:\0oops\0"
+	"expected \0unexpected \0missing \0string\0 underflow\0 overflow\0^C\0^B\0^U\0exp\0op\0:xby+-*/\0eof\0var\0number\0)\0saved\0eeprom\0:=\"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\nFunctions:\0oops\0arg\0"
 #endif
 };
 
@@ -109,7 +109,7 @@ tokenhandler tokenhandlers[TOKENTYPES] = {
 prog_char chartypes[] PROGMEM = {    		//0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 	np(3,4), np(4,4),  np(4,4), np(4,4),  np(4,0), np(0,4),  np(4,0), np(4,4),	//0  NUL SOH STX ETX EOT ENQ ACK BEL BS  HT  LF  VT  FF  CR  SO  SI
 	np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),	//1  DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US
-	np(0,8), np(7,7),  np(4,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,7),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
+	np(0,8), np(7,7),  np(7,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,7),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
 	np(1,1), np(1,1),  np(1,1), np(1,1),  np(1,1), np(8,7),  np(8,8), np(8,4),	//3   0   1   2   3   4   5   6   7   8   9   :   ;   <   =   >   ?
 	np(4,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),	//4   @   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O
 	np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,4),  np(4,4), np(7,2),	//5   P   Q   R   S   T   U   V   W   X   Y   Z   [   \   ]   ^   _
@@ -244,13 +244,20 @@ void calleeprommacro(int macrotext) {
 	callmacro(kludge(macrotext));
 }
 
-
-// Expression evaluation stack
-#define vstacklen 8
+////////////////////
+///
+///		Expression evaluation stack
+///
+#define vstacklen 64
 byte vsptr;			  		// value stack pointer
+numvar *arg;				// argument frame pointer
 numvar vstack[vstacklen];  	// value stack
 
-void vinit(void) { vsptr = 0; }
+void vinit(void) { 
+	vsptr = 0; 
+	arg = vstack;	// point the argblock at the stack base
+	vpush(0);		// push a 0 there so arg(0) is 0 at the top
+}
 
 void vpush(numvar x) {
 	if (vsptr >= vstacklen-1) overflow(M_exp);
@@ -285,6 +292,64 @@ numvar x,y;
 		case s_shiftleft:	vpush(y << x);	break;
 		case s_shiftright:	vpush(y >> x);	break;
 		default: 			unexpected(M_op);
+	}
+}
+
+
+////////////////////
+///
+/// Argument Block handling
+///
+
+void openargblock(void) {
+sp("@open");
+	vpush((numvar) arg);	// save base of current argblock
+	arg = &vstack[vsptr];	// move global arg pointer to base of new block
+	vpush(0);				// initialize arg(0) (a/k/a argc) to 0
+}
+
+void addarg(numvar a) {
+sp("@addarg");
+	vpush(a);
+	arg[0]++;
+}
+
+numvar getarg(numvar which) {
+sp("@getarg");
+	if (which > arg[0]) missing(M_arg);
+	return arg[which];
+}
+
+#if 0
+//	returns arg value from parent context
+//
+numvar getparentarg(void) {
+	if (arg[0] < 1) underflow(M_arg);
+	numvar *parentArg = *(arg-1);
+	if (arg[1] > parentArg[0]) overflow(M_arg);
+	return parentArg[arg[1]];
+}
+#endif
+
+void releaseargblock(void) {
+sp("@release");
+	if (vsptr <= 0) underflow(M_arg);	// shouldn't happen
+	vsptr -= arg[0] + 1;				// pop all args en masse
+	arg = (numvar *) vpop();			// pop arg frame and we're back
+}
+
+void parsearglist(void) {
+sp("\n@parse");
+	openargblock();
+	if (sym == s_lparen) {
+		getsym();		// eat arglist '('
+		while (sym != s_rparen) {
+			addarg(getnum());
+			if (sym == s_comma) getsym();	// eat arglist ',' and go around
+			else break;
+		}
+		if (sym != s_rparen) expected(M_rparen);
+		getsym();	// eat arglist ')'
 	}
 }
 
@@ -529,11 +594,9 @@ byte thesym = sym;
 	switch (thesym) {
 		case s_nval:
 			vpush(symval);
-//			getsym();
 			break;
 			
 		case s_nvar:
-//			getsym();
 			if (sym == s_equals) {		// assignment, push is after the break;
 				getsym();
 				assignVar(thesymval, getnum());
@@ -554,20 +617,18 @@ byte thesym = sym;
 			break;
 
 		case s_nfunct:
-//			getsym();					// scan past the thesymval
 			getfunction(thesymval);			// get its value onto the stack
 			break;
 
 		// Macro-returning-value used as a factor
 		case s_macro:				// macro returning value
-			getsym();				// eat the macroid
+//			getsym();				// eat the macroid
 			doMacroCall(thesymval);	// run the macro
 			vpush(expval);			// push the last value it mentions
 			break;
 
 #ifdef ARDUINO_BUILD
 		case s_apin:					// analog pin reference like a0
-//			getsym();
 			if (sym == s_equals) { 		// digitalWrite or analogWrite
 				getsym();
 				analogWrite(thesymval, getnum());
@@ -577,7 +638,6 @@ byte thesym = sym;
 			break;
 #endif
 		case s_dpin:					// digital pin reference like d1
-//			getsym();
 			if (sym == s_equals) { 		// digitalWrite or analogWrite
 				getsym();
 				digitalWrite(thesymval, getnum());
@@ -587,7 +647,6 @@ byte thesym = sym;
 			break;
 
 		case s_incr:
-//			getsym();
 			if (sym != s_nvar) expected(M_var);
 			assignVar(symval, getVar(symval) + 1);
 			vpush(getVar(symval));
@@ -595,15 +654,17 @@ byte thesym = sym;
 			break;
 
 		case s_decr:		// pre decrement
-//			getsym();
 			if (sym != s_nvar) expected(M_var);
 			assignVar(symval, getVar(symval) - 1);
 			vpush(getVar(symval));
 			getsym();
 			break;
 
+		case s_dollars:		// $n - argument value
+			vpush(getarg(getnum()));
+			break;
+
 		case s_lparen:  // expression in parens
-//			getsym();
 			getexpression();
 			if (exptype != s_nval) expected(M_number);
 			if (sym != s_rparen) missing(M_rparen);
@@ -615,24 +676,20 @@ byte thesym = sym;
 		// The Family of Unary Operators, which Bind Most Closely to their Factor
 		//
 		case s_add:			// unary plus (like +3) is kind of a no-op
-//			getsym();		// eat the +
 			getfactor();	// scan a factor and leave its result on the stack
 			break;			// done
 	
 		case s_sub:			// unary minus (like -3)
-//			getsym();
 			getfactor();
 			vpush(-vpop());	// similar to above but we adjust the stack value
 			break;
 	
 		case s_bitnot:
-//			getsym();
 			getfactor();
 			vpush(~vpop());
 			break;
 	
 		case s_logicalnot:
-//			getsym();
 			getfactor();
 			vpush(!vpop());
 			break;

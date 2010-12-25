@@ -512,7 +512,9 @@ numvar getnum(void);
 void calleeprommacro(int);
 void getexpression(void);
 char hexval(char);
-
+numvar getarg(numvar);
+void releaseargblock(void);
+void parsearglist(void);
 
 // Interpreter globals
 extern char *fetchptr;		// pointer to current char in input buffer
@@ -576,6 +578,7 @@ extern char idbuf[IDLEN+1];
 #define M_promptid		25
 #define M_functions		26
 #define M_oops			27
+#define M_arg			28
 
 
 //	Names for symbols
@@ -637,6 +640,7 @@ extern char idbuf[IDLEN+1];
 #define s_colon			':'
 #define s_pound			'#'
 #define s_quote			'"'
+#define s_dollars		'$'
 
 
 #endif	// defined _BITLASH_H

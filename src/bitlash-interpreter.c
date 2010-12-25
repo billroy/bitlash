@@ -281,6 +281,8 @@ void doMacroCall(int macroaddress) {
 char op = sym;					// save sym for restore
 	if (macroaddress >= 0) {
 	
+		parsearglist();
+	
 		char *fetchmark = fetchptr;			// save the current parse pointer
 	
 		// call the macro
@@ -290,6 +292,7 @@ char op = sym;					// save sym for restore
 		if (sym != s_eof) expected(M_eof);
 	
 		// restore parsing context so we can resume cleanly
+		releaseargblock();
 		fetchptr = fetchmark;	// restore pointer
 		primec();				// and inchar
 		sym = op;				// restore saved sym

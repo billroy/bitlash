@@ -40,6 +40,10 @@ void setup(void) {
 	initBitlash(57600);		// must be first to initialize serial port
 
 	// Register the extension function with Bitlash
+	//		"timer1" is the Bitlash name for the function
+	//		0 is the argument signature: takes 0 arguments
+	//		(bitlash_function) timer1 tells Bitlash where our handler lives
+	//
 	addBitlashFunction("timer1", 0, (bitlash_function) timer1);
 }
 
