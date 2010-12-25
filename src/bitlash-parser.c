@@ -129,27 +129,27 @@ byte chartype(byte c) {
 byte isdigit(byte c) { return (chartype(c) == 1); }
 byte isalpha(byte c) { return (chartype(c) == 2); }
 byte isalnum(byte c) { return isalpha(c) || isdigit(c); }
-char tolower(char c) {
+byte tolower(byte c) {
 	return ((c >= 'A') && (c <= 'Z')) ? (c - 'A' + 'a') : c;
 }
 #endif
 
 // Tests on the symbol type
-char isrelop(void) {
+byte isrelop(void) {
 	return ((sym == s_lt) || (sym == s_le)
 			|| (sym == s_logicaleq) || (sym == s_logicalne)
 			|| (sym == s_gt) || (sym == s_ge));
 }
-char ishex(char c) { 
+byte ishex(char c) { 
 	return ((c >= '0') && (c <= '9')) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')); 
 }
-char hexval(char c) {
+byte hexval(char c) {
 	if ((c >= '0') && (c <= '9')) return c - '0';
 	return tolower(c) - 'a' + 10;
 }
 
 #ifdef PARSER_TRACE
-char trace;
+byte trace;
 #endif
 
 #if !defined(TINY85)
@@ -277,7 +277,7 @@ numvar vpop(void) {
 	return vstack[--vsptr];
 }
 
-void vop(int op)  {
+void vop(byte op)  {
 numvar x,y;
 	x = vpop(); y = vpop();
 	switch (op) {
@@ -361,14 +361,14 @@ void releaseargblock(void) {
 //
 #ifdef TINY85
 prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
-prog_char reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
+prog_uchar reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
 #else
 prog_char reservedwords[] PROGMEM = { "arg\0boot\0help\0if\0ls\0peep\0print\0ps\0return\0rm\0run\0set\0stop\0switch\0while\0" };
-prog_char reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_set, s_stop, s_switch, s_while };
+prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_set, s_stop, s_switch, s_while };
 #endif
 
 // find id in PROGMEM wordlist.  result in symval, return true if found.
-char findindex(char *id, prog_char *wordlist, byte sorted) {
+byte findindex(char *id, prog_char *wordlist, byte sorted) {
 	symval = 0;
 	while (pgm_read_byte(wordlist)) {
 		int result = strcmp_P(id, wordlist);
@@ -431,7 +431,7 @@ void chrconst(void) {
 
 
 prog_char twochartokens[] PROGMEM = { "&&||==!=++--:=>=>><=<<" };
-prog_char twocharsyms[] PROGMEM = {
+prog_uchar twocharsyms[] PROGMEM = {
 	s_logicaland, s_logicalor, s_logicaleq, s_logicalne, s_incr, 
 	s_decr, s_define, s_ge, s_shiftright, s_le, s_shiftleft
 };
@@ -442,7 +442,7 @@ void parseop(void) {
 	fetchc();			// inchar has second char of token or ??
 
 	prog_char *tk = twochartokens;
-	char index = 0;
+	byte index = 0;
 	for (;;) {
 		byte c1 = pgm_read_byte(tk++);
 		if (!c1) return;
@@ -471,7 +471,7 @@ void eof(void) {
 // Parse a numeric constant from the input stream
 // Octal isn't supported.  Use hex.
 void parsenum(void) {
-int radix;
+byte radix;
 	radix = 10;
 	symval = inchar - '0';
 	for (;;) {
@@ -569,7 +569,7 @@ void parsestring(void (*charFunc)(char)) {
 
 				case 'x':			// bkslash x hexdigit hexdigit	
 					if (ishex(fetchc())) {
-						char firstnibble = hexval(inchar);
+						byte firstnibble = hexval(inchar);
 						if (ishex(fetchc())) {
 							inchar = hexval(inchar) + (firstnibble << 4);
 							break;
@@ -721,7 +721,7 @@ byte thesym = sym;
 void parseReduce(void (*parsefunc)(void), byte sym1, byte sym2, byte sym3) {
 	(*parsefunc)();
 	while ((sym == sym1) || (sym == sym2) || (sym == sym3)) {
-		char op = sym;
+		byte op = sym;
 		getsym();
 		(*parsefunc)();
 		vop(op);
@@ -736,7 +736,7 @@ void getterm(void) {
 #else
 	getfactor();
 	while ((sym == s_mul) || (sym == s_div) || (sym == s_mod)) {
-		char op = sym;
+		byte op = sym;
 		getsym();
 		getfactor();
 		vop(op);
@@ -750,7 +750,7 @@ void getsimpexp(void) {
 #else
 	getterm();
 	while ((sym == s_add) || (sym == s_sub)) {
-		char op = sym;
+		byte op = sym;
 		getsym();
 		getterm();
 		vop(op);
@@ -764,7 +764,7 @@ void getshiftexp(void) {
 #else
 	getsimpexp();
 	while ((sym == s_shiftright) || (sym == s_shiftleft)) {
-		char op = sym;
+		byte op = sym;
 		getsym();
 		getsimpexp();
 		vop(op);
@@ -775,7 +775,7 @@ void getshiftexp(void) {
 void getrelexp(void) {
 	getshiftexp();
 	while (isrelop()) {
-		char op = sym;
+		byte op = sym;
 		getsym();
 		getshiftexp();
 		vop(op);
@@ -788,7 +788,7 @@ void getbitopexp(void) {
 #else
 	getrelexp();
 	while ((sym == s_bitand) || (sym == s_bitor) || (sym == s_xor)) {
-		char op = sym;
+		byte op = sym;
 		getsym();
 		getrelexp();
 		vop(op);
@@ -804,7 +804,7 @@ void getexpression(void) {
 #else
 	getbitopexp();
 	while ((sym == s_logicaland) || (sym == s_logicalor)) {
-		char op = sym;
+		byte op = sym;
 		getsym();
 		getbitopexp();
 		vop(op);

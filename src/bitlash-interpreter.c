@@ -32,7 +32,7 @@
 // Turn HEX_UPLOAD on to enable the hex file EEPROM uploader
 // It costs 78 bytes of flash
 //
-#define HEX_UPLOAD
+//#define HEX_UPLOAD
 #ifdef HEX_UPLOAD
 int gethex(byte count) {
 int value = 0;
@@ -162,11 +162,6 @@ void getstatement(void) {
 		getsym();
 		if (sym != s_macro) unexpected(M_id);
 
-#if 0
-		// address of macroid is in symval via parseid
-		startTask(kludge(symval));
-		getsym();
-#else
 		// address of macroid is in symval via parseid
 		// check for [,snoozeintervalms]
 		getsym();	// eat macroid to check for comma; symval untouched
@@ -177,8 +172,8 @@ void getstatement(void) {
 			startTask(kludge(vpop()), expval);
 		}
 		else startTask(kludge(symval), 0);
-#endif
 	}
+
 	else if (sym == s_stop) {
 		getsym();
 		if (sym == s_mul) {						// stop * stops all tasks
@@ -204,7 +199,7 @@ void getstatement(void) {
 		else expected(M_id);
 		getsym();
 	}
-	else if (sym == s_ps) showTaskList();
+	else if (sym == s_ps) 		{ getsym();	showTaskList(); }
 	else if (sym == s_peep) 	{ getsym(); cmd_peep(); }
 	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
 	else if (sym == s_help) 	{ getsym(); cmd_help(); }

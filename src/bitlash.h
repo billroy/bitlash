@@ -466,7 +466,7 @@ void cmd_print(void);
 //
 void initTaskList(void);
 void runBackgroundTasks(void);
-void stopTask(int);
+void stopTask(byte);
 void startTask(char *, numvar);
 void snooze(unumvar);
 void showTaskList(void);
@@ -511,7 +511,7 @@ void msgpl(byte);
 numvar getnum(void);
 void calleeprommacro(int);
 void getexpression(void);
-char hexval(char);
+byte hexval(char);
 numvar getarg(numvar);
 void releaseargblock(void);
 void parsearglist(void);
@@ -534,7 +534,7 @@ extern unumvar symcount;
 #endif
 
 #ifdef PARSER_TRACE
-extern char trace;
+extern byte trace;
 void tb(void);
 #endif
 

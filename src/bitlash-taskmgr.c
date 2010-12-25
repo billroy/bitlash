@@ -40,11 +40,11 @@ unsigned long waketime[NUMTASKS];	// millis() time this task is eligible to run
 
 void initTaskList(void) { memset(tasklist, 0, NUMTASKS * sizeof(char *)); }
 
-void stopTask(int slot) { if ((slot >= 0) && (slot < NUMTASKS)) tasklist[slot] = 0; }
+void stopTask(byte slot) { if (slot < NUMTASKS) tasklist[slot] = 0; }
 
 // add task to run list
 void startTask(char *macroid, numvar snoozems) {
-int slot;
+byte slot;
 	for (slot = 0; (slot < NUMTASKS); slot++) {
 		if (tasklist[slot] == 0) {
 			tasklist[slot] = macroid;
@@ -65,7 +65,7 @@ void snooze(unumvar duration) {
 
 
 void runBackgroundTasks(void) {
-int i;	
+byte i;	
 
 #ifndef TINY85
 	if (suspendBackground) return;
@@ -86,11 +86,6 @@ int i;
 			//
 			if (!tasklist[curtask]) { 
 				unexpected(M_unexpected);		// unexpected unexpected error
-#if 0
-				// dump the background task list to prove it's empty
-				sp("BACKGROUND:"); printInteger(curtask); speol();
-				for (int i=0; i<NUMTASKS; i++) { printHex((unsigned long) tasklist[i]); spb(' '); } speol(); 
-#endif
 			}
 			doCommand(kludge(findend(dekludge(tasklist[curtask]))));
 
@@ -106,8 +101,8 @@ int i;
 
 #ifndef TINY85
 void showTaskList(void) {
-int slot;
-	for (slot = 0; (slot < NUMTASKS); slot++) {
+byte slot;
+	for (slot = 0; slot < NUMTASKS; slot++) {
 		if (tasklist[slot] != 0) {
 			printInteger(slot); spb(':'); spb(' ');
 			eeputs(dekludge(tasklist[slot])); speol();
