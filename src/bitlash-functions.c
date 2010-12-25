@@ -28,11 +28,21 @@
 
 // syntactic sugar for func_handlers()
 extern numvar getarg(numvar);
+#if 0	// 15022 bytes
 #define arg1 getarg(1)
 #define arg2 getarg(2)
 #define arg3 getarg(3)
-#define arg4 getarg(4)
-#define arg5 getarg(5)
+#endif
+
+// 14772 vs 15022
+extern numvar *arg;
+#define arg1 arg[1]
+#define arg2 arg[2]
+#define arg3 arg[3]
+void req1arg(void)  { if (arg[0] != 1) missing(M_arg); }
+void req2args(void) { if (arg[0] != 2) missing(M_arg); }
+void req3args(void) { if (arg[0] != 3) missing(M_arg); }
+
 
 ///////////////////////
 // FUNCTION HANDLERS
@@ -50,6 +60,7 @@ void beep(unumvar pin, unumvar frequency, unumvar duration) {
 }
 #else
 numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
+	req3args();
 	unsigned long cycles = ((unsigned long) arg2 * (unsigned long) arg3) / 1000UL;
 	unsigned long halfperiod = (500000UL / (unsigned long) arg2) - 7UL;	// 7 fudge
 
@@ -82,6 +93,7 @@ static uint32_t deadbeef_seed = 0xbeefcafe;
 static uint32_t deadbeef_beef = 0xdeadbeef;
 numvar func_random(void) {
 unumvar ret;
+	req1arg();
 	deadbeef_seed = (deadbeef_seed << 7) ^ ((deadbeef_seed >> 25) + deadbeef_beef);
 	ret = ((numvar) deadbeef_seed & 0x7fff) % arg1;
 	deadbeef_beef = (deadbeef_beef << 7) ^ ((deadbeef_beef >> 25) + 0xdeadbeef);
@@ -112,32 +124,34 @@ void dbseed(uint32_t x) {
 //		>print inb(0x53)
 //		2
 //
-numvar func_inb(void) { return *(volatile byte *) arg1; }
-numvar func_outb(void) { *(volatile byte *) arg1 = (byte) arg2; }
-numvar func_abs(void) { return arg1 < 0 ? -arg1 : arg1; }
+numvar func_inb(void) { req1arg(); return *(volatile byte *) arg1; }
+numvar func_outb(void) { req2args(); *(volatile byte *) arg1 = (byte) arg2; }
+numvar func_abs(void) { req1arg(); return arg1 < 0 ? -arg1 : arg1; }
 numvar func_sign(void) {
+	req1arg();
 	if (arg1 < 0) return -1;
 	if (arg1 > 0) return 1;
 	return 0;
 }
-numvar func_min(void) { return (arg1 < arg2) ? arg1 : arg2; }
-numvar func_max() { return (arg1 > arg2) ? arg1 : arg2; }
+numvar func_min(void) { req2args(); return (arg1 < arg2) ? arg1 : arg2; }
+numvar func_max() { req2args(); return (arg1 > arg2) ? arg1 : arg2; }
 numvar func_constrain(void) {
+	req3args();
 	if (arg1 < arg2) return arg2;
 	if (arg1 > arg3) return arg3;
 	return arg1;
 }
-numvar func_ar(void) { return analogRead(arg1); }
-numvar func_aw(void) { analogWrite(arg1, arg2); return 0; }
-numvar func_dr(void) { return digitalRead(arg1); }
-numvar func_dw(void) { digitalWrite(arg1, arg2); return 0; }
-numvar func_er(void) { return eeread(arg1); }
-numvar func_ew(void) { eewrite(arg1, arg2); return 0; }
-numvar func_pinmode(void) { pinMode(arg1, arg2); return 0; }
-numvar func_pulsein(void) { return pulseIn(arg1, arg2, arg3); }
-numvar func_snooze(void) { snooze(arg1); return 0; }
-numvar func_delay(void) { delay(arg1); return 0; }
-numvar func_setBaud(void) { setBaud(arg1, arg2); return 0; }
+numvar func_ar(void) { req1arg(); return analogRead(arg1); }
+numvar func_aw(void) { req2args(); analogWrite(arg1, arg2); return 0; }
+numvar func_dr(void) { req1arg(); return digitalRead(arg1); }
+numvar func_dw(void) { req2args(); digitalWrite(arg1, arg2); return 0; }
+numvar func_er(void) { req1arg(); return eeread(arg1); }
+numvar func_ew(void) { req2args(); eewrite(arg1, arg2); return 0; }
+numvar func_pinmode(void) { req2args(); pinMode(arg1, arg2); return 0; }
+numvar func_pulsein(void) { req3args(); return pulseIn(arg1, arg2, arg3); }
+numvar func_snooze(void) { req1arg(); snooze(arg1); return 0; }
+numvar func_delay(void) { req1arg(); delay(arg1); return 0; }
+numvar func_setBaud(void) { req2args(); setBaud(arg1, arg2); return 0; }
 
 //////////
 // Function name dictionary
