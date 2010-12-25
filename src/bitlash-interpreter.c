@@ -263,11 +263,10 @@ numvar getstatementlist(void) {
 // call a macro and push its return value on the stack
 //
 void domacrocall(int macroaddress) {
-char op = sym;					// save sym for restore
 	if (macroaddress >= 0) {
 	
 		parsearglist();
-	
+		byte thesym = sym;					// save sym for restore
 		char *fetchmark = fetchptr;			// save the current parse pointer
 	
 		// call the macro
@@ -282,7 +281,7 @@ char op = sym;					// save sym for restore
 		vpush(ret);
 		fetchptr = fetchmark;	// restore pointer
 		primec();				// and inchar
-		sym = op;				// restore saved sym
+		sym = thesym;			// restore saved sym
 	}
 }
 

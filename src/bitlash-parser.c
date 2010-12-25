@@ -444,12 +444,12 @@ void parseop(void) {
 	prog_char *tk = twochartokens;
 	char index = 0;
 	for (;;) {
-		char c1 = pgm_read_byte(tk++);
+		byte c1 = pgm_read_byte(tk++);
 		if (!c1) return;
-		char c2 = pgm_read_byte(tk++); 
+		byte c2 = pgm_read_byte(tk++); 
 
 		if ((sym == c1) && (inchar == c2)) {
-			sym = pgm_read_byte(twocharsyms + index);
+			sym = (byte) pgm_read_byte(twocharsyms + index);
 			fetchc();
 			return;
 		}
