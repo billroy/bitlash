@@ -64,7 +64,7 @@ numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
 }
 #endif
 
-numvar get_free_memory(void) {
+numvar func_free(void) {
 numvar ret;
 	// from http://forum.pololu.com/viewtopic.php?f=10&t=989&view=unread#p4218
 	extern int __bss_end;
@@ -196,7 +196,7 @@ bitlash_function function_table[] PROGMEM = {
 	func_dw ,
 	func_er ,
 	func_ew ,
-	get_free_memory ,
+	func_free ,
 	func_inb ,
 	func_max ,
 	(bitlash_function) millis ,
@@ -286,17 +286,13 @@ char find_user_function(char *id) {
 
 
 //////////
-// getfunction(): evaluate a function reference
+// dofunctioncall(): evaluate a function reference
 //
 // parse the argument list, marshall the arguments and call the function,
 // and push its return value, if any, on the value stack
 //
-void getfunction(byte entry) {
-
-//bitlash_function (*fp)();
+void dofunctioncall(byte entry) {
 bitlash_function fp;
-
-sp("\n@getfunc");
 
 #ifdef USER_FUNCTIONS
 	// Detect and handle a user function: its id has the high bit set
@@ -310,9 +306,7 @@ sp("\n@getfunc");
 	fp = (bitlash_function) pgm_read_word(&function_table[entry]);
 
 	parsearglist();			// parse the arguments
-sp("@gf-call");
 	numvar ret = (*fp)();	// call the function 
-sp("@gf-aftercall");
 	releaseargblock();		// peel off the arguments
 	vpush(ret);				// and push the return value
 }

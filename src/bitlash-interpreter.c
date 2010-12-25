@@ -45,12 +45,6 @@ int value = 0;
 #endif
 
 
-#define SKETCH 1
-#if SKETCH
-void doMacroCall(int);
-#endif
-
-
 void nukeeeprom(void) {
 	initTaskList();		// stop any currently running background tasks
 	int addr = STARTDB;
@@ -103,7 +97,6 @@ void getstatement(void) {
 	}
 
 
-#if SKETCH
 	// The switch statement: call one of N macros based on a selector value
 	// switch <numval>: macroid1, macroid2,.., macroidN
 	// numval < 0: numval = 0
@@ -130,15 +123,14 @@ void getstatement(void) {
 
 		// call the macro whose addr is squirreled in symval all this time
 		// on return, the parser is ready to pick up where we left off
-		doMacroCall(symval);
+		domacrocall(symval);
 
 		// scan past the rest of the unused switch options, if any
 		// TODO: syntax checking for non-chosen options could be made much tighter at the cost of some space
 		while ((sym != s_semi) && (sym != s_eof)) getsym();		// scan to end of statement without executing
 	}
-#endif
 
-
+#if 0
 	else if ((sym == s_macro) || (sym == s_undef)) {		// macro def or ref
 		getsym();						// scan past macro name to next symbol: ; or :=
 		if (sym == s_define) {			// macro definition: macroid := strvalue
@@ -146,36 +138,24 @@ void getstatement(void) {
 			// to avoid having this local buffer in every getstatement stack frame,
 			// we break out defineMacro here to a separate function that only eats that
 			// stack in the case that a macro is being defined
-#ifdef TINY85
-			unexpected(M_defmacro);
-#else
 			defineMacro();
-#endif
 		}
 		else if ((sym == s_semi) || (sym == s_eof)) {	// valid macro reference: let's call it
-#if SKETCH
-			doMacroCall(symval);			// parseid stashes the macro address in symval
-#else
-			char op = sym;					// save sym for restore
-			expval = findKey(idbuf);		// assumes id in idbuf isn't clobbered since getsym() above
-			if (expval >= 0) {
-				char *fetchmark = fetchptr;			// save the current parse pointer
-
-				// call the macro
-				calleeprommacro(findend(expval));	// register the macro into the parser stream
-				getsym();
-				getstatementlist();		// parse and execute the macro code here
-				if (sym != s_eof) expected(M_eof);
-
-				// restore parsing context so we can resume cleanly
-				fetchptr = fetchmark;	// restore pointer
-				primec();				// and inchar
-				sym = op;				// restore saved sym: s_semi or s_eof
-			} else unexpected(M_id);
-#endif
+			domacrocall(symval);			// parseid stashes the macro address in symval
 		}
 		else expectedchar(';');
 		//else getexpression();		// assume it was macro1+32+macro2...
+	}
+#endif
+
+	else if (sym == s_set) {		// v2 macro def: set foo = "blah"
+		getsym();					// grab the macro name
+		if ((sym == s_macro) || (sym == s_undef)) {
+			getsym();				// scan to putative '='
+			if (sym != s_equals) expectedchar(s_equals);
+			defineMacro();
+		}
+		else expected(M_id);
 	}
 	
 	else if (sym == s_run) {	// run macroname
@@ -229,6 +209,7 @@ void getstatement(void) {
 	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
 	else if (sym == s_help) 	{ getsym(); cmd_help(); }
 	else if (sym == s_print) 	{ getsym(); cmd_print(); }
+	else if (sym == s_semi)		{ getsym(); }
 #endif
 
 #ifdef HEX_UPLOAD
@@ -258,26 +239,30 @@ void getstatement(void) {
 
 
 // Parse and execute a list of statements separated by semicolons
-void getstatementlist(void) {
-	getstatement();
-	while (sym == s_semi) {
-		getsym();
-		if (sym != s_eof) getstatement();		// quietly allow trailing semicolon
+//
+//
+numvar getstatementlist(void) {
+//	getstatement();
+//	while (sym == s_semi) {
+//		getsym();
+//		if (sym != s_eof) getstatement();		// quietly allow trailing semicolon
+//	}
+	
+	while (sym != s_eof) {
+		if (sym == s_return) {
+			getsym();
+			if ((sym == s_semi) || (sym == s_eof)) return 0;
+			return getnum();
+		}
+		else getstatement();
 	}
-
-
-#if 0
-	// TODO: try when the linker bug is fixed
-	// poll the USB subsystem once per statement
-	// this won't prevent starvation but might help
-	usbPoll();		
-#endif
-
+	return 0;
 }
 
 
-#if SKETCH
-void doMacroCall(int macroaddress) {
+// call a macro and push its return value on the stack
+//
+void domacrocall(int macroaddress) {
 char op = sym;					// save sym for restore
 	if (macroaddress >= 0) {
 	
@@ -287,17 +272,18 @@ char op = sym;					// save sym for restore
 	
 		// call the macro
 		calleeprommacro(findend(macroaddress));	// register the macro into the parser stream
-		getsym();
-		getstatementlist();		// parse and execute the macro code here
-		if (sym != s_eof) expected(M_eof);
-	
+		getsym();								// fetch its first symbol
+		
+		numvar ret = getstatementlist();		// parse and execute the macro code here
+//		if (sym != s_eof) expected(M_eof);
+
 		// restore parsing context so we can resume cleanly
 		releaseargblock();
+		vpush(ret);
 		fetchptr = fetchmark;	// restore pointer
 		primec();				// and inchar
 		sym = op;				// restore saved sym
 	}
 }
-#endif
 
 

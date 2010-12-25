@@ -287,12 +287,12 @@ void printBinary(unumvar n) { printIntegerInBase(n, 2); }
 // check serial input stream for ^C break
 void chkbreak(void) {
 	if (serialAvailable()) {		// allow ^C to break out
-		if (serialRead() == 3) {
+		if (serialRead() == 3) {	// BUG: this gobblesnarfs input characters! - need serialPeek()
 			msgpl(M_ctrlc);
 			longjmp(env, X_EXIT);
 		}
 	}
-	if (get_free_memory() < MINIMUM_FREE_RAM) overflow(M_stack);
+	if (func_free() < MINIMUM_FREE_RAM) overflow(M_stack);
 }
 #endif
 

@@ -53,7 +53,7 @@
 //
 // Enable PARSER_TRACE to make ^T toggle a parser trace debug print stream
 // cost: ~400 bytes flash
-//#define PARSER_TRACE 1
+#define PARSER_TRACE 1
 
 
 
@@ -426,8 +426,8 @@ extern numvar lastval;
 /////////////////////////////////////////////
 // bitlash-functions.c
 //
-void getfunction(byte);
-numvar get_free_memory(void);
+void dofunctioncall(byte);
+numvar func_free(void);
 void beep(unumvar, unumvar, unumvar);
 
 extern prog_char functiondict[] PROGMEM;
@@ -485,8 +485,8 @@ byte eeread(int) __attribute__((noinline));
 /////////////////////////////////////////////
 // bitlash-interpreter.c
 //
-void getstatementlist(void);
-void doMacroCall(int);
+numvar getstatementlist(void);
+void domacrocall(int);
 
 
 /////////////////////////////////////////////
@@ -540,7 +540,7 @@ void tb(void);
 
 
 // Expression result
-extern char exptype;				// type of expression: s_nval [or s_sval]
+extern byte exptype;				// type of expression: s_nval [or s_sval]
 extern numvar expval;				// value of numeric expr or length of string
 
 // Temporary buffer for ids
@@ -582,40 +582,48 @@ extern char idbuf[IDLEN+1];
 
 
 //	Names for symbols
-#define s_undef			0
-#define s_nval			1
-#define s_sval			2
-#define s_nvar			3
-#define s_le			4
-#define s_ge			5
-#define s_logicaland	6
-#define s_logicalor		7
-#define s_logicaleq		8
-#define s_logicalne		9
-#define s_shiftleft		10
-#define s_shiftright	11
-#define s_incr			12
-#define s_decr			13
-#define s_nfunct		14
-#define s_eof 			15
-#define s_if			16
-#define s_while			17
-#define s_apin			18
-#define s_dpin			19
-#define s_define		20
-#define s_macro			21
-#define s_rm			22
-#define s_run			23
-#define s_ps			24
-#define s_stop			25
-#define s_boot			26
-#define s_peep			27
-#define s_help			28
-#define s_ls			29
-#define s_print			30
-#define s_switch		31
+//
+//	Each symbol in the grammar is parsed to a unique symval enumerated here
+//
+//	One character symbols take their ascii value as their symval
+//	Complex symbols have the high bit set so start at 128 (0x80)
+//
+#define s_undef			(0 | 0x80)
+#define s_nval			(1 | 0x80)
+#define s_sval			(2 | 0x80)
+#define s_nvar			(3 | 0x80)
+#define s_le			(4 | 0x80)
+#define s_ge			(5 | 0x80)
+#define s_logicaland	(6 | 0x80)
+#define s_logicalor		(7 | 0x80)
+#define s_logicaleq		(8 | 0x80)
+#define s_logicalne		(9 | 0x80)
+#define s_shiftleft		(10 | 0x80)
+#define s_shiftright	(11 | 0x80)
+#define s_incr			(12 | 0x80)
+#define s_decr			(13 | 0x80)
+#define s_nfunct		(14 | 0x80)
+#define s_eof 			(15 | 0x80)
+#define s_if			(16 | 0x80)
+#define s_while			(17 | 0x80)
+#define s_apin			(18 | 0x80)
+#define s_dpin			(19 | 0x80)
+#define s_define		(20 | 0x80)
+#define s_macro			(21 | 0x80)
+#define s_rm			(22 | 0x80)
+#define s_run			(23 | 0x80)
+#define s_ps			(24 | 0x80)
+#define s_stop			(25 | 0x80)
+#define s_boot			(26 | 0x80)
+#define s_peep			(27 | 0x80)
+#define s_help			(28 | 0x80)
+#define s_ls			(29 | 0x80)
+#define s_print			(30 | 0x80)
+#define s_switch		(31 | 0x80)
+#define s_return		(32 | 0x80)
+#define s_set			(33 | 0x80)
+#define s_arg			(34 | 0x80)
 
-// 33 will conflict with s_logicalnot ('!') !!
 
 // Names for literal symbols: these one-character symbols 
 // are represented by their 7-bit ascii char code

@@ -76,7 +76,11 @@ void doCommand(char *cmd) {
 	getsym();
 	if (sym == s_eof) return;
 
-	getstatementlist();
+//	getstatementlist();
+
+	// run the macro and print the result if nonzero
+	numvar ret = getstatementlist();
+	if (ret) { printInteger(ret); speol(); }
 }
 
 

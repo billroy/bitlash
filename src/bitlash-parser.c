@@ -44,7 +44,7 @@ byte inchar;		// Current parser character
 #endif
 
 // Expression result
-char exptype;				// type of expression: s_nval [or s_sval]
+byte exptype;				// type of expression: s_nval [or s_sval]
 numvar expval;				// value of numeric expr or length of string
 
 // Temporary buffer for ids
@@ -169,7 +169,8 @@ void getsym(void) {
 
 #ifdef PARSER_TRACE
 	if (trace) {
-		spb('{'); printInteger(sym); spb(' '); printInteger(symval); spb('}');
+		//spb('{'); printInteger(sym); spb(' '); printInteger(symval); spb('}');
+		sp(" sym="); printInteger(sym); sp(" v="); printInteger(symval); spb(' ');
 	}
 #endif
 }
@@ -181,15 +182,18 @@ void primec(void) {
 	if (isram(fetchptr)) inchar = *fetchptr;
 	else {
 		inchar = eeread(dekludge(fetchptr));
+		if (inchar == 255) inchar = 0;
+	}
 
 #ifdef PARSER_TRACE
 		// char trace
 		if (trace) {
-			spb('<'); printInteger(inchar);spb(':'); if (inchar) spb(inchar); spb('>');
+			spb('<'); 
+			if (inchar >= 0x20) spb(inchar);
+			else { spb('\\'); printInteger(inchar); }
+			spb('>');
 		}
 #endif
-		if (inchar == 255) inchar = 0;
-	}
 }
 
 
@@ -213,7 +217,11 @@ char fetchc(void) {
 #ifdef PARSER_TRACE
 	// char trace
 	if (trace) {
-		spb('['); printInteger(inchar);spb(':'); if (inchar) spb(inchar); spb(']');
+		//spb('['); printInteger(inchar);spb(':'); if (inchar) spb(inchar); spb(']');
+		spb('[');
+		if (inchar >= 0x20) spb(inchar);
+		else { spb('\\'); printInteger(inchar); }
+		spb(']');
 	}
 #endif
 
@@ -301,21 +309,7 @@ numvar x,y;
 /// Argument Block handling
 ///
 
-void openargblock(void) {
-sp("@open");
-	vpush((numvar) arg);	// save base of current argblock
-	arg = &vstack[vsptr];	// move global arg pointer to base of new block
-	vpush(0);				// initialize arg(0) (a/k/a argc) to 0
-}
-
-void addarg(numvar a) {
-sp("@addarg");
-	vpush(a);
-	arg[0]++;
-}
-
 numvar getarg(numvar which) {
-sp("@getarg");
 	if (which > arg[0]) missing(M_arg);
 	return arg[which];
 }
@@ -331,36 +325,46 @@ numvar getparentarg(void) {
 }
 #endif
 
+void parsearglist(void) {
+	vpush((numvar) arg);				// save base of current argblock
+	numvar *newarg = &vstack[vsptr];	// move global arg pointer to base of new block
+	vpush(0);							// initialize new arg(0) (a/k/a argc) to 0
+
+	if (sym == s_lparen) {
+		getsym();		// eat arglist '('
+		while ((sym != s_rparen) && (sym != s_eof)) {
+			vpush(getnum());				// push the value
+			newarg[0]++;					// bump the count
+			if (sym == s_comma) getsym();	// eat arglist ',' and go around
+			else break;
+		}
+		if (sym == s_rparen) getsym();		// eat the ')'
+		else expected(M_rparen);
+	}
+	arg = newarg;		// activate new argument frame
+}
+
+
+// release the top argblock once its execution context has expired
+//
 void releaseargblock(void) {
-sp("@release");
 	if (vsptr <= 0) underflow(M_arg);	// shouldn't happen
 	vsptr -= arg[0] + 1;				// pop all args en masse
 	arg = (numvar *) vpop();			// pop arg frame and we're back
 }
 
-void parsearglist(void) {
-sp("\n@parse");
-	openargblock();
-	if (sym == s_lparen) {
-		getsym();		// eat arglist '('
-		while (sym != s_rparen) {
-			addarg(getnum());
-			if (sym == s_comma) getsym();	// eat arglist ',' and go around
-			else break;
-		}
-		if (sym != s_rparen) expected(M_rparen);
-		getsym();	// eat arglist ')'
-	}
-}
 
 
-
+// Statement labels
+//
+//	MUST BE IN ALPHABETICAL ORDER!
+//
 #ifdef TINY85
 prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
 prog_char reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
 #else
-prog_char reservedwords[] PROGMEM = { "boot\0help\0if\0ls\0peep\0print\0ps\0rm\0run\0stop\0switch\0while\0" };
-prog_char reservedwordtypes[] PROGMEM = { s_boot, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_rm, s_run, s_stop, s_switch, s_while };
+prog_char reservedwords[] PROGMEM = { "arg\0boot\0help\0if\0ls\0peep\0print\0ps\0return\0rm\0run\0set\0stop\0switch\0while\0" };
+prog_char reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_set, s_stop, s_switch, s_while };
 #endif
 
 // find id in PROGMEM wordlist.  result in symval, return true if found.
@@ -617,14 +621,12 @@ byte thesym = sym;
 			break;
 
 		case s_nfunct:
-			getfunction(thesymval);			// get its value onto the stack
+			dofunctioncall(thesymval);			// get its value onto the stack
 			break;
 
 		// Macro-returning-value used as a factor
 		case s_macro:				// macro returning value
-//			getsym();				// eat the macroid
-			doMacroCall(thesymval);	// run the macro
-			vpush(expval);			// push the last value it mentions
+			domacrocall(thesymval);	// call the macro; its value is on the stack
 			break;
 
 #ifdef ARDUINO_BUILD
@@ -660,8 +662,16 @@ byte thesym = sym;
 			getsym();
 			break;
 
-		case s_dollars:		// $n - argument value
+//		case s_dollars:		// $n - argument value
+//			vpush(getarg(getnum()));
+//			break;
+
+		case s_arg:			// arg(n) - argument value
+			if (sym != s_lparen) expectedchar(s_lparen);
+			getsym(); 		// eat '('
 			vpush(getarg(getnum()));
+			if (sym != s_rparen) expectedchar(s_rparen);
+			getsym();		// eat ')'
 			break;
 
 		case s_lparen:  // expression in parens
@@ -695,6 +705,8 @@ byte thesym = sym;
 			break;
 
 		default: 
+			printInteger(thesym);speol();
+			printInteger(thesymval);speol();
 			unexpected(M_number);
 	}
 
