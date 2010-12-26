@@ -426,6 +426,8 @@ extern numvar lastval;
 /////////////////////////////////////////////
 // bitlash-functions.c
 //
+typedef numvar (*bitlash_function)(void);
+
 void dofunctioncall(byte);
 numvar func_free(void);
 void beep(unumvar, unumvar, unumvar);

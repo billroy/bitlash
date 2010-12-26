@@ -32,7 +32,9 @@
 
 // function handler for "spiput()" bitlash function
 //
-numvar spi_put(numvar value) {
+//	arg 1: byte to send via SPI
+//
+numvar spi_put(void) {
 	if (!(SPCR & (1<<SPE))) {	// if SPI isn't initialized, do so now
 
 		// Set output mode for MOSI and SCK
@@ -45,7 +47,7 @@ numvar spi_put(numvar value) {
 		int junk = SPSR;
 		junk = SPDR;
 	}
-	SPDR = value;
+	SPDR = getarg(1);
 	while (!(SPSR & (1<<SPIF))) {;}		// could hang here...
 	return SPDR;
 }
@@ -56,10 +58,9 @@ void setup(void) {
 
 	// Register the extension function with Bitlash:
 	// 		"spiput" is the name Bitlash will match for the function
-	// 		1 is the argument signature: 1 args, >0 means returns a value
 	// 		(bitlash_function) spi_put is the C function handler declared above
 	//
-	addBitlashFunction("spiput", 1, (bitlash_function) spi_put);
+	addBitlashFunction("spiput", (bitlash_function) spi_put);
 }
 
 void loop(void) {

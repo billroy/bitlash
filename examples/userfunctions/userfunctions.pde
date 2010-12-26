@@ -44,7 +44,7 @@ void setup(void) {
 	//		0 is the argument signature: takes 0 arguments
 	//		(bitlash_function) timer1 tells Bitlash where our handler lives
 	//
-	addBitlashFunction("timer1", 0, (bitlash_function) timer1);
+	addBitlashFunction("timer1", (bitlash_function) timer1);
 }
 
 void loop(void) {

@@ -56,7 +56,7 @@ prog_char strings[] PROGMEM = {
 #ifdef TINY85
 	"exp \0unexp \0mssng \0str\0 uflow \0oflow \0\0\0\0exp\0op\0\0eof\0var\0num\0)\0\0eep\0:=\"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\n\0\0\0"
 #else
-	"expected \0unexpected \0missing \0string\0 underflow\0 overflow\0^C\0^B\0^U\0exp\0op\0:xby+-*/\0eof\0var\0number\0)\0saved\0eeprom\0:=\"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\nFunctions:\0oops\0arg\0"
+	"expected \0unexpected \0missing \0string\0 underflow\0 overflow\0^C\0^B\0^U\0exp\0op\0:xby+-*/\0eof\0var\0number\0)\0saved\0eeprom\0 = \"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\nFunctions:\0oops\0arg\0"
 #endif
 };
 

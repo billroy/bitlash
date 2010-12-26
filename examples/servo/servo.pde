@@ -39,11 +39,14 @@ Servo myservos[NUMSERVOS];	// the Servo object for those servos
 //////////
 // servohandler: function handler for Bitlash servo() function
 //
-void servohandler(numvar servopin, numvar setting) { 
+//	arg 1: servopin
+//	arg 2: setting
+//
+numvar servohandler(void) {
 byte slot = 0;
 	// is this pin already allocated a servo slot?
 	while (slot < servo_install_count) {
-		if (servo_pin[slot] == servopin) break;
+		if (servo_pin[slot] == getarg(1)) break;
 		slot++;
 	}
 	if (slot >= servo_install_count) {	// not found
@@ -51,15 +54,16 @@ byte slot = 0;
 		// do we have a free slot to allocate?
 		if (servo_install_count < NUMSERVOS) {
 			slot = servo_install_count++;
-			servo_pin[slot] = servopin;
-			myservos[slot].attach(servopin);
+			servo_pin[slot] = getarg(1);
+			myservos[slot].attach(getarg(1));
 		}
 		else {
 			Serial.println("servohandler: oops!");	// please increase NUMSERVOS above
-			return;
+			return -1;
 		}
 	}
-	myservos[slot].write(setting);
+	myservos[slot].write(getarg(2));
+	return 0;
 }
 
 void setup(void) {
@@ -67,10 +71,9 @@ void setup(void) {
 
 	// Register the extension function with Bitlash:
 	// 		"servo" is the name Bitlash will match for the function
-	// 		-2 is the argument signature: 2 args, no return value
 	// 		(bitlash_function) servohandler is the C function handler declared above
 	//
-	addBitlashFunction("servo", -2, (bitlash_function) servohandler);
+	addBitlashFunction("servo", (bitlash_function) servohandler);
 }
 
 void loop(void) {

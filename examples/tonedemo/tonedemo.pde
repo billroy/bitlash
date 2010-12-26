@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-//	tone.pde:	Bitlash tone User Function Code
+//	tonedemo.pde:	Bitlash tone User Function Code
 //
 //	Copyright 2010 by Bill Roy
 //
@@ -32,9 +32,13 @@
 
 // function handler for "tone()" bitlash function
 //
-void tone_func(numvar pin, numvar freq, numvar duration) {
-	tone(pin, freq, duration);
-	// delay(duration); 	// uncomment this line if you want tone() to be blocking
+//	arg 1: pin
+//	arg 2: frequency
+//	arg 3: duration
+//
+numvar func_tone(void) {
+	tone(getarg(1), getarg(2), getarg(3));
+	return 0;
 }
 
 
@@ -43,10 +47,9 @@ void setup(void) {
 
 	// Register the extension function with Bitlash:
 	// 		"tone" is the name Bitlash will match for the function
-	// 		3 is the argument signature: 3 args, <0 means returns no value
 	// 		(bitlash_function) tone_func is the C function handler declared above
 	//
-	addBitlashFunction("tone", -3, (bitlash_function) tone_func);
+	addBitlashFunction("tone", (bitlash_function) func_tone);
 }
 
 void loop(void) {

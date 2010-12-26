@@ -196,7 +196,6 @@ prog_char functiondict[] PROGMEM = {
 //
 // this must be 1:1 with the symbols above, which in turn must be in alpha order
 //
-typedef numvar (*bitlash_function)(void);
 
 bitlash_function function_table[] PROGMEM = {
 	func_abs ,
@@ -271,11 +270,9 @@ user_functab_entry user_functions[MAX_USER_FUNCTIONS];		// the table
 //		> print foo(22)
 //		148
 //
-void addBitlashFunction(char *name, signed char argsig, bitlash_function func_ptr) {
+void addBitlashFunction(char *name, bitlash_function func_ptr) {
 	if (bf_install_count >= MAX_USER_FUNCTIONS-1) overflow(M_functions);
-//	if (myabs(argsig) > MAXARGS) overflow(M_functions); 
 	user_functions[bf_install_count].name = name;
-//	user_functions[bf_install_count].argsig = argsig;
 	user_functions[bf_install_count].func_ptr = func_ptr;	
 	bf_install_count++;
 }
