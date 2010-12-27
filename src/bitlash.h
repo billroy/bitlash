@@ -122,7 +122,14 @@
 //	WIZNET ETHERNET CONFIGURATION
 //
 #ifdef WIZ_ETHERNET
-//#include <Ethernet.h>
+
+//
+// You'll need these two lines in your sketch, as of Arduino-0022:
+//
+//	#include <SPI.h>
+//	#include <Ethernet.h>
+//
+
 byte mac[] 		= { 'b','i','t','l','s','h' };
 byte ip[]  		= { 192, 168, 1, 27 };
 byte gateway[] 	= { 192, 168, 1, 1 };

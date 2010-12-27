@@ -233,7 +233,7 @@ prog_char banner[] PROGMEM = {
 // Ruler:     1                   2         3         4         5         6         7         8         9        10
 //   12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 #ifdef ARDUINO_BUILD
-	"print \"bitlash here! v1.2b (c) 2010 Bill Roy -type HELP-\",free,\"bytes free\""
+	"print \"bitlash here! v1.2c (c) 2010 Bill Roy -type HELP-\",free,\"bytes free\""
 #else
 	"print \"bitlash here! v1.2 (c) 2010 Bill Roy\""
 #endif

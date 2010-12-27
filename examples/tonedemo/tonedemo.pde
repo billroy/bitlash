@@ -34,10 +34,16 @@
 //
 //	arg 1: pin
 //	arg 2: frequency
-//	arg 3: duration
+//	arg 3: duration (optional)
 //
 numvar func_tone(void) {
-	tone(getarg(1), getarg(2), getarg(3));
+	if (getarg(0) == 2) tone(getarg(1), getarg(2));
+	else tone(getarg(1), getarg(2), getarg(3));
+	return 0;
+}
+
+numvar func_notone(void) {
+	noTone(getarg(1));
 	return 0;
 }
 
@@ -50,6 +56,7 @@ void setup(void) {
 	// 		(bitlash_function) tone_func is the C function handler declared above
 	//
 	addBitlashFunction("tone", (bitlash_function) func_tone);
+	addBitlashFunction("notone", (bitlash_function) func_notone);
 }
 
 void loop(void) {

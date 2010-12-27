@@ -106,7 +106,7 @@ tokenhandler tokenhandlers[TOKENTYPES] = {
 //	The code corresponding to a character specifies which of the token handlers above will
 //	be called when the character is seen as the initial character in a symbol.
 #define np(a,b) ((a<<4)+b)
-prog_char chartypes[] PROGMEM = {    		//0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+prog_char chartypes[] PROGMEM = {    											//0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 	np(3,4), np(4,4),  np(4,4), np(4,4),  np(4,0), np(0,4),  np(4,0), np(4,4),	//0  NUL SOH STX ETX EOT ENQ ACK BEL BS  HT  LF  VT  FF  CR  SO  SI
 	np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),	//1  DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US
 	np(0,8), np(7,7),  np(4,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,7),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
@@ -350,7 +350,12 @@ void parsearglist(void) {
 void releaseargblock(void) {
 	if (vsptr <= 0) underflow(M_arg);	// shouldn't happen
 	vsptr -= arg[0] + 1;				// pop all args en masse
-	arg = (numvar *) vpop();			// pop arg frame and we're back
+
+	// TODO: test this better alternative that does not rely on arg(0)
+	// if (arg == vstack) underflow(M_arg);	// shouldn't happen
+	// vsptr = arg;							// peel back to where we started
+
+	arg = (numvar *) vpop();			// pop parent arg frame and we're back
 }
 
 
@@ -626,7 +631,13 @@ byte thesym = sym;
 
 		// Macro-returning-value used as a factor
 		case s_macro:				// macro returning value
-			domacrocall(thesymval);	// call the macro; its value is on the stack
+			if (sym == s_define) defineMacro();
+			else domacrocall(thesymval);	// call the macro; its value is on the stack
+			break;
+
+		case s_undef:
+			if (sym != s_define) unexpected(M_id);
+			defineMacro();
 			break;
 
 #ifdef ARDUINO_BUILD

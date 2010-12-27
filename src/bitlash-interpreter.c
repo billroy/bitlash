@@ -148,6 +148,7 @@ void getstatement(void) {
 	}
 #endif
 
+#if 0
 	else if (sym == s_set) {		// v2 macro def: set foo = "blah"
 		getsym();					// grab the macro name
 		if ((sym == s_macro) || (sym == s_undef)) {
@@ -157,7 +158,8 @@ void getstatement(void) {
 		}
 		else expected(M_id);
 	}
-	
+#endif
+
 	else if (sym == s_run) {	// run macroname
 		getsym();
 		if (sym != s_macro) unexpected(M_id);
