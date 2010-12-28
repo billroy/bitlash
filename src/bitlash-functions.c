@@ -39,9 +39,13 @@ extern numvar *arg;
 #define arg1 arg[1]
 #define arg2 arg[2]
 #define arg3 arg[3]
-void req1arg(void)  { if (arg[0] != 1) missing(M_arg); }
-void req2args(void) { if (arg[0] != 2) missing(M_arg); }
-void req3args(void) { if (arg[0] != 3) missing(M_arg); }
+#define arg4 arg[4]
+#define arg5 arg[5]
+void req1arg(void)  { if (arg[0] < 1) missing(M_arg); }
+void req2args(void) { if (arg[0] < 2) missing(M_arg); }
+void req3args(void) { if (arg[0] < 3) missing(M_arg); }
+void req4args(void) { if (arg[0] < 4) missing(M_arg); }
+void req5args(void) { if (arg[0] < 5) missing(M_arg); }
 
 
 ///////////////////////
@@ -152,6 +156,8 @@ numvar func_pulsein(void) { req3args(); return pulseIn(arg1, arg2, arg3); }
 numvar func_snooze(void) { req1arg(); snooze(arg1); return 0; }
 numvar func_delay(void) { req1arg(); delay(arg1); return 0; }
 numvar func_setBaud(void) { req2args(); setBaud(arg1, arg2); return 0; }
+//numvar func_map(void) { req5args; return map(arg1, arg2, arg3, arg4, arg5); }
+//numvar func_shiftout(void) { req4args; shiftOut(arg1, arg2, arg3, arg4); return 0; }
 
 //////////
 // Function name dictionary
@@ -180,6 +186,7 @@ prog_char functiondict[] PROGMEM = {
 	"ew\0"
 	"free\0"
 	"inb\0"
+//	"map\0"
 	"max\0"
 	"millis\0"
 	"min\0"
@@ -187,6 +194,7 @@ prog_char functiondict[] PROGMEM = {
 	"pinmode\0"
 	"pulsein\0"
 	"random\0"
+//	"shiftout\0"
 	"sign\0"
 	"snooze\0"
 };
@@ -198,27 +206,29 @@ prog_char functiondict[] PROGMEM = {
 //
 
 bitlash_function function_table[] PROGMEM = {
-	func_abs ,
-	func_ar ,
-	func_aw ,
-	func_setBaud ,
-	func_beep ,
-	func_constrain ,
-	func_delay ,
-	func_dr ,
-	func_dw ,
-	func_er ,
-	func_ew ,
-	func_free ,
-	func_inb ,
-	func_max ,
-	(bitlash_function) millis ,
-	func_min ,
-	func_outb ,
-	func_pinmode ,
-	func_pulsein ,
-	func_random ,
-	func_sign ,
+	func_abs,
+	func_ar,
+	func_aw,
+	func_setBaud,
+	func_beep,
+	func_constrain,
+	func_delay,
+	func_dr,
+	func_dw,
+	func_er,
+	func_ew,
+	func_free,
+	func_inb,
+//	func_map,
+	func_max,
+	(bitlash_function) millis,
+	func_min,
+	func_outb,
+	func_pinmode,
+	func_pulsein,
+	func_random,
+//	func_shiftout,
+	func_sign,
 	func_snooze 		// last one no comma!
  	};
 

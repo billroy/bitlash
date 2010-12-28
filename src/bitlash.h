@@ -630,8 +630,7 @@ extern char idbuf[IDLEN+1];
 #define s_print			(30 | 0x80)
 #define s_switch		(31 | 0x80)
 #define s_return		(32 | 0x80)
-#define s_set			(33 | 0x80)
-#define s_arg			(34 | 0x80)
+#define s_arg			(33 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols 

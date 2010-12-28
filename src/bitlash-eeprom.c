@@ -264,6 +264,7 @@ int start = STARTDB;
 		start = findend(start);
 		eeputs(start);
 		spb('"');
+		spb(';');
 		speol();
 		start = findend(start);
 	}
