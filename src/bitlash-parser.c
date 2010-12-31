@@ -602,7 +602,7 @@ byte thesym = sym;
 
 	switch (thesym) {
 		case s_nval:
-			vpush(symval);
+			vpush(thesymval);
 			break;
 			
 		case s_nvar:

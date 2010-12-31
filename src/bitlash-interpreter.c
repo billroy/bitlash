@@ -66,6 +66,10 @@ void reboot(void) {
 void skipstatement(void) {
 signed char nestlevel = 0;
 
+#ifdef PARSER_TRACE
+	if (trace) sp("SKP[");
+#endif
+
 	// Skip a statement list in curly braces: { stmt; stmt; stmt; }
 	// Eat until the matching s_rcurly
 	if (sym == s_lcurly) {
@@ -75,7 +79,7 @@ signed char nestlevel = 0;
 			else if (sym == s_rcurly) {
 				if (nestlevel <= 0) {
 					getsym(); 	// eat "}"
-					return;
+					break;
 				}
 				else --nestlevel;
 			}
@@ -93,7 +97,7 @@ signed char nestlevel = 0;
 			else if (sym == s_rparen) {
 				if (nestlevel <= 0) {
 					getsym();
-					return;
+					break;
 				}
 				else --nestlevel;
 			}
@@ -101,12 +105,17 @@ signed char nestlevel = 0;
 			else if (nestlevel == 0) {
 				if ((sym == s_semi) || (sym == s_comma)) {
 					getsym();	// eat ";" or ","
-					return;
+					break;
 				}
 			}
 			getsym();
 		}
 	}
+
+#ifdef PARSER_TRACE
+	if (trace) sp("]SKP");
+#endif
+
 }
 
 
@@ -157,8 +166,12 @@ numvar retval = 0;
 			fetchptr = fetchmark;			// restore to mark
 			primec();						// set up for mr. getsym()
 			getsym(); 						// fetch the start of the conditional
+// how does return get passed through here?
 			if (getnum()) retval = getstatement();
-			else skipstatement();
+			else {
+				skipstatement();
+				break;
+			}
 		}
 	}
 	
@@ -308,7 +321,7 @@ numvar retval = 0;
 	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
 	else if (sym == s_help) 	{ getsym(); cmd_help(); }
 	else if (sym == s_print) 	{ getsym(); cmd_print(); }
-	else if (sym == s_semi)		{ getsym(); }
+	else if (sym == s_semi)		{ ; }	// ;)
 #endif
 
 #ifdef HEX_UPLOAD
@@ -333,6 +346,7 @@ numvar retval = 0;
 
 	else getexpression();
 
+	if (sym == s_semi) getsym();		// eat trailing ';'
 	return retval;
 }
 
