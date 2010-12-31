@@ -114,7 +114,7 @@ prog_char chartypes[] PROGMEM = {    											//0   1   2   3   4   5   6   7 
 	np(4,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),	//4   @   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O
 	np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,4),  np(4,4), np(7,2),	//5   P   Q   R   S   T   U   V   W   X   Y   Z   [   \   ]   ^   _
 	np(4,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),	//6   `   a   b   c   d   e   f   g   h   i   j   k   l   m   n   o
-	np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,4),  np(8,4), np(7,4) 	//7   p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~ DEL
+	np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,7),  np(8,7), np(7,4) 	//7   p   q   r   s   t   u   v   w   x   y   z   {   |   }   ~ DEL
 };
 
 // Return the chartype for a given char
@@ -368,8 +368,8 @@ void releaseargblock(void) {
 prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
 prog_uchar reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
 #else
-prog_char reservedwords[] PROGMEM = { "arg\0boot\0help\0if\0ls\0peep\0print\0ps\0return\0rm\0run\0stop\0switch\0while\0" };
-prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_stop, s_switch, s_while };
+prog_char reservedwords[] PROGMEM = { "arg\0boot\0else\0help\0if\0ls\0peep\0print\0ps\0return\0rm\0run\0stop\0switch\0while\0" };
+prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_else, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_stop, s_switch, s_while };
 #endif
 
 // find id in PROGMEM wordlist.  result in symval, return true if found.

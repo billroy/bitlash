@@ -58,13 +58,66 @@ void reboot(void) {
 }
 
 
+// Skip a statement without executing it
+//
+// { stmt; stmt; }
+// stmt;
+//
+void skipstatement(void) {
+signed char nestlevel = 0;
+
+	// Skip a statement list in curly braces: { stmt; stmt; stmt; }
+	// Eat until the matching s_rcurly
+	if (sym == s_lcurly) {
+		getsym();	// eat "{"
+		while (sym != s_eof) {
+			if (sym == s_lcurly) ++nestlevel;
+			else if (sym == s_rcurly) {
+				if (nestlevel <= 0) {
+					getsym(); 	// eat "}"
+					return;
+				}
+				else --nestlevel;
+			}
+			else if (sym == s_quote) parsestring(&countByte);
+			getsym();
+		}
+	}
+
+	// Skip a single statement, not a statementlist in braces: 
+	// eat until semicolon or comma or ')'
+	// ignoring embedded argument lists
+	else {
+		while (sym != s_eof) {
+			if (sym == s_lparen) ++nestlevel;
+			else if (sym == s_rparen) {
+				if (nestlevel <= 0) {
+					getsym();
+					return;
+				}
+				else --nestlevel;
+			}
+			else if (sym == s_quote) parsestring(&countByte);
+			else if (nestlevel == 0) {
+				if ((sym == s_semi) || (sym == s_comma)) {
+					getsym();	// eat ";" or ","
+					return;
+				}
+			}
+			getsym();
+		}
+	}
+}
+
+
 // Get a statement
-void getstatement(void) {
+numvar getstatement(void) {
+numvar retval = 0;
 
-#if !defined(TINY85)
 	chkbreak();
-#endif
 
+//#define LINEMODE
+#ifdef LINEMODE
 	if (sym == s_while) {
 		// at this point sym is pointing at s_while, before the conditional expression
 		// save fetchptr so we can restart parsing from here as the while iterates
@@ -83,7 +136,6 @@ void getstatement(void) {
 			getstatementlist();
 		}
 	}
-	
 	else if (sym == s_if) {
 		getsym(); 								// fetch the start of the conditional
 		if (!getnum()) {
@@ -95,6 +147,56 @@ void getstatement(void) {
 		getsym();	// eat :
 		getstatementlist();
 	}
+#else
+	// new statement handling
+	if (sym == s_while) {
+		// at this point sym is pointing at s_while, before the conditional expression
+		// save fetchptr so we can restart parsing from here as the while iterates
+		char *fetchmark = fetchptr;
+		for (;;) {
+			fetchptr = fetchmark;			// restore to mark
+			primec();						// set up for mr. getsym()
+			getsym(); 						// fetch the start of the conditional
+			if (getnum()) retval = getstatement();
+			else skipstatement();
+		}
+	}
+	
+	else if (sym == s_if) {
+		getsym();			// eat "if"
+		if (getnum()) {
+			retval = getstatement();
+			if (sym == s_else) {
+				getsym();	// eat "else"
+				skipstatement();
+			}
+		} else {
+//			// backwards compatiblity with one-line mode
+//			if (sym == s_colon) {
+//				sym = s_eof;
+//				return;
+//			}
+
+			skipstatement();
+			if (sym == s_else) {
+				getsym();	// eat "else"
+				retval = getstatement();
+			}
+		}
+	}
+	else if (sym == s_lcurly) {
+		getsym(); 	// eat "{"
+		while ((sym != s_eof) && (sym != s_rcurly)) retval = getstatement();
+		if (sym == s_rcurly) getsym();	// eat "}"
+	}
+	else if (sym == s_return) {
+		getsym();	// eat "return"
+		if ((sym != s_eof) && (sym != s_semi) && (sym != s_comma)) retval = getnum();
+		sym = s_eof;
+	}
+
+
+#endif
 
 
 	// The switch statement: call one of N macros based on a selector value
@@ -229,9 +331,9 @@ void getstatement(void) {
 	}
 #endif
 
-	else  {
-		getexpression();
-	}
+	else getexpression();
+
+	return retval;
 }
 
 
@@ -244,7 +346,8 @@ numvar getstatementlist(void) {
 //		getsym();
 //		if (sym != s_eof) getstatement();		// quietly allow trailing semicolon
 //	}
-	
+
+#ifdef LINEMODE
 	while (sym != s_eof) {
 		if (sym == s_return) {
 			getsym();
@@ -254,7 +357,13 @@ numvar getstatementlist(void) {
 		else getstatement();
 	}
 	return 0;
+#else
+numvar retval = 0;
+	while (sym != s_eof) retval = getstatement();
+	return retval;
+#endif
 }
+
 
 
 // call a macro and push its return value on the stack

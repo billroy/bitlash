@@ -53,7 +53,7 @@
 //
 // Enable PARSER_TRACE to make ^T toggle a parser trace debug print stream
 // cost: ~400 bytes flash
-//#define PARSER_TRACE 1
+#define PARSER_TRACE 1
 
 
 
@@ -631,6 +631,7 @@ extern char idbuf[IDLEN+1];
 #define s_switch		(31 | 0x80)
 #define s_return		(32 | 0x80)
 #define s_arg			(33 | 0x80)
+#define s_else			(34 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols 
@@ -657,6 +658,8 @@ extern char idbuf[IDLEN+1];
 #define s_pound			'#'
 #define s_quote			'"'
 #define s_dollars		'$'
+#define s_lcurly		'{'
+#define s_rcurly		'}'
 
 
 #endif	// defined _BITLASH_H
