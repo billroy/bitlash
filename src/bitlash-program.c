@@ -27,6 +27,7 @@
 
 ***/
 #include "bitlash.h"
+#ifndef UNIX_BUILD
 #include "avr/eeprom.h"
 
 // This file contains the source of the eeprom macros which are
@@ -147,4 +148,4 @@ char startup[] EEMEM =
 	"dy\0y=y+v;if y<0||y>h:v=-v;bip\0"
 ;
 #endif	
-
+#endif

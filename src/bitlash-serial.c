@@ -133,7 +133,7 @@ void spb(char c) {
 	whackabyte(c);
 #endif
 }
-void sp(char *str) { while (*str) spb(*str++); }
+void sp(const char *str) { while (*str) spb(*str++); }
 void speol(void) { spb(13); spb(10); }
 #else
 // handle no-serial case

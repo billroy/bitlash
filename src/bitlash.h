@@ -29,6 +29,7 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
+#ifndef UNIX_BUILD
 #include "avr/io.h"
 #include "string.h"
 #include "avr/pgmspace.h"
@@ -36,6 +37,13 @@
 #include "ctype.h"
 #include "setjmp.h"
 #include <avr/wdt.h>
+#else
+#include <stdio.h>
+#include <stddef.h>
+#include <string.h>
+#include "ctype.h"
+#include "setjmp.h"
+#endif
 
 #ifndef byte
 #define byte uint8_t
@@ -291,12 +299,43 @@ void beginSerial(unsigned long baud) { ; }
 #endif	// defined '32U4
 
 
+///////////////////////////////////////////////////////
+//
+//	Unix build options
+//	(not working)
+//
+//	> gcc bitlash.cpp -D UNIX_BUILD
+//
+#ifdef UNIX_BUILD
+#define MINIMUM_FREE_RAM 200
+#define NUMPINS 32
+#undef HARDWARE_SERIAL_TX
+#undef SOFTWARE_SERIAL_TX
+#define beginSerial(x)
+
+#define E2END 2048
+
+#define uint8_t unsigned char
+#define uint32_t unsigned long int
+#define prog_char char
+#define prog_uchar unsigned char
+#define strncpy_P strncpy
+#define strcmp_P strcmp
+#define strlen_P strlen
+
+#define PROGMEM
+#define OUTPUT 1
+
+#define pgm_read_byte(addr) (*(char*) addr)
+#define pgm_read_word(addr) (*(int *) addr)
+
+#endif	// defined unix_build
 
 
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
-#ifdef ARDUINO_BUILD
+#if defined(ARDUINO_BUILD) || defined(UNIX_BUILD)
 typedef long int numvar;
 typedef unsigned long int unumvar;
 #else
@@ -455,8 +494,9 @@ extern char startup[];
 //
 void printInteger(numvar);
 void printHex(unumvar);
+void printBinary(unumvar);
 void spb(char c);
-void sp(char *);
+void sp(const char *);
 void speol(void);
 
 #ifdef SOFTWARE_SERIAL_TX
@@ -464,7 +504,7 @@ void resetOutput(void);
 numvar setBaud(numvar, unumvar);
 #endif
 
-#ifdef ARDUINO_BUILD
+#if defined(ARDUINO_BUILD) || defined(UNIX_BUILD)
 void chkbreak(void);
 void cmd_print(void);
 #endif
@@ -529,7 +569,7 @@ void parsearglist(void);
 extern char *fetchptr;		// pointer to current char in input buffer
 extern numvar symval;		// value of current numeric expression
 
-#define USE_GPIORS 1
+#define USE_GPIORS !defined(UNIX_BUILD)
 #if USE_GPIORS
 #define sym GPIOR0
 #define inchar GPIOR1

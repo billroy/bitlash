@@ -28,7 +28,9 @@
 ***/
 #include "bitlash.h"
 
+#ifndef UNIX_BUILD
 #include "avr/eeprom.h"
+#endif
 
 #ifdef TINY85
 #undef eeread

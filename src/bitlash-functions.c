@@ -80,10 +80,14 @@ numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
 #endif
 
 numvar func_free(void) {
+#ifdef UNIX_BUILD
+	return 1000L;
+#else
 numvar ret;
 	// from http://forum.pololu.com/viewtopic.php?f=10&t=989&view=unread#p4218
 	extern int __bss_end;
 	return ((int)&ret) - ((int)&__bss_end);
+#endif
 }
 
 

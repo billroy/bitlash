@@ -166,7 +166,6 @@ numvar retval = 0;
 			fetchptr = fetchmark;			// restore to mark
 			primec();						// set up for mr. getsym()
 			getsym(); 						// fetch the start of the conditional
-// how does return get passed through here?
 			if (getnum()) retval = getstatement();
 			else {
 				skipstatement();
@@ -244,36 +243,6 @@ numvar retval = 0;
 		// TODO: syntax checking for non-chosen options could be made much tighter at the cost of some space
 		while ((sym != s_semi) && (sym != s_eof)) getsym();		// scan to end of statement without executing
 	}
-
-#if 0
-	else if ((sym == s_macro) || (sym == s_undef)) {		// macro def or ref
-		getsym();						// scan past macro name to next symbol: ; or :=
-		if (sym == s_define) {			// macro definition: macroid := strvalue
-			// to define the macro, we need to copy the id somewhere on the stack
-			// to avoid having this local buffer in every getstatement stack frame,
-			// we break out defineMacro here to a separate function that only eats that
-			// stack in the case that a macro is being defined
-			defineMacro();
-		}
-		else if ((sym == s_semi) || (sym == s_eof)) {	// valid macro reference: let's call it
-			domacrocall(symval);			// parseid stashes the macro address in symval
-		}
-		else expectedchar(';');
-		//else getexpression();		// assume it was macro1+32+macro2...
-	}
-#endif
-
-#if 0
-	else if (sym == s_set) {		// v2 macro def: set foo = "blah"
-		getsym();					// grab the macro name
-		if ((sym == s_macro) || (sym == s_undef)) {
-			getsym();				// scan to putative '='
-			if (sym != s_equals) expectedchar(s_equals);
-			defineMacro();
-		}
-		else expected(M_id);
-	}
-#endif
 
 	else if (sym == s_run) {	// run macroname
 		getsym();
