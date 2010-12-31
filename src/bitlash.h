@@ -562,6 +562,7 @@ numvar getnum(void);
 void calleeprommacro(int);
 void getexpression(void);
 byte hexval(char);
+byte is_end(void);
 numvar getarg(numvar);
 void releaseargblock(void);
 void parsearglist(void);

@@ -58,6 +58,10 @@ void reboot(void) {
 }
 
 
+// helper for parsestring(), below
+void skipByte(char) {;}
+
+
 // Skip a statement without executing it
 //
 // { stmt; stmt; }
@@ -101,7 +105,7 @@ signed char nestlevel = 0;
 				}
 				else --nestlevel;
 			}
-			else if (sym == s_quote) parsestring(&countByte);
+			else if (sym == s_quote) parsestring(&skipByte);
 			else if (nestlevel == 0) {
 				//if ((sym == s_semi) || (sym == s_comma)) {
 				if (sym == s_semi) {
@@ -241,18 +245,18 @@ byte thesym = sym;
 	}
 	else if (sym == s_return) {
 		getsym();	// eat "return"
-		if ((sym != s_eof) && (sym != s_semi) && (sym != s_comma)) retval = getnum();
+		if ((sym != s_eof) && (sym != s_semi)) retval = getnum();
 		sym = s_eof;
 	}
 
 	// The switch statement: execute one of N statements based on a selector value
 	// switch <numval> { stmt0; stmt1;...;stmtN }
-	// numval < 0: numval = 0
-	// numval > N: is an error (Bitlash 1.1 tolerated numval = N)
+	// numval < 0: treated as numval == 0
+	// numval > N: treated as numval == N
 	//
 	else if (sym == s_switch) {
 		getsym();		// eat "switch"
-		numvar which = (int) getnum();	// evaluate the switch value
+		numvar which = getnum();	// evaluate the switch selector
 		if (which < 0) which = 0;
 		if (sym != s_lcurly) expectedchar('{');
 		getsym();		// eat "{"
@@ -325,7 +329,7 @@ byte thesym = sym;
 			eraseentry(idbuf);
 		} 
 		else if (sym == s_mul) nukeeeprom();
-		else expected(M_id);
+		else if (sym != s_undef) expected(M_id);
 		getsym();
 	}
 	else if (sym == s_ps) 		{ getsym();	showTaskList(); }

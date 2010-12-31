@@ -134,6 +134,7 @@ byte isalnum(byte c) { return isalpha(c) || isdigit(c); }
 byte tolower(byte c) {
 	return ((c >= 'A') && (c <= 'Z')) ? (c - 'A' + 'a') : c;
 }
+byte is_end(void) { return ((sym == s_eof) || (sym == s_semi)); }
 #endif
 
 // Tests on the symbol type
@@ -149,6 +150,7 @@ byte hexval(char c) {
 	if ((c >= '0') && (c <= '9')) return c - '0';
 	return tolower(c) - 'a' + 10;
 }
+
 
 #ifdef PARSER_TRACE
 byte trace;

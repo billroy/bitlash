@@ -324,7 +324,7 @@ void cmd_print(void) {
 			parsestring(&spb);	// munch through the string (incl. closing quote) spewing it via spb
 			getsym();			// and prime up the next symbol after for the comma check
 		} 
-		else {
+		else if ((sym != s_semi) && (sym != s_eof))  {
 			getexpression();
 
 			// format specifier: :x :b
