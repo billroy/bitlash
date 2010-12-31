@@ -402,7 +402,8 @@ void initlbuf(void);
 #endif
 
 // String value buffer size
-#define STRVALSIZE 80
+//#define STRVALSIZE 80
+#define STRVALSIZE 140
 #define STRVALLEN (STRVALSIZE-1)
 #define LBUFLEN STRVALSIZE
 

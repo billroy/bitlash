@@ -89,7 +89,7 @@ signed char nestlevel = 0;
 	}
 
 	// Skip a single statement, not a statementlist in braces: 
-	// eat until semicolon or comma or ')'
+	// eat until semicolon or ')'
 	// ignoring embedded argument lists
 	else {
 		while (sym != s_eof) {
@@ -103,8 +103,9 @@ signed char nestlevel = 0;
 			}
 			else if (sym == s_quote) parsestring(&countByte);
 			else if (nestlevel == 0) {
-				if ((sym == s_semi) || (sym == s_comma)) {
-					getsym();	// eat ";" or ","
+				//if ((sym == s_semi) || (sym == s_comma)) {
+				if (sym == s_semi) {
+					getsym();	// eat ";"
 					break;
 				}
 			}
@@ -121,7 +122,10 @@ signed char nestlevel = 0;
 
 // Get a statement
 numvar getstatement(void) {
+char *fetchmark;
 numvar retval = 0;
+numvar thesymval = symval;
+byte thesym = sym;
 
 	chkbreak();
 
@@ -195,7 +199,7 @@ numvar retval = 0;
 	if (sym == s_while) {
 		// at this point sym is pointing at s_while, before the conditional expression
 		// save fetchptr so we can restart parsing from here as the while iterates
-		char *fetchmark = fetchptr;
+		fetchmark = fetchptr;
 		for (;;) {
 			fetchptr = fetchmark;			// restore to mark
 			primec();						// set up for mr. getsym()
@@ -247,20 +251,33 @@ numvar retval = 0;
 	// numval > N: is an error (Bitlash 1.1 tolerated numval = N)
 	//
 	else if (sym == s_switch) {
-		getsym();	// eat "switch"
-		numvar selector = getnum();	// evaluate the switch value
-		if (selector < 0) selector = 0;
+		getsym();		// eat "switch"
+		int current = 0;
+		int chosen = (int) getnum();	// evaluate the switch value
+		if (chosen < 0) chosen = 0;
 		if (sym != s_lcurly) expectedchar('{');
 		getsym();		// eat "{"
 
 		// we sit before the first statement
 		// scan and discard the <selector>'s worth of statements 
 		// that sit before the one we want
-		while ((selector > 0) && (sym != s_eof) && (sym != s_rcurly)) {
+		while ((current < chosen) && (sym != s_eof) && (sym != s_rcurly)) {
+			fetchmark = fetchptr;
+			thesym = sym;
+			thesymval = symval;
 			skipstatement();
-			--selector;
+			if ((sym != s_eof) && (sym != s_rcurly)) ++current;
 		}
-		if (selector > 0) unexpected(M_number);
+
+		// If the selector is greater than the number of statements,
+		// back up and execute the last one
+		if (current < chosen) {				// oops ran out of piddys
+			fetchptr = fetchmark;			// restore to last statement
+			primec();						// set up for getsym()
+			sym = thesym;
+			symval = thesymval;
+		}
+		//unexpected(M_number);
 
 		// execute the statement we're pointing at
 		retval = getstatement();
