@@ -252,26 +252,25 @@ byte thesym = sym;
 	//
 	else if (sym == s_switch) {
 		getsym();		// eat "switch"
-		int current = 0;
-		int chosen = (int) getnum();	// evaluate the switch value
-		if (chosen < 0) chosen = 0;
+		numvar which = (int) getnum();	// evaluate the switch value
+		if (which < 0) which = 0;
 		if (sym != s_lcurly) expectedchar('{');
 		getsym();		// eat "{"
 
 		// we sit before the first statement
 		// scan and discard the <selector>'s worth of statements 
 		// that sit before the one we want
-		while ((current < chosen) && (sym != s_eof) && (sym != s_rcurly)) {
+		while ((which > 0) && (sym != s_eof) && (sym != s_rcurly)) {
 			fetchmark = fetchptr;
 			thesym = sym;
 			thesymval = symval;
 			skipstatement();
-			if ((sym != s_eof) && (sym != s_rcurly)) ++current;
+			if ((sym != s_eof) && (sym != s_rcurly)) --which;
 		}
 
 		// If the selector is greater than the number of statements,
 		// back up and execute the last one
-		if (current < chosen) {				// oops ran out of piddys
+		if (which > 0) {					// oops ran out of piddys
 			fetchptr = fetchmark;			// restore to last statement
 			primec();						// set up for getsym()
 			sym = thesym;
