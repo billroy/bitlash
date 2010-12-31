@@ -156,6 +156,40 @@ numvar retval = 0;
 		getsym();	// eat :
 		getstatementlist();
 	}
+
+	// The switch statement: call one of N macros based on a selector value
+	// switch <numval>: macroid1, macroid2,.., macroidN
+	// numval < 0: numval = 0
+	// numval > N: numval = N
+
+	else if (sym == s_switch) {
+		getsym();	// eat "switch"
+		numvar selector = getnum();	// evaluate the switch value
+		if (selector < 0) selector = 0;
+		if (sym != s_colon) expectedchar(':');
+
+		// we sit before the first macroid
+		// scan and discard the <selector>'s worth of macro ids 
+		// that sit before the one we want
+		for (;;) {
+			getsym();	// get an id, sets symval to its eeprom addr as a side effect
+			if (sym != s_macro) expected (6);		// TODO: define M_macro instead of 6
+			getsym();	// eat id, get separator; assume symval is untouched
+			if ((sym == s_semi) || (sym == s_eof)) break;	// last case is default so we exit always
+			if (sym != s_comma) expectedchar(',');
+			if (!selector) break;		// ok, this is the one we want to execute
+			selector--;					// one down...
+		}
+
+		// call the macro whose addr is squirreled in symval all this time
+		// on return, the parser is ready to pick up where we left off
+		domacrocall(symval);
+
+		// scan past the rest of the unused switch options, if any
+		// TODO: syntax checking for non-chosen options could be made much tighter at the cost of some space
+		while ((sym != s_semi) && (sym != s_eof)) getsym();		// scan to end of statement without executing
+	}
+
 #else
 	// new statement handling
 	if (sym == s_while) {
@@ -207,42 +241,35 @@ numvar retval = 0;
 		sym = s_eof;
 	}
 
-
-#endif
-
-
-	// The switch statement: call one of N macros based on a selector value
-	// switch <numval>: macroid1, macroid2,.., macroidN
+	// The switch statement: execute one of N statements based on a selector value
+	// switch <numval> { stmt0; stmt1;...;stmtN }
 	// numval < 0: numval = 0
-	// numval > N: numval = N
-
+	// numval > N: is an error (Bitlash 1.1 tolerated numval = N)
+	//
 	else if (sym == s_switch) {
 		getsym();	// eat "switch"
 		numvar selector = getnum();	// evaluate the switch value
 		if (selector < 0) selector = 0;
-		if (sym != s_colon) expectedchar(':');
+		if (sym != s_lcurly) expectedchar('{');
+		getsym();		// eat "{"
 
-		// we sit before the first macroid
-		// scan and discard the <selector>'s worth of macro ids 
+		// we sit before the first statement
+		// scan and discard the <selector>'s worth of statements 
 		// that sit before the one we want
-		for (;;) {
-			getsym();	// get an id, sets symval to its eeprom addr as a side effect
-			if (sym != s_macro) expected (6);		// TODO: define M_macro instead of 6
-			getsym();	// eat id, get separator; assume symval is untouched
-			if ((sym == s_semi) || (sym == s_eof)) break;	// last case is default so we exit always
-			if (sym != s_comma) expectedchar(',');
-			if (!selector) break;		// ok, this is the one we want to execute
-			selector--;					// one down...
+		while ((selector > 0) && (sym != s_eof) && (sym != s_rcurly)) {
+			skipstatement();
+			--selector;
 		}
+		if (selector > 0) unexpected(M_number);
 
-		// call the macro whose addr is squirreled in symval all this time
-		// on return, the parser is ready to pick up where we left off
-		domacrocall(symval);
+		// execute the statement we're pointing at
+		retval = getstatement();
 
-		// scan past the rest of the unused switch options, if any
-		// TODO: syntax checking for non-chosen options could be made much tighter at the cost of some space
-		while ((sym != s_semi) && (sym != s_eof)) getsym();		// scan to end of statement without executing
+		// eat the rest of the statement block to "}"
+		while ((sym != s_eof) && (sym != s_rcurly)) skipstatement();
+		if (sym == s_rcurly) getsym();		// eat "}"
 	}
+#endif
 
 	else if (sym == s_run) {	// run macroname
 		getsym();
