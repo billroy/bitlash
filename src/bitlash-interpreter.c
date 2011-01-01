@@ -247,7 +247,7 @@ byte thesym = sym;
 	}
 	else if (sym == s_lcurly) {
 		getsym(); 	// eat "{"
-		while ((sym != s_eof) && (sym != s_rcurly)) retval = getstatement();
+		while ((sym != s_eof) && (sym != s_returning) && (sym != s_rcurly)) retval = getstatement();
 		if (sym == s_rcurly) getsym();	// eat "}"
 	}
 	else if (sym == s_return) {
