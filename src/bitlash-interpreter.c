@@ -212,7 +212,10 @@ byte thesym = sym;
 			fetchptr = fetchmark;			// restore to mark
 			primec();						// set up for mr. getsym()
 			getsym(); 						// fetch the start of the conditional
-			if (getnum()) retval = getstatement();
+			if (getnum()) {
+				retval = getstatement();
+				if (sym == s_returning) break;	// exit if we caught a return
+			}
 			else {
 				skipstatement();
 				break;
@@ -250,7 +253,7 @@ byte thesym = sym;
 	else if (sym == s_return) {
 		getsym();	// eat "return"
 		if ((sym != s_eof) && (sym != s_semi)) retval = getnum();
-		sym = s_eof;
+		sym = s_returning;		// signal we're returning up the line
 	}
 
 	// The switch statement: execute one of N statements based on a selector value
@@ -393,7 +396,7 @@ numvar getstatementlist(void) {
 	return 0;
 #else
 numvar retval = 0;
-	while (sym != s_eof) retval = getstatement();
+	while ((sym != s_eof) && (sym != s_returning)) retval = getstatement();
 	return retval;
 #endif
 }
