@@ -58,6 +58,9 @@ c.sendline('q=0; while q<10 {if q&1 {print "odd ",;} else {print "even ",;} q++;
 c.expect('even odd even odd even odd even odd even odd done');
 c.expect('>')
 
+c.sendline('t=millis;i=1000;while i {if i&1 j++; else j--; i--;} print millis-t,"done";')
+c.expect('done')
+c.expect('>')
 
 c.sendline('logout')
 c.expect(pexpect.EOF)

@@ -61,7 +61,7 @@
 //
 // Enable PARSER_TRACE to make ^T toggle a parser trace debug print stream
 // cost: ~400 bytes flash
-#define PARSER_TRACE 1
+//#define PARSER_TRACE 1
 
 
 
@@ -233,7 +233,6 @@ void beginEthernet(unsigned long baud) {
 // Mega primary serial tx output is on pin 1 (rx on 0)
 // Mega alternate hardware serial port tx output is on pin 18 (rx on 19)
 // TODO: Support for hardware serial uart2 and uart3
-// TODO: There may be buggy interactions with pins 17/16 and 15/14 due to interrupt handlers
 //
 #define MEGA_DEFAULT_SERIAL 1
 #define MEGA_ALTERNATE_SERIAL 18
