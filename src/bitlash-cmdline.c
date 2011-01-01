@@ -64,7 +64,8 @@ void cmd_help(void) {
 	displayBanner();
 	showdict(helptext);
 	// TODO: extern this puppy
-	//showdict(reservedwords);
+	extern prog_char reservedwords[];
+	showdict(reservedwords);
 	msgp(M_functions);
 #ifdef LONG_ALIASES
 	showdict(aliasdict);
