@@ -232,12 +232,6 @@ byte thesym = sym;
 				skipstatement();
 			}
 		} else {
-//			// backwards compatiblity with one-line mode
-//			if (sym == s_colon) {
-//				sym = s_eof;
-//				return;
-//			}
-
 			skipstatement();
 			if (sym == s_else) {
 				getsym();	// eat "else"

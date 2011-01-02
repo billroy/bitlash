@@ -486,6 +486,7 @@ byte radix;
 	for (;;) {
 		inchar = tolower(fetchc());
 		if (inchar == 'x') radix = 16;
+		else if (inchar == 'b') radix = 2;
 		else if (isdigit(inchar))
 			symval = (symval*radix) + inchar - '0';
 		else if (radix>10) {
