@@ -555,12 +555,16 @@ void parseid(void) {
 
 
 // Parse a "quoted string" from the input.
+//
+// Enter with sym = s_quote therefore inchar = first char in string
+// Exit with inchar = first char past closing s_quote
+//
+// Callers will need to call getsym() to resume parsing
+//
 void parsestring(void (*charFunc)(char)) {
 
 	for (;;) {
 
-		if (!fetchc()) unexpected(M_eof);		// get next else end of input before string terminator
-		
 		if (inchar == ASC_QUOTE) {				// found the string terminator
 			fetchc();							// consume it so's we move along
 			break;								// done with the big loop
@@ -592,6 +596,8 @@ void parsestring(void (*charFunc)(char)) {
 		}
 		// Process the character we just extracted
 		(*charFunc)(inchar);
+
+		if (!fetchc()) unexpected(M_eof);		// get next else end of input before string terminator
 	}
 }
 

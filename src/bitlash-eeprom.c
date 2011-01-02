@@ -193,8 +193,9 @@ void writeMacro(char *id) {
 	// measure length of macro value
 	// we get here with inchar = first char of macro and fetchptr one past that
 	//
-	char *fetchmark = --fetchptr;		// back up and mark first char of macro text
-	primec();							// re-prime
+//	char *fetchmark = --fetchptr;		// back up and mark first char of macro text
+//	primec();							// re-prime
+	char *fetchmark = fetchptr;			// mark first char of macro text
 	expval = 0;							// zero the count
 	parsestring(&countByte);			// now expval is the macro value length
 	if (!expval) return;				// empty string? we're done

@@ -57,14 +57,13 @@ void reboot(void) {
 	void (*bootvec)(void) = 0; (*bootvec)(); 	// we jump through 0 instead
 }
 
-
-// helper for parsestring(), below
 void skipbyte(char) {;}
+#if 0
+// helper for parsestring(), below
 void skipstring(void) {
-	--fetchptr;
-	primec();
 	parsestring(&skipbyte);
 }
+#endif
 
 // Skip a statement without executing it
 //
@@ -91,7 +90,7 @@ signed char nestlevel = 0;
 				}
 				else --nestlevel;
 			}
-			else if (sym == s_quote) skipstring();
+			else if (sym == s_quote) parsestring(&skipbyte);
 			getsym();
 		}
 	}
@@ -109,7 +108,7 @@ signed char nestlevel = 0;
 				}
 				else --nestlevel;
 			}
-			else if (sym == s_quote) skipstring();
+			else if (sym == s_quote) parsestring(&skipbyte);
 			else if (nestlevel == 0) {
 				//if ((sym == s_semi) || (sym == s_comma)) {
 				if (sym == s_semi) {
