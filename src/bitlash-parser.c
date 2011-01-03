@@ -253,7 +253,9 @@ void callmacro(char *macrotext) {
 // call macro in eeprom
 void calleeprommacro(int macrotext) {
 	// terrible horrible eeprom kludge
-	callmacro(kludge(macrotext));
+	//callmacro(kludge(macrotext));
+	fetchptr = kludge(macrotext);
+	primec();
 }
 
 ////////////////////
@@ -601,6 +603,10 @@ void parsestring(void (*charFunc)(char)) {
 	}
 }
 
+
+//#define SWITCHING_YARD_PARSER
+
+
 void getexpression(void);
 
 //
@@ -696,6 +702,7 @@ byte thesym = sym;
 			getsym();		// eat ')'
 			break;
 
+#if !defined(SWITCHING_YARD_PARSER)
 		case s_lparen:  // expression in parens
 			getexpression();
 			if (exptype != s_nval) expected(M_number);
@@ -703,7 +710,8 @@ byte thesym = sym;
 			vpush(expval);
 			getsym();	// eat the )
 			break;
-	
+#endif	
+
 		//
 		// The Family of Unary Operators, which Bind Most Closely to their Factor
 		//
@@ -732,8 +740,8 @@ byte thesym = sym;
 
 }
 
-#define SWITCHING_YARD_PARSER
 #ifdef SWITCHING_YARD_PARSER
+//http://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
 #define NUMOPS 21
 prog_char operators[NUMOPS] PROGMEM = {
@@ -765,28 +773,62 @@ byte opindex;
 byte optop;
 byte opstack[OPSTACKLEN];
 
+void voptop(void) {
+	vop(pgm_read_byte(operators + opstack[--optop]));
+}
+byte getprecedence(byte offset) {
+	return pgm_read_byte(precedence + offset);
+}
+void oppush(byte opindex) {
+	if (optop >= OPSTACKLEN) overflow(M_exp);
+	opstack[optop++] = opindex;	// op: ...then push this one on the op stack
+}
+
 void getexpression(void) {
 
 	for (;;) {
+
+		while (sym == s_lparen) {
+			oppush(s_lparen);
+			getsym();
+		}
+
 		getfactor();
 
 		// is the current symbol an operator?
 		opindex = findsym(operators);
-		if (!opindex) break;			// not an op?  we're done
-		else {							// op: reduce while precedence < top operator
+		if (opindex) {				// op: reduce while precedence < top operator
 			while (optop &&
-					(pgm_read_byte(precedence + opindex) <= 
-						pgm_read_byte(precedence + opstack[optop-1]))) {
-							vop(pgm_read_byte(operators + opstack[--optop]));
-
+//					(pgm_read_byte(precedence + opindex) <= 
+//						pgm_read_byte(precedence + opstack[optop-1]))) {
+					(getprecedence(opindex) <=
+						getprecedence(opstack[optop-1]))) {
+							voptop();
+							//vop(pgm_read_byte(operators + opstack[--optop]));
 			}
-			if (optop >= OPSTACKLEN) overflow(M_exp);
-			opstack[optop++] = opindex;	// op: ...then push this one on the op stack
+			oppush(opindex);
+//			if (optop >= OPSTACKLEN) overflow(M_exp);
+//			opstack[optop++] = opindex;	// op: ...then push this one on the op stack
 		}
+		else if (sym == s_lparen) {
+			oppush(s_lparen);
+//			if (optop >= OPSTACKLEN) overflow(M_exp);
+//			opstack[optop++] = sym;		// mark the opstack with s_lparen
+		}
+		else if (sym == s_rparen) {
+			while (optop && (opstack[optop-1] != s_lparen)) {
+				voptop();
+				//vop(pgm_read_byte(operators + opstack[--optop]));
+			}
+			if (!optop) unexpected(')');
+			if (opstack[optop-1] == s_lparen) --optop;	// pop '('
+		}
+		else break;
 		getsym();		// eat the operator and move along
 	}
 	while (optop) {
-		vop(pgm_read_byte(operators + opstack[--optop]));
+		voptop();
+		//vop(pgm_read_byte(operators + opstack[--optop]));
 	}
 	exptype = s_nval;
 	expval = vpop();

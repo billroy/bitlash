@@ -127,12 +127,62 @@ signed char nestlevel = 0;
 }
 
 
-// Get a statement
-numvar getstatement(void) {
+numvar getstatement(void);
+
+
+// The switch statement: execute one of N statements based on a selector value
+// switch <numval> { stmt0; stmt1;...;stmtN }
+// numval < 0: treated as numval == 0
+// numval > N: treated as numval == N
+//
+numvar getswitchstatement(void) {
+numvar thesymval = symval;
 char *fetchmark;
 numvar retval = 0;
-numvar thesymval = symval;
 byte thesym = sym;
+
+	getsym();						// eat "switch"
+	getnum();						// evaluate the switch selector
+	if (expval < 0) expval = 0;		// map negative values to zero
+	byte which = (byte) expval;		// and stash it for reference
+	if (sym != s_lcurly) expectedchar('{');
+	getsym();		// eat "{"
+
+	// we sit before the first statement
+	// scan and discard the <selector>'s worth of statements 
+	// that sit before the one we want
+	while ((which > 0) && (sym != s_eof) && (sym != s_rcurly)) {
+		fetchmark = fetchptr;
+		thesym = sym;
+		thesymval = symval;
+		skipstatement();
+		if ((sym != s_eof) && (sym != s_rcurly)) --which;
+	}
+
+	// If the selector is greater than the number of statements,
+	// back up and execute the last one
+	if (which > 0) {					// oops ran out of piddys
+		fetchptr = fetchmark;			// restore to last statement
+		primec();						// set up for getsym()
+		sym = thesym;
+		symval = thesymval;
+	}
+	//unexpected(M_number);
+
+	// execute the statement we're pointing at
+	retval = getstatement();
+
+	// eat the rest of the statement block to "}"
+	while ((sym != s_eof) && (sym != s_rcurly)) skipstatement();
+	if (sym == s_rcurly) getsym();		// eat "}"
+	return retval;
+}
+
+
+// Get a statement
+numvar getstatement(void) {
+numvar retval = 0;
+char *fetchmark;
 
 	chkbreak();
 
@@ -248,47 +298,7 @@ byte thesym = sym;
 		if ((sym != s_eof) && (sym != s_semi)) retval = getnum();
 		sym = s_returning;		// signal we're returning up the line
 	}
-
-	// The switch statement: execute one of N statements based on a selector value
-	// switch <numval> { stmt0; stmt1;...;stmtN }
-	// numval < 0: treated as numval == 0
-	// numval > N: treated as numval == N
-	//
-	else if (sym == s_switch) {
-		getsym();		// eat "switch"
-		numvar which = getnum();	// evaluate the switch selector
-		if (which < 0) which = 0;
-		if (sym != s_lcurly) expectedchar('{');
-		getsym();		// eat "{"
-
-		// we sit before the first statement
-		// scan and discard the <selector>'s worth of statements 
-		// that sit before the one we want
-		while ((which > 0) && (sym != s_eof) && (sym != s_rcurly)) {
-			fetchmark = fetchptr;
-			thesym = sym;
-			thesymval = symval;
-			skipstatement();
-			if ((sym != s_eof) && (sym != s_rcurly)) --which;
-		}
-
-		// If the selector is greater than the number of statements,
-		// back up and execute the last one
-		if (which > 0) {					// oops ran out of piddys
-			fetchptr = fetchmark;			// restore to last statement
-			primec();						// set up for getsym()
-			sym = thesym;
-			symval = thesymval;
-		}
-		//unexpected(M_number);
-
-		// execute the statement we're pointing at
-		retval = getstatement();
-
-		// eat the rest of the statement block to "}"
-		while ((sym != s_eof) && (sym != s_rcurly)) skipstatement();
-		if (sym == s_rcurly) getsym();		// eat "}"
-	}
+	else if (sym == s_switch) retval = getswitchstatement();
 #endif
 
 	else if (sym == s_run) {	// run macroname
