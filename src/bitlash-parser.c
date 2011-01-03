@@ -737,7 +737,7 @@ byte thesym = sym;
 
 #define NUMOPS 21
 prog_char operators[NUMOPS] PROGMEM = {
-	0,
+	-1,
 	s_mul, s_div, s_mod,
  	s_add, s_sub,
  	s_shiftright, s_shiftleft,
@@ -751,6 +751,7 @@ prog_char precedence[NUMOPS-1] PROGMEM = {
 };
 
 byte findsym(const prog_char *table) {
+	if (sym == s_eof) return 0;
 	const prog_char *opptr = strchr_P(table, sym);
 	if (opptr) return opptr-table;
 	return 0;
@@ -766,32 +767,27 @@ byte opstack[OPSTACKLEN];
 
 void getexpression(void) {
 
-//	while ((sym != s_eof) && (sym != s_semi) && (sym != s_comma) && (sym != s_rparen)) {
-//	while (!findsym(terminators)) {
 	for (;;) {
 		getfactor();
-//		if ((sym == s_eof) || (sym == s_semi) || (sym == s_comma) && (sym == s_rparen)) break;
-//		if (findsym(terminators)) break;
 
-		// find the operator in the operator table
+		// is the current symbol an operator?
 		opindex = findsym(operators);
-		if (!opindex) break;				// no op?  we're done
-		else {
-//		if (opindex) {						// have operator
-			// reduce while precedence < top operator
+		if (!opindex) break;			// not an op?  we're done
+		else {							// op: reduce while precedence < top operator
 			while (optop &&
 					(pgm_read_byte(precedence + opindex) <= 
 						pgm_read_byte(precedence + opstack[optop-1]))) {
-				vop(pgm_read_byte(operators + opstack[--optop]));
+							vop(pgm_read_byte(operators + opstack[--optop]));
+
 			}
 			if (optop >= OPSTACKLEN) overflow(M_exp);
-			opstack[optop++] = opindex;
+			opstack[optop++] = opindex;	// op: ...then push this one on the op stack
 		}
-//		else expected(M_op);
 		getsym();		// eat the operator and move along
 	}
-	while (optop) vop(pgm_read_byte(operators + opstack[--optop]));
-
+	while (optop) {
+		vop(pgm_read_byte(operators + opstack[--optop]));
+	}
 	exptype = s_nval;
 	expval = vpop();
 }
