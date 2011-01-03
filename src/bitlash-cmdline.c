@@ -112,7 +112,7 @@ byte putlbuf(char c) {
 void pointToError(void) {
 	if (isram(fetchptr)) {
 		int i = fetchptr - lbuf;
-		if ((i < 0) && (i >= 80)) return;
+		if ((i < 0) && (i >= LBUFLEN)) return;
 		while (i-- >= 0) spb(' ');
 		spb('^'); speol();
 	}

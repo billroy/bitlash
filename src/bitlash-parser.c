@@ -732,6 +732,72 @@ byte thesym = sym;
 
 }
 
+#define SWITCHING_YARD_PARSER
+#ifdef SWITCHING_YARD_PARSER
+
+#define NUMOPS 21
+prog_char operators[NUMOPS] PROGMEM = {
+	0,
+	s_mul, s_div, s_mod,
+ 	s_add, s_sub,
+ 	s_shiftright, s_shiftleft,
+	s_lt, s_gt, s_le, s_ge, s_logicaleq, s_logicalne,
+	s_bitand, s_bitor, s_xor,
+	s_logicaland, s_logicalor, s_logicalor, 0
+};
+
+prog_char precedence[NUMOPS-1] PROGMEM = {
+	0, 6,6,6, 5,5, 4,4, 3,3,3,3,3,3, 2,2,2, 1,1,1
+};
+
+byte findsym(const prog_char *table) {
+	const prog_char *opptr = strchr_P(table, sym);
+	if (opptr) return opptr-table;
+	return 0;
+}
+
+//prog_char terminators[] PROGMEM = { 0, s_eof, s_semi, s_comma, s_rparen, 0 };
+
+#define OPSTACKLEN 16
+const prog_char* opptr;
+byte opindex;
+byte optop;
+byte opstack[OPSTACKLEN];
+
+void getexpression(void) {
+
+//	while ((sym != s_eof) && (sym != s_semi) && (sym != s_comma) && (sym != s_rparen)) {
+//	while (!findsym(terminators)) {
+	for (;;) {
+		getfactor();
+//		if ((sym == s_eof) || (sym == s_semi) || (sym == s_comma) && (sym == s_rparen)) break;
+//		if (findsym(terminators)) break;
+
+		// find the operator in the operator table
+		opindex = findsym(operators);
+		if (!opindex) break;				// no op?  we're done
+		else {
+//		if (opindex) {						// have operator
+			// reduce while precedence < top operator
+			while (optop &&
+					(pgm_read_byte(precedence + opindex) <= 
+						pgm_read_byte(precedence + opstack[optop-1]))) {
+				vop(pgm_read_byte(operators + opstack[--optop]));
+			}
+			if (optop >= OPSTACKLEN) overflow(M_exp);
+			opstack[optop++] = opindex;
+		}
+//		else expected(M_op);
+		getsym();		// eat the operator and move along
+	}
+	while (optop) vop(pgm_read_byte(operators + opstack[--optop]));
+
+	exptype = s_nval;
+	expval = vpop();
+}
+
+
+#else
 // parseReduce via a template
 // saves 100 bytes but eats stack like crazy
 // while we're ram-starved this stays off
@@ -833,6 +899,9 @@ void getexpression(void) {
 	exptype = s_nval;
 	expval = vpop();
 }
+
+#endif	// SWITCHING_YARD_PARSER
+
 
 // Get a number from the input stream.  Result to expval.
 numvar getnum(void) {
