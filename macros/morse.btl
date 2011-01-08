@@ -1,0 +1,17 @@
+
+
+startup	:="pinmode(13,1);wpm(5)";
+wpm		:="t=1200/arg(1)";
+on		:="d13=1";
+off		:="d13=0";
+dt		:="delay(t*arg(1))";
+em		:="on;dt(arg(1));off;dt(1)";
+di		:="em(1)";
+da		:="em(3)";
+
+lspc	:="dt(2)";
+wspc	:="dt(5)";
+ok		:="da;da;da;lspc;da;di;da";
+
+kt0x	:="da;di;da;lspc;da;lspc;da;da;da;da;da;lspc;da;di;di;da";
+bcn		:="wpm(25);run kt0x,2000";

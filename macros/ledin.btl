@@ -1,0 +1,36 @@
+
+# d1 -> led cathode
+# d4 -> led anode
+# (resistor on one or both legs)
+
+startup:= "out4; run cycle,1000"
+
+out4 := "pinmode(4,1)"
+out1 := "pinmode(1,1)"
+in1  := "pinmode(1,0); d1=0"
+
+on 		:= "out1; d1=0; d4=1"
+off 	:= "d4=0"
+
+bias 	:= "out1; d1=1; d4=0;"
+
+read := "in1; t=millis(); while d1:d=millis()-t"
+
+show := "print d"
+
+cycle := "bias;read;show"
+
+---
+
+out4:="pinmode(4,1)"
+out1:="pinmode(1,1)"
+show:="print d"
+on:="out1;d1=0;d4=1"
+off:="d4=0"
+init:="out4"
+bias:="out1;d1=1;d4=0"
+read:="t=millis;in1;while d1:d=millis-t"
+in1:="pinmode(1,0);d1=0"
+cycle:="flash;bias;read;show"
+flash:="on;delay(25);off;delay(25)"
+watch:="bias;read;d0=(d>3)"

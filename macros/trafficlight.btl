@@ -1,0 +1,28 @@
+#traffic light example
+
+# state machine
+#
+startup := "run tick,1000"
+tick	:= "switch s {flashred(0);nsgrn(3);nsylo(1);allred(1);ewgrn(3);ewylo(1);allred(1);} tock;"
+tock	:= "++t;if a && t>=a {t=0; if ++s>6 s=1;}"
+
+# set the lights on a state change:
+# 	set(nsred, nsylo, nsgrn, ewred, ewylo, ewgrn, howlong)
+#
+# for debugging, print each state change
+set		:= "print s,t,\":\",arg(1),arg(2),arg(3),arg(4),arg(5),arg(6); a=arg(7)"
+#
+# to control LEDs on pins 14-19 (A0-A5):
+#set	:= "a=arg(7);i=1;while i<arg(0) {pinmode(13+i,1);dw(13+i,arg(i));i++;}"
+
+# state handlers
+#
+flashred:= "set(t&1,0,0, t&1,0,0, arg(1));"
+nsgrn	:= "set(0,0,1, 1,0,0, arg(1));"
+nsylo	:= "set(0,1,0, 1,0,0, arg(1));"
+allred	:= "set(1,0,0, 1,0,0, arg(1));"
+ewgrn	:= "set(1,0,0, 0,0,1, arg(1));"
+ewylo	:= "set(1,0,0, 0,1,0, arg(1));"
+
+enable	:= "s=1"
+disable	:= "s=0"

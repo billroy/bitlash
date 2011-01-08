@@ -1,0 +1,36 @@
+# elevator example
+#
+# s: state: down, hold, up
+# f: current floor [0..31]
+# p: pickups, bit vector, floors with passengers waiting to enter the elevator
+# d: dropoffs, bit vector, floors with passengers in elevator waiting to exit
+
+rm *
+
+# demand generation task
+demand		:= "if (random(100)>5) callcar(random(32));"
+
+# how we display status
+show := "print f,s,p:b,d:b"
+
+# car operations, take floor as arg(1)
+callcar		:= "p=p|1<<arg(1)"
+clearcall	:= "p=p&(~(1<<arg(1)))"
+requestdrop	:= "d=d|1<<arg(1)"
+cleardrop	:= "d=d&~(1<<arg(1))"
+
+# f<31 and bit set in p or d above f
+workabove := "return ((f<31) && ((p|d) & (-1<<f)))"
+
+# f>0 and bit set in p or d below f
+workbelow := "return ((f>0) && ((p|d) & ~(-1<<f)))"
+
+cycle 	:= "switch s {waiting; goingup; goingdown;}"
+
+waiting:="s=0; if workbelow goingdown; else if workabove goingup;";
+
+goingup := "s=1; if workabove moveto(f+1); else waiting;"
+
+goingdown := "s=2; if workbelow moveto(f-1); else waiting;"
+
+moveto := "f=arg(1); cleardrop(f); if (p&(1<<f)) {clearcall(f); requestdrop(random(32));} show;"

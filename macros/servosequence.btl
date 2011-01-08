@@ -1,0 +1,89 @@
+# http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1275217615/0#0
+
+# s: state of operation
+# t: counts seconds in current state (seconds)
+# a: duration of action state (seconds)
+# w: duration of wait state (seconds)
+# p: position of servo in seconds [0..a], will be mapped to [0..180] degrees
+
+startup:= "a=4*60*60; w=16*60*60; t=-1; run dispatch,1000"
+
+dispatch := ++t; switch s: up1,dn1,wait,up2,dn2,wait"
+next     := "t=-1; s=++s%6"
+
+wait := "if t>=w: next"
+
+up1  := "p=t;set1"
+dn1  := "p=a-t;set1"
+set1 := "servo(5, 180*p/a); if t>=a: next"
+
+up2  := "p=t;set2"
+dn2  := "p=a-t;set2"
+set2 := "servo(6, 180*p/a); if t>=a: next"
+
+-----
+
+startup:= "a=4*60*60; w=16*60*60; t=-1; run dispatch,1000"
+dispatch := ++t; switch s: up1,dn1,wait,up2,dn2,wait"
+next     := "t=-1; s=++s%6"
+
+wait := "if t>=w: next"
+
+up1  := "servo(5, 180*t/a); if t>=a: next"
+dn1  := "servo(5, 180*(a-t)/a); if t>=a: next"
+
+up2  := "servo(6, 180*t/a); if t>=a: next"
+dn2  := "servo(6, 180*(a-t)/a); if t>=a: next"
+
+----
+
+# bitlash state machine example
+#
+# tick runs once per cycle to call the state handler
+# tock advances the clock and, if needed, the state
+# 
+# a: number of ticks in a cycle
+# t: current cycle number [0..(a-1)]
+# s: state number [0..whatever]
+#
+startup := "a=4*60*60; run tick,1000"
+tick	:= "switch s: up1,dn1,nop,nop,nop,nop,up2,dn2,nop,nop,nop,nop; tock"
+tock	:= "if ++t>=a: t=0; if ++s>=12:s=0"
+nop 	:= "0"
+up1  	:= "servo(5, 180*t/a)"
+dn1  	:= "servo(5, 180*(a-t)/a)"
+up2  	:= "servo(6, 180*t/a)"
+dn2  	:= "servo(6, 180*(a-t)/a)"
+
+
+----
+
+# with state initialization switches to handle different state durations
+# WIP
+#
+startup := "run tick,1000"
+tick	:= "switch s: short,up1,dn1,hold,short,up2,dn2,hold; tock"
+tock	:= "if ++t>=a: t=0; if ++s>=8:s=0"
+short	:= "t=a=4*60*60"
+hold	:= "a=4*4*60*60"
+up1  	:= "servo(5, 180*t/a)"
+dn1  	:= "servo(5, 180*(a-t)/a)"
+up2  	:= "servo(6, 180*t/a)"
+dn2  	:= "servo(6, 180*(a-t)/a)"
+
+
+#----
+#1/1/11 with args and {}
+
+startup := "run tick,1000"
+tick	:= "switch s {short;up1;dn1;hold;short;up2;dn2;hold;s=0;} tock;"
+tock	:= "if ++t>=a {t=0; ++s;}"
+hours	:= "return arg(1)*60*60;"
+short	:= "t=a=hours(4)"
+hold	:= "a=hours(16)"
+up1  	:= "servo(5, 180*t/a)"
+dn1  	:= "servo(5, 180*(a-t)/a)"
+up2  	:= "servo(6, 180*t/a)"
+dn2  	:= "servo(6, 180*(a-t)/a)"
+
+
