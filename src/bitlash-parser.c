@@ -744,7 +744,7 @@ byte thesym = sym;
 //http://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
 #define NUMOPS 21
-prog_char operators[NUMOPS] PROGMEM = {
+char operators[NUMOPS] = {
 	-1,
 	s_mul, s_div, s_mod,
  	s_add, s_sub,
@@ -754,30 +754,29 @@ prog_char operators[NUMOPS] PROGMEM = {
 	s_logicaland, s_logicalor, s_logicalor, 0
 };
 
-prog_char precedence[NUMOPS-1] PROGMEM = {
+char precedence[NUMOPS-1] = {
 	0, 6,6,6, 5,5, 4,4, 3,3,3,3,3,3, 2,2,2, 1,1,1
 };
 
-byte findsym(const prog_char *table) {
+byte findsym(char *table) {
 	if (sym == s_eof) return 0;
-	const prog_char *opptr = strchr_P(table, sym);
+	char *opptr = strchr(table, sym);
 	if (opptr) return opptr-table;
 	return 0;
 }
 
-//prog_char terminators[] PROGMEM = { 0, s_eof, s_semi, s_comma, s_rparen, 0 };
-
 #define OPSTACKLEN 16
-const prog_char* opptr;
 byte opindex;
 byte optop;
 byte opstack[OPSTACKLEN];
 
 void voptop(void) {
-	vop(pgm_read_byte(operators + opstack[--optop]));
+//	vop(pgm_read_byte(operators + opstack[--optop]));
+	vop(operators[opstack[--optop]]);
 }
 byte getprecedence(byte offset) {
-	return pgm_read_byte(precedence + offset);
+//	return pgm_read_byte(precedence + offset);
+	return precedence[offset];
 }
 void oppush(byte opindex) {
 	if (optop >= OPSTACKLEN) overflow(M_exp);
@@ -799,37 +798,22 @@ void getexpression(void) {
 		opindex = findsym(operators);
 		if (opindex) {				// op: reduce while precedence < top operator
 			while (optop &&
-//					(pgm_read_byte(precedence + opindex) <= 
-//						pgm_read_byte(precedence + opstack[optop-1]))) {
 					(getprecedence(opindex) <=
 						getprecedence(opstack[optop-1]))) {
-							voptop();
-							//vop(pgm_read_byte(operators + opstack[--optop]));
+				voptop();
 			}
 			oppush(opindex);
-//			if (optop >= OPSTACKLEN) overflow(M_exp);
-//			opstack[optop++] = opindex;	// op: ...then push this one on the op stack
 		}
-		else if (sym == s_lparen) {
-			oppush(s_lparen);
-//			if (optop >= OPSTACKLEN) overflow(M_exp);
-//			opstack[optop++] = sym;		// mark the opstack with s_lparen
-		}
+		else if (sym == s_lparen) oppush(s_lparen);
 		else if (sym == s_rparen) {
-			while (optop && (opstack[optop-1] != s_lparen)) {
-				voptop();
-				//vop(pgm_read_byte(operators + opstack[--optop]));
-			}
+			while (optop && (opstack[optop-1] != s_lparen)) voptop();
 			if (!optop) unexpected(')');
 			if (opstack[optop-1] == s_lparen) --optop;	// pop '('
 		}
 		else break;
 		getsym();		// eat the operator and move along
 	}
-	while (optop) {
-		voptop();
-		//vop(pgm_read_byte(operators + opstack[--optop]));
-	}
+	while (optop) voptop();
 	exptype = s_nval;
 	expval = vpop();
 }

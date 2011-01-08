@@ -413,8 +413,9 @@ void domacrocall(int macroaddress) {
 	
 		parsearglist();
 		byte thesym = sym;					// save sym for restore
+		vpush(symval);						// and symval
 		char *fetchmark = fetchptr;			// save the current parse pointer
-	
+
 		// call the macro
 		calleeprommacro(findend(macroaddress));	// register the macro into the parser stream
 		getsym();								// fetch its first symbol
@@ -423,11 +424,12 @@ void domacrocall(int macroaddress) {
 //		if (sym != s_eof) expected(M_eof);
 
 		// restore parsing context so we can resume cleanly
-		releaseargblock();
-		vpush(ret);
+		symval = vpop();		// restore symval
+		sym = thesym;			// restore saved sym
+		releaseargblock();		// drop the args
 		fetchptr = fetchmark;	// restore pointer
 		primec();				// and inchar
-		sym = thesym;			// restore saved sym
+		vpush(ret);				// send back our return value
 	}
 }
 
