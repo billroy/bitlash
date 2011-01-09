@@ -95,6 +95,23 @@ signed char nestlevel = 0;
 		}
 	}
 
+	// skipping the if statement is a little tricky
+	else if (sym == s_if) {
+
+		// find ';', '{', or end
+		while ((sym != s_eof) && (sym != s_semi) && (sym != s_lcurly)) getsym();
+
+		if (sym == s_eof) return;
+		else if (sym == s_lcurly) skipstatement();	// eat an if-true {statementlist;}
+		else getsym();								// ate the statement; eat the ';'
+
+		// now handle the optional 'else' part
+		if (sym == s_else) {
+			getsym();			// eat 'else'
+			skipstatement();	// skip one statement and we're done
+		}
+	}
+
 	// Skip a single statement, not a statementlist in braces: 
 	// eat until semicolon or ')'
 	// ignoring embedded argument lists

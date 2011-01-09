@@ -7,31 +7,11 @@
 
 rm *
 
+# run the sim at startup
+startup	:= "run cycle,500; run demand,10000;"
+
 # demand generation task
 demand		:= "if (random(100)>5) callcar(random(32));"
-
-# show state of the system
-ss	:= "if s==1 print '>':y,; else {if s==2 print '<':y,; else print 'W':y,;}"
-sf	:= "if p&(1<<arg(1)) print 'p':y,; else {if d&(1<<arg(1)) print 'd':y,; else print '-':y,;}"
-show	:= "i=0;while i<32 {if i==f ss; else sf(i); i++;} print f;"
-
-# simpler printed status
-pshow := "print f,s,p:b,d:b"
-
-# car operations, take floor as arg(1)
-callcar		:= "p=p|1<<arg(1)"
-clearcall	:= "p=p&(~(1<<arg(1)))"
-requestdrop	:= "d=d|1<<arg(1)"
-cleardrop	:= "d=d&~(1<<arg(1))"
-
-# there is work above if f<31 and bit set in p or d above f
-workabove := "return ((f<31) && ((p|d) & (-1<<f)))"
-
-# there is work below if f>0 and bit set in p or d below f
-workbelow := "return ((f>0) && ((p|d) & ~(-1<<f)))"
-
-# move to a new floor
-moveto := "f=arg(1); cleardrop(f); if (p&(1<<f)) {clearcall(f); requestdrop(random(32));} show;"
 
 # state machine
 cycle 	:= "switch s {waiting; goingup; goingdown;}"
@@ -41,5 +21,31 @@ waiting		:= "s=0; if workbelow goingdown; else if workabove goingup;";
 goingup 	:= "s=1; if workabove moveto(f+1); else waiting;"
 goingdown 	:= "s=2; if workbelow moveto(f-1); else waiting;"
 
+# move to a new floor
+service := "cleardrop(f); if (p&(1<<f)) {clearcall(f); requestdrop(random(32));}"
+moveto := "service; f=arg(1); service; show;"
 
-startup	:= "run cycle,500; run demand,10000;"
+cleardrop(f); if (p&(1<<f)) {clearcall(f); requestdrop(random(32));} show;"
+
+# there is work above if f<31 and bit set in p or d above f
+workabove := "return ((f<31) && ((p|d) & (-1<<(f+1))))"
+
+# there is work below if f>0 and bit set in p or d below f
+workbelow := "return ((f>0) && ((p|d) & ~(-1<<f)))"
+
+# car operations, take floor as arg(1)
+callcar		:= "p=p|(1<<arg(1))"
+clearcall	:= "p=p&(~(1<<arg(1)))"
+requestdrop	:= "d=d|(1<<arg(1))"
+cleardrop	:= "d=d&~(1<<arg(1))"
+
+# simple printed status
+#show := "print f,s,p:b,d:b"
+
+# show state of the system as a map: -p---------p------<-------------18
+#
+ss	:= "if s==1 print '>':y,; else if s==2 print '<':y,; else print 'W':y,;"
+sf	:= "if p&(1<<arg(1)) print 'p':y,; else if d&(1<<arg(1)) print 'd':y,; else print '-':y,;"
+show	:= "i=0;while i<32 {if i==f ss; else sf(i); i++;} print f;"
+
+
