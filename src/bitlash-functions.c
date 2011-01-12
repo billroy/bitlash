@@ -163,6 +163,12 @@ numvar func_setBaud(void) { req2args(); setBaud(arg1, arg2); return 0; }
 //numvar func_map(void) { req5args; return map(arg1, arg2, arg3, arg4, arg5); }
 //numvar func_shiftout(void) { req4args; shiftOut(arg1, arg2, arg3, arg4); return 0; }
 
+numvar func_bitclear(void) { req2args(); return arg1 & ~((numvar)1 << arg2); }
+numvar func_bitset(void) { req2args(); return arg1 | ((numvar)1 << arg2); }
+numvar func_bitread(void) { req2args(); return (arg1 & ((numvar)1 << arg2)) != 0; }
+numvar func_bitwrite(void) { req3args(); return arg3 ? func_bitset() : func_bitclear(); }
+
+
 //////////
 // Function name dictionary
 //
@@ -181,7 +187,11 @@ prog_char functiondict[] PROGMEM = {
 	"ar\0"
 	"aw\0"
 	"baud\0"
+	"bc\0"
 	"beep\0"
+	"br\0"
+	"bs\0"
+	"bw\0"
 	"constrain\0"
 	"delay\0"
 	"dr\0"
@@ -214,7 +224,11 @@ bitlash_function function_table[] PROGMEM = {
 	func_ar,
 	func_aw,
 	func_setBaud,
+	func_bitclear,
 	func_beep,
+	func_bitread,
+	func_bitset,
+	func_bitwrite,
 	func_constrain,
 	func_delay,
 	func_dr,

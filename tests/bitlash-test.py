@@ -12,58 +12,91 @@ time.sleep(1.0)
 c = pexpect.spawn('nc localhost 8080');
 c.logfile_read = sys.stdout
 
-c.sendline('boot')
-c.expect('>')
-c.sendline('print millis')
-c.expect('>')
+def waitprompt():
+	c.expect('\n> ')
 
+c.sendline('boot')
+waitprompt()
+
+# oops, this kills nc
 #c.sendcontrol('c')
-#c.expect('^C\r\n>')
+#c.expect('^C\n> ')
+
+c.sendline('stop *;print millis')
+waitprompt()
 
 c.sendline('print abs(-1), abs(0), abs(1)')
 c.expect('1 0 1')
-c.expect('>')
+waitprompt()
 
 c.sendline('print sign(-10), sign(0), sign(10)')
 c.expect('-1 0 1')
-c.expect('>')
+waitprompt()
 
 c.sendline('if 1 print 1; else print 0')
 c.expect('1')
-c.expect('>')
+waitprompt()
 
 c.sendline('if 0 print 1; else print 0')
 c.expect('0')
-c.expect('>')
+waitprompt()
 
-c.sendline('i=0; while i<5 {print i,"",;i++;}')
+c.sendline('i=0; while i<5 {print i,"",;i++;} print;')
 c.expect('0 1 2 3 4')
-c.expect('>')
+waitprompt()
 
 c.sendline('rm foo')
-c.expect('>')
+waitprompt()
 c.sendline('foo:="switch arg(1) {print 0,;print 1,;print 2,;}"')
 c.expect('saved')
-c.expect('>')
-c.sendline('i=-2; while i<4 foo(i++);')
-c.expect('000122>')
+waitprompt()
+c.sendline('i=-2; while i<4 foo(i++); print;')
+c.expect('000122')
+waitprompt()
 c.sendline('rm foo')
-c.expect('>')
+waitprompt()
 
 c.sendline('i=0;while i<1000 {i++; if i>100 return 4; } print i;')
 c.expect('4')
-c.expect('>')
+waitprompt()
 
 c.sendline('q=0; while q<10 {if q&1 {print "odd ",;} else {print "even ",;} q++;} print "done";')
 c.expect('even odd even odd even odd even odd even odd done');
-c.expect('>')
+waitprompt()
 
 c.sendline('t=millis;i=1000;while i {if i&1 j++; else j--; i--;} print millis-t,"done";')
 c.expect('done')
-c.expect('>')
+waitprompt()
+
+c.sendline('i=-2;while i++<3 if i<=0 print 0,;else print 1,; print;')
+c.expect('00111')
+waitprompt()
+
+c.sendline('i=-2;while i++<3 {if i<=0 print 0,;else print 1,;} print;')
+c.expect('00111')
+waitprompt()
+
+c.sendline('i=0; while i<32 print br(0xaaaaaaaa,i++),; print;')
+c.expect('01010101010101010101010101010101')
+waitprompt()
+
+c.sendline('i=0; while i<32 print br(0x55555555,i++),; print;')
+c.expect('10101010101010101010101010101010')
+waitprompt();
+
+c.sendline('x=0;i=0;while i<32 x=bs(x,i++); print x;')
+c.expect('-1');
+waitprompt()
+
+c.sendline('x=-1;i=0;while i<32 x=bc(x,i++); print x;')
+c.expect('0')
+waitprompt()
+
+c.sendline('print millis')
+waitprompt()
 
 c.sendline('logout')
 c.expect(pexpect.EOF)
 
 c.close()
-d.close() 
+d.close()
