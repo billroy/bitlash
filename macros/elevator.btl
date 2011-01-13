@@ -5,16 +5,17 @@
 # p: pickups, bit vector, floors with passengers waiting to enter the elevator
 # d: dropoffs, bit vector, floors with passengers in elevator waiting to exit
 
-#rm *
+# clear the eeprom
+rm *
 
-# run the sim at startup
-startup		:= "run elevator,500; run demand,10000;"
+# run the sim
+go		:= "run elevator,500; run demand,10000;"
 
 # demand generation task
-demand		:= "if random(100)>50 callcar(random(32));"
+demand	:= "if random(100)>50 callcar(random(32));"
 
 # state machine task
-elevator 	:= "switch s {waiting; goingup; goingdown;}"
+elevator:= "switch s {waiting; goingup; goingdown;}"
 
 # state handlers
 waiting		:= "s=0; if callat(f) service; else if workbelow goingdown; else if workabove goingup;"
@@ -22,15 +23,13 @@ goingup 	:= "s=1; if workabove moveto(f+1); else waiting;"
 goingdown 	:= "s=2; if workbelow moveto(f-1); else waiting;"
 
 # move to a new floor
-service 	:= "cleardrop(f); if callat(f) {clearcall(f); requestdrop(random(32));}"
-moveto 		:= "service; f=arg(1); service; show;"
+service := "cleardrop(f); if callat(f) {clearcall(f); requestdrop(random(32));}"
+moveto 	:= "service; f=arg(1); service; show;"
 
 # there is work above if f<31 and bit set in p or d above f
-#workabove 	:= "return ((f<31) && ((p|d) & (-1<<(f+1))))"
 workabove 	:= "w=f; while ++w<32 if dropat(w) || callat(w) return 1; return 0;"
 
 # there is work below if f>0 and bit set in p or d below f
-#workbelow 	:= "return ((f>0) && ((p|d) & ~(-1<<f)))"
 workbelow	:= "w=f; while --w>=0 if dropat(w) || callat(w) return 1; return 0;"
 
 # car operations, take floor [0..31] as arg(1)
@@ -50,5 +49,3 @@ ss			:= "if !s c='W'; else if s==1 c='>'; else c='<';"
 sf			:= "if callat(arg(1)) c='p'; else if dropat(arg(1)) c='d'; else c='-';"
 pm			:= "if arg(1)==f ss; else sf(arg(1)); print c:y,;" 
 show		:= "i=0;while i<32 pm(i++); print f;"
-
-

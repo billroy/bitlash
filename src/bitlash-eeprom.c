@@ -233,6 +233,45 @@ char id[IDLEN+1];
 }
 
 
+// Parse and store a function definition
+//
+void cmd_function(void) {
+char id[IDLEN+1];			// buffer for id
+
+	getsym();				// eat "function", get putative id
+	if ((sym != s_undef) && (sym != s_macro)) unexpected(M_id);
+	strncpy(id, idbuf, IDLEN+1);	// save id string through value parse
+	eraseentry(id);
+	
+	getsym();		// eat the id, move on to '{'
+	if (sym != s_lcurly) expected(s_lcurly);
+
+	// measure the macro text using skipstatement
+	// fetchptr is on the character after '{'
+	//
+	char *startmark = fetchptr;		// mark first char of macro text
+	void skipstatement(void);
+	skipstatement();				// gobble it up without executing it
+	char *endmark = fetchptr;		// and note the char past '}'
+	
+	int addr = findhole(strlen(id) + (endmark-startmark) + 2);	// longjmps on fail
+	if (addr >= 0) {
+		saveString(addr, id);		// write the id and its terminator
+		addr += strlen(id) + 1;		// advance to payload offset
+
+		// reset parse context
+		fetchptr = startmark;
+		primec();
+		while (fetchptr < endmark) {
+			eewrite(addr++, inchar);
+			fetchc();
+		}
+		eewrite(--addr, 0);
+	}
+
+	msgpl(M_saved);
+}
+
 
 // print eeprom string at addr
 void eeputs(int addr) {

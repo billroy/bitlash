@@ -316,7 +316,11 @@ char *fetchmark;
 		sym = s_returning;		// signal we're returning up the line
 	}
 	else if (sym == s_switch) retval = getswitchstatement();
+
+	else if (sym == s_function) cmd_function();
+
 #endif
+
 
 	else if (sym == s_run) {	// run macroname
 		getsym();
