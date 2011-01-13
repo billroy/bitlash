@@ -5,23 +5,18 @@
 # also requires pexpect from http://pexpect.sourceforge.net/pexpect.html
 # see also http://www.noah.org/wiki/Pexpect
 
-import pexpect, sys, time
-d = pexpect.spawn('python bitty.py -k');
-time.sleep(1.0)
+import serial, fdpexpect, sys, time, os
 
-c = pexpect.spawn('nc localhost 8080');
+device = '/dev/tty.usbserial-A70063Md'
+baud = 57600
+serialport = serial.Serial(device, baud, timeout=0)
+c = fdpexpect.fdspawn(serialport.fd)
 c.logfile_read = sys.stdout
 
 def waitprompt():
 	c.expect('\n> ')
 
-c.sendline('boot')
 waitprompt()
-
-# oops, this kills nc
-#c.sendcontrol('c')
-#c.expect('^C\n> ')
-
 c.sendline('stop *;print millis')
 waitprompt()
 
@@ -72,6 +67,9 @@ c.sendline('i=-2;while i++<3 if i<=0 print 0,;else print 1,; print;')
 c.expect('00111')
 waitprompt()
 
+c.sendline('print millis')
+waitprompt()
+
 c.sendline('i=-2;while i++<3 {if i<=0 print 0,;else print 1,;} print;')
 c.expect('00111')
 waitprompt()
@@ -95,8 +93,8 @@ waitprompt()
 c.sendline('print millis')
 waitprompt()
 
-c.sendline('logout')
-c.expect(pexpect.EOF)
+#c.sendline('logout')
+#c.expect(fdpexpect.EOF)
 
 c.close()
-d.close()
+#d.close()

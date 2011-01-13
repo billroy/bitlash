@@ -2,18 +2,29 @@
 #
 # usage: python bloader.py foobar.btl
 #
-import pexpect, sys, time
-d = pexpect.spawn('python ../tests/bitty.py -k');
-d.expect('Listening')
-d.logfile=None
+import serial, fdpexpect, sys, time
 
-c = pexpect.spawn('nc localhost 8080');
+device = '/dev/tty.usbserial-A70063Md'
+baud = 57600
+serialport = serial.Serial(device, baud, timeout=0)
+c = fdpexpect.fdspawn(serialport.fd)
 c.logfile_read = sys.stdout
 
+# no arguments: interactive mode, ^] to exit (like telnet)
+if (len(sys.argv) < 2):
+	c.sendline("");
+	c.interact()
+	sys.exit()
+
+def waitprompt():
+	c.expect('\n> ')
+	time.sleep(0.1)
+
 c.sendline('boot')
-c.expect('>')
+waitprompt()
 c.sendline('print millis')
-c.expect('>')
+waitprompt()
+
 #######################
 
 # open the passed-in file and send it line by line to Bitlash
@@ -26,14 +37,10 @@ for line in lines:
 	line = line.strip()
 	if (len(line) > 0) and (line[0] != '#'):
 		c.sendline(line.strip())
-		c.expect('\n> ')
+		waitprompt()
 
 ##########################
+
 c.sendline('print millis')
-c.expect('\n> ')
-
-c.sendline('logout')
-c.expect(pexpect.EOF)
-
+waitprompt()
 c.close()
-d.close() 

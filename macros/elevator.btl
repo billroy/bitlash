@@ -34,12 +34,12 @@ workabove 	:= "w=f; while ++w<32 if dropat(w) || callat(w) return 1; return 0;"
 workbelow	:= "w=f; while --w>=0 if dropat(w) || callat(w) return 1; return 0;"
 
 # car operations, take floor [0..31] as arg(1)
-callcar		:= "p=p|(1<<arg(1))"
-clearcall	:= "p=p&(~(1<<arg(1)))"
-callat		:= "return p&(1<<arg(1));"
-requestdrop	:= "d=d|(1<<arg(1))"
-cleardrop	:= "d=d&~(1<<arg(1))"
-dropat		:= "return d&(1<<arg(1));"
+callcar		:= "p=bs(p,arg(1))"
+clearcall	:= "p=bc(p,arg(1))"
+callat		:= "return br(p,arg(1))"
+requestdrop	:= "d=bs(d,arg(1))"
+cleardrop	:= "d=bc(d,arg(1))"
+dropat		:= "return br(d,arg(1))"
 
 # simple printed status
 #show := "print f,s,p:b,d:b"
