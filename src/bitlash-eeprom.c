@@ -299,11 +299,24 @@ int start = STARTDB;
 		start = findoccupied(start);
 		if (start == FAIL) return;
 
+#if 0
 		eeputs(start);
 		msgp(M_defmacro);
 		start = findend(start);
 		eeputs(start);
 		spb('"');
+		spb(';');
+		speol();
+		start = findend(start);
+#endif
+		msgp(M_function);
+		spb(' ');
+		eeputs(start);
+		spb(' ');
+		spb('{');
+		start = findend(start);
+		eeputs(start);
+		spb('}');
 		spb(';');
 		speol();
 		start = findend(start);

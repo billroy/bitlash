@@ -629,6 +629,7 @@ extern char idbuf[IDLEN+1];
 #define M_functions		26
 #define M_oops			27
 #define M_arg			28
+#define M_function		29
 
 
 //	Names for symbols
