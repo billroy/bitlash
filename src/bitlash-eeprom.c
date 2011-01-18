@@ -244,6 +244,14 @@ char id[IDLEN+1];			// buffer for id
 	eraseentry(id);
 	
 	getsym();		// eat the id, move on to '{'
+
+	// provide for function functionname()
+	if (sym == s_lparen) {
+		getsym();	// eat '('
+		if (sym != s_rparen) expectedchar(')');
+		getsym();	// eat ')'
+	}
+
 	if (sym != s_lcurly) expected(s_lcurly);
 
 	// measure the macro text using skipstatement
@@ -278,7 +286,7 @@ void eeputs(int addr) {
 	for (;;) {
 		byte c = eeread(addr++);
 		if (!c || (c == EMPTY)) return;
-		else if (c == '"') { spb('\\'); spb('"'); }
+		//else if (c == '"') { spb('\\'); spb('"'); }
 		else if (c == '\\') { spb('\\'); spb('\\'); }
 		else if (c == '\n') { spb('\\'); spb('n'); }
 		else if (c == '\t') { spb('\\'); spb('t'); }
@@ -331,9 +339,9 @@ int i=0;
 #endif
 
 	while (i <= ENDEEPROM) {
-		if (i%64 == 0) {speol(); printHex(i+0xe000); spb(':'); }
-		if (i%8 == 0) spb(' ');
-		if (i%4 == 0) spb(' ');		
+		if (!(i&63)) {speol(); printHex(i+0xe000); spb(':'); }
+		if (!(i&7)) spb(' ');
+		if (!(i&3)) spb(' ');		
 		byte c = eeread(i) & 0xff;
 
 		if (c == 0) spb('\\');

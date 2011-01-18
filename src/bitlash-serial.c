@@ -116,6 +116,29 @@ void whackabyte(unsigned char c) {
 
 
 
+#ifdef SERIAL_OVERRIDE
+///////////////////////////////////////
+// serial output override mechanism
+// the primary or default serial output can be diverted by plugging in a serialOverrideFunc
+//
+serialOutputFunc serial_override_handler;
+
+byte serialIsOverridden(void) {
+	return serial_override_handler != 0;
+}
+
+void setOutputHandler(serialOutputFunc newHandler) {
+	serial_override_handler = newHandler;
+}
+
+void resetOutputHandler(void) {
+	serial_override_handler = 0;
+}
+
+#endif
+
+
+
 ///////////////////////////////////////
 // spb: serial print byte
 //
@@ -124,7 +147,15 @@ void whackabyte(unsigned char c) {
 #if defined(HARDWARE_SERIAL_TX) || defined(SOFTWARE_SERIAL_TX)
 void spb(char c) {
 #ifdef HARDWARE_SERIAL_TX
-	if (outpin == DEFAULT_OUTPIN) { serialWrite(c); return; }
+	if (outpin == DEFAULT_OUTPIN) { 
+
+#ifdef SERIAL_OVERRIDE
+		if (serial_override_handler) (*serial_override_handler)(c);
+		else
+#endif
+		serialWrite(c); 
+		return;
+	}
 #endif
 #ifdef ALTERNATE_OUTPIN
 	if (outpin == ALTERNATE_OUTPIN) { Serial1.print(c); return; }

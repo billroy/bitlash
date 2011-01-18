@@ -92,6 +92,12 @@ void initlbuf(void) {
 	lbufptr = lbuf;
 
 #ifndef TINY85
+
+#if 0	// && defined(SERIAL_OVERRIDE)
+	// don't do the prompt in serialIsOverridden mode
+	if (serialIsOverridden()) return;
+#endif
+
 	prompt();
 	
 	// flush any pending serial input
@@ -112,8 +118,9 @@ byte putlbuf(char c) {
 void pointToError(void) {
 	if (isram(fetchptr)) {
 		int i = fetchptr - lbuf;
-		if ((i < 0) && (i >= LBUFLEN)) return;
-		while (i-- >= 0) spb(' ');
+		if ((i < 0) || (i >= LBUFLEN)) return;
+		speol();
+		while (i-- >= 0) spb('-');
 		spb('^'); speol();
 	}
 }
@@ -234,9 +241,9 @@ prog_char banner[] PROGMEM = {
 // Ruler:     1                   2         3         4         5         6         7         8         9        10
 //   12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 #ifdef ARDUINO_BUILD
-	"print \"bitlash here! v1.2e (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\""
+	"print \"bitlash here! v1.2f (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\""
 #else
-	"print \"bitlash here! v1.2e (c) 2011 Bill Roy\""
+	"print \"bitlash here! v1.2f (c) 2011 Bill Roy\""
 #endif
 };
 

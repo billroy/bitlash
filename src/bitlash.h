@@ -504,7 +504,16 @@ void resetOutput(void);
 numvar setBaud(numvar, unumvar);
 #endif
 
-#if defined(ARDUINO_BUILD) || defined(UNIX_BUILD)
+// serial override handling
+#define SERIAL_OVERRIDE
+#ifdef SERIAL_OVERRIDE
+typedef void (*serialOutputFunc)(byte);
+byte serialIsOverridden(void);
+void setOutputHandler(serialOutputFunc);
+void resetOutputHandler(void);
+#endif
+
+#ifdef ARDUINO_BUILD
 void chkbreak(void);
 void cmd_print(void);
 #endif

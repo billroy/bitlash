@@ -66,3 +66,11 @@ int getValue(char *key);			// return location of macro value in EEPROM or -1
 typedef numvar (*bitlash_function)(void);
 void addBitlashFunction(char *, bitlash_function);
 numvar getarg(numvar);
+
+///////////////////////
+//	Serial Output Capture
+//
+typedef void (*serialOutputFunc)(byte);
+byte serialIsOverridden(void);
+void setOutputHandler(serialOutputFunc);
+void resetOutputHandler(void);
