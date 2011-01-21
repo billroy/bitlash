@@ -30,12 +30,9 @@
 
 
 // Serial command line buffer
-byte remoteOperation;		// set BITLASH_RQ_EXECUTE execute contents of line buffer on next runBitlash
 char *lbufptr;
 char lbuf[LBUFLEN];
 
-
-#if !defined(TINY85)
 
 // Help text
 //
@@ -91,8 +88,6 @@ char buf[IDLEN+1];
 void initlbuf(void) {
 	lbufptr = lbuf;
 
-#ifndef TINY85
-
 #if 0	// && defined(SERIAL_OVERRIDE)
 	// don't do the prompt in serialIsOverridden mode
 	if (serialIsOverridden()) return;
@@ -102,7 +97,6 @@ void initlbuf(void) {
 	
 	// flush any pending serial input
 	while (serialAvailable()) serialRead();
-#endif
 }
 
 
@@ -124,14 +118,6 @@ void pointToError(void) {
 		spb('^'); speol();
 	}
 }
-#endif
-
-
-#ifdef AVROPENDOUS_BUILD
-byte bitlashBackgroundEvent;
-void connectBitlash(void) { bitlashBackgroundEvent = 'c'; }
-#include "stdbool.h"
-#endif
 
 
 // run the bitlash command line editor and hand off commands to the interpreter
@@ -140,110 +126,79 @@ void connectBitlash(void) { bitlashBackgroundEvent = 'c'; }
 // note that doCommand blocks until it returns, so looping in a while() will delay other tasks
 //
 
-// TODO: change to lastval when linker bug is fixed
-numvar lastval;			// last return value
+///////////////////////
+//	handle a character from the input stream
+// 	may execute the command, etc.
+//
+void doCharacter(char c) {
 
-#ifdef TINY85
+	if (lbufptr >= &lbuf[LBUFLEN-1]) overflow(M_line);
 
-void runBitlash(void) {
-
-	// Process a command from the buffer, if it's ready
-	if (remoteOperation == BITLASH_RQ_EXECUTEBUFFER) {
-		//remoteOperation = BITLASH_RQ_BUSY;
+	if ((c == '\r') || (c == '\n') || (c == '`')) {
+		speol();
+		*lbufptr = 0;
 		doCommand(lbuf);
-		lastval = expval;
 		initlbuf();
-		remoteOperation = BITLASH_RQ_NULL;
 	}
-	runBackgroundTasks();
+	else if (c == 3) {		// ^C break/stop
+		msgpl(M_ctrlc);
+		initTaskList();
+		initlbuf();
+	}
+	else if (c == 2) {			// ^B suspend Background macros
+		suspendBackground = !suspendBackground;
+	}
+	else if ((c == 8) || (c == 0x7f)) {
+		if (lbufptr == lbuf) spb(7);		// bell
+		else {
+			spb(8); spb(' '); spb(8);
+			*(--lbufptr) = 0;
+		}
+	} 
+#ifdef PARSER_TRACE
+	else if (c == 20) {		// ^T toggle trace
+		trace = !trace;
+		spb(7);
+	}
+#endif
+	else if (c == 21) {		// ^U to get last line
+		msgpl(M_ctrlu);
+		prompt();
+		sp(lbuf);
+		lbufptr = lbuf + strlen(lbuf);
+	}
+	else {
+		spb(c);
+		*lbufptr++ = c;
+	}
 }
 
-#else
-
+/////////////////////////////
+//
+//	runBitlash
+//
+//	This is the main entry point where the main loop gives Bitlash cycles
+//	Call this frequently from loop()
+//
 void runBitlash(void) {
 
-#ifdef AVROPENDOUS_BUILD
-	if (bitlashBackgroundEvent == 'c') {
-		if (serialAvailable()) {
-			bitlashBackgroundEvent = 0;
-			displayBanner();
-			initlbuf();
-		}
-	}
-#endif
-
-	if (serialAvailable()) {
-		if (lbufptr >= &lbuf[LBUFLEN-1]) overflow(M_line);
-		char c = serialRead();
-
-#if 0
-		setOutput(9);
-		//spb(c);
-		spb('['); printHex(unumvar (c & 0xff)); spb(']');
-		resetOutput();
-#endif
-
-		if ((c == '\r') || (c == '\n') || (c == '`')) {
-			speol();
-			*lbufptr = 0;
-			doCommand(lbuf);
-			initlbuf();
-		}
-		else if (c == 3) {		// ^C break/stop
-			msgpl(M_ctrlc);
-			initTaskList();
-			initlbuf();
-		}
-		else if (c == 2) {			// ^B suspend Background macros
-			suspendBackground = !suspendBackground;
-		}
-		else if ((c == 8) || (c == 0x7f)) {
-			if (lbufptr == lbuf) spb(7);		// bell
-			else {
-				spb(8); spb(' '); spb(8);
-				*(--lbufptr) = 0;
-			}
-		} 
-#ifdef PARSER_TRACE
-		else if (c == 20) {		// ^T toggle trace
-			trace = !trace;
-			spb(7);
-		}
-#endif
-		else if (c == 21) {		// ^U to get last line
-			msgpl(M_ctrlu);
-			prompt();
-			sp(lbuf);
-			lbufptr = lbuf + strlen(lbuf);
-		}
-#if 0
-		else if (c == 22) {
-			for (int i=0; i<NUMTASKS; i++) { printHex((unsigned long) tasklist[i]); spb(' '); } speol(); 
-		}
-#endif
-		else {
-			spb(c);
-			*lbufptr++ = c;
-		}
-	}
+	// Pipe the serial input into the command handler
+	if (serialAvailable()) doCharacter(serialRead());
 
 	// Background macro handler: feed it one call each time through
 	runBackgroundTasks();
 }
-#endif
 
 
-
-#if !defined(TINY85)
 //	Banner and copyright notice
 //
 prog_char banner[] PROGMEM = { 
 // Ruler:     1                   2         3         4         5         6         7         8         9        10
 //   12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 #ifdef ARDUINO_BUILD
-	"print \"bitlash here! v1.2f (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\""
+	"print \"bitlash here! v1.2g (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\""
 #else
-	"print \"bitlash here! v1.2f (c) 2011 Bill Roy\""
+	"print \"bitlash here! v1.2g (c) 2011 Bill Roy\""
 #endif
 };
 
@@ -253,7 +208,6 @@ void displayBanner(void) {
 	strncpy_P(lbuf, banner, STRVALLEN);
 	doCommand(lbuf);
 }
-#endif
 
 
 

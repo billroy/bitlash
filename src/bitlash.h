@@ -71,9 +71,10 @@
 //
 ////////////////////////////////////////////////////
 //
-#ifdef HIGH		// this detects the Arduino build environment
+#if defined(HIGH) || defined(ARDUINO)		// this detects the Arduino build environment
 
 #define ARDUINO_BUILD 1
+
 //#define ARDUINO_VERSION 14	// working
 //#define ARDUINO_VERSION 15 	// working
 #define ARDUINO_VERSION 16		// working, released
@@ -367,6 +368,7 @@ void initBitlash(void);
 #endif
 void runBitlash(void);					// call this in loop(), frequently
 void doCommand(char *);					// execute a command from your sketch
+void doCharacter(char);					// pass an input character to the line editor
 
 void flash(unsigned int, int);
 
@@ -466,8 +468,6 @@ void unexpected(byte);
 void missing(byte);
 //void oops(int);						// fatal exit
 
-extern byte errorcode1,errorcode2;
-extern numvar lastval;
 
 /////////////////////////////////////////////
 // bitlash-functions.c

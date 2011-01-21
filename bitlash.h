@@ -26,6 +26,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 ***/
+#include "WProgram.h"
 
 ///////////////////////
 //	Start Bitlash, and give it cycles to do stuff
@@ -38,7 +39,7 @@ void runBitlash(void);					// call this in loop(), frequently
 //	Pass a command to Bitlash for interpretation
 //
 void doCommand(char *);					// execute a command from your sketch
-
+void doCharacter(char);					// pass an input character to the line editor
 
 ///////////////////////
 //	Access to Numeric Variables
@@ -58,7 +59,6 @@ numvar incVar(unsigned char);				// increment variable.  id is [0..25] for [a..z
 //
 // Lookup key in EEPROM and return the location of its value
 int getValue(char *key);			// return location of macro value in EEPROM or -1
-
 
 ///////////////////////
 //	Add a user function to Bitlash

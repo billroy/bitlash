@@ -79,7 +79,6 @@ void loop(void) {
 		while (client.connected()) {
 			if (client.available()) {
 				char c = client.read();
-				//Serial.print(c,BYTE);
 				if ((c == '\r') || (c == '\n')) {
 					if (llen) {
 						linebuf[llen] = '\0';
