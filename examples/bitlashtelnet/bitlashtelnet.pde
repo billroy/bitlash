@@ -27,7 +27,6 @@
 //
 //////////////////////////////////////////////////////////////////
 //
-#include "WProgram.h"
 #include <SPI.h>
 #include <Ethernet.h>
 #include "bitlash.h"
@@ -37,10 +36,10 @@
 //	Ethernet configuration
 //	Adjust for local conditions
 //
-byte mac[] 		= { 'b','i','t','l','s','h' };
-byte ip[]  		= { 192, 168, 1, 27 };
-byte gateway[] 	= { 192, 168, 1, 1 };
-byte subnet[] 	= {255,255,255,0};
+byte mac[] 		= {'b','i','t','l','s','h'};
+byte ip[]  		= {192, 168, 1, 27};
+byte gateway[] 	= {192, 168, 1, 1};
+byte subnet[] 	= {255, 255, 255, 0};
 #define PORT 8080
 //
 ////////////////////////////////////////

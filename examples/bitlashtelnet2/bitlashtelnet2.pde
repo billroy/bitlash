@@ -27,7 +27,6 @@
 //
 //////////////////////////////////////////////////////////////////
 //
-#include "WProgram.h"
 #include <SPI.h>
 #include <Ethernet.h>
 #include "bitlash.h"
@@ -37,10 +36,10 @@
 //	Ethernet configuration
 //	Adjust for local conditions
 //
-byte mac[] 		= { 'b','i','t','l','s','h' };
-byte ip[]  		= { 192, 168, 1, 27 };
-byte gateway[] 	= { 192, 168, 1, 1 };
-byte subnet[] 	= {255,255,255,0};
+byte mac[] 		= {'b','i','t','l','s','h'};
+byte ip[]  		= {192, 168, 1, 27};
+byte gateway[] 	= {192, 168, 1, 1};
+byte subnet[] 	= {255, 255, 255, 0};
 #define PORT 8080
 //
 ////////////////////////////////////////
@@ -69,7 +68,10 @@ void loop(void) {
 	client = server.available();
 	if (client) {
 		while (client.connected()) {
-			if (client.available()) doCharacter((char) client.read());
+			if (client.available()) {
+				char c = (char) client.read();
+				if (c != '\n') doCharacter(c);	// prevent double prompts
+			}
 			else runBitlash();
 		}
 	}
