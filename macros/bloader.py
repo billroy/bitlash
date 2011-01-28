@@ -2,19 +2,23 @@
 #
 # usage: python bloader.py foobar.btl
 #
-import serial, fdpexpect, sys, time
+import serial, fdpexpect, sys, time, commands
 
-device = '/dev/tty.usbserial-A70063Md'
+device = None
+#device = '/dev/tty.usbserial-A7006wXd'
 baud = 57600
+
+if not device:
+	devicelist = commands.getoutput("ls /dev/tty.usbserial*")
+	#devicelist = commands.getoutput("ls /dev/ttyUSB*")		# this works on Linux
+	if devicelist[0] == '/': device = devicelist
+	if not device: 
+		print "Fatal: Can't find usb serial device."
+		sys.exit(0);
+
 serialport = serial.Serial(device, baud, timeout=0)
 c = fdpexpect.fdspawn(serialport.fd)
 c.logfile_read = sys.stdout
-
-# no arguments: interactive mode, ^] to exit (like telnet)
-if (len(sys.argv) < 2):
-	c.sendline("");
-	c.interact()
-	sys.exit()
 
 def waitprompt():
 	c.expect('\n> ')
@@ -22,25 +26,24 @@ def waitprompt():
 
 c.sendline('boot')
 waitprompt()
-c.sendline('print millis')
-waitprompt()
 
 #######################
 
-# open the passed-in file and send it line by line to Bitlash
-
-filename = sys.argv[1]
-
-f=open(filename)
-lines = f.readlines()
-for line in lines:
-	line = line.strip()
-	if (len(line) > 0) and (line[0] != '#'):
-		c.sendline(line.strip())
-		waitprompt()
+# if a filename argument was provided, open the file and send it line by line to Bitlash
+if (len(sys.argv) >= 2):
+	filename = sys.argv[1]
+	f=open(filename)
+	lines = f.readlines()
+	for line in lines:
+		line = line.strip()
+		if (len(line) > 0) and (line[0] != '#'):
+			c.sendline(line.strip())
+			waitprompt()
 
 ##########################
 
-c.sendline('print millis')
-waitprompt()
+# after the file is sent, or if there are no arguments: 
+# interactive mode, ^] to exit (like telnet)
+#c.sendline("");		# get a fresh prompt
+c.interact()
 c.close()
