@@ -103,7 +103,7 @@ numvar func_random(void) {
 unumvar ret;
 	req1arg();
 	deadbeef_seed = (deadbeef_seed << 7) ^ ((deadbeef_seed >> 25) + deadbeef_beef);
-	ret = ((numvar) deadbeef_seed & 0x7fff) % arg1;
+	ret = ((numvar) deadbeef_seed & 0x7fffffff) % arg1;
 	deadbeef_beef = (deadbeef_beef << 7) ^ ((deadbeef_beef >> 25) + 0xdeadbeef);
 	return ret;
 }
