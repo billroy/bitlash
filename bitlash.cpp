@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009, 2010 Bill Roy
+	Copyright (C) 2008-2011 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,6 @@
 #include "src/bitlash-functions.c"
 #include "src/bitlash-interpreter.c"
 #include "src/bitlash-parser.c"
-#include "src/bitlash-program.c"
 #include "src/bitlash-serial.c"
 #include "src/bitlash-taskmgr.c"
 #include "src/bitlash-api.c"

@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009, 2010 Bill Roy
+	Copyright (C) 2008-2011 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -58,12 +58,6 @@ void reboot(void) {
 }
 
 void skipbyte(char) {;}
-#if 0
-// helper for parsestring(), below
-void skipstring(void) {
-	parsestring(&skipbyte);
-}
-#endif
 
 // Skip a statement without executing it
 //

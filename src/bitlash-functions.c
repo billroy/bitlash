@@ -7,7 +7,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009, 2010 Bill Roy
+	Copyright (C) 2008-11 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -287,14 +287,12 @@ user_functab_entry user_functions[MAX_USER_FUNCTIONS];		// the table
 // by changing these definitions.
 //
 //
-// You can easily see the calc engine value size by typing "print -1:x" in Bitlash.
-//
 // Example:
-//		numvar foo_the_function(numvar arg) { return random(arg) * random(arg); }
-//		addBitlashFunction("foo", 1, &foo_the_function);
+//		numvar foo_the_function(void) { return random(arg(1)) * random(arg(2)); }
+//		addBitlashFunction("foo", &foo_the_function);
 //
 //		then in Bitlash you can say:
-//		> print foo(22)
+//		> print foo(22,33)
 //		148
 //
 void addBitlashFunction(char *name, bitlash_function func_ptr) {
@@ -348,10 +346,3 @@ bitlash_function fp;
 	releaseargblock();		// peel off the arguments
 	vpush(ret);				// and push the return value
 }
-
-
-
-
-
-
-
