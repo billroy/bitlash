@@ -2,7 +2,7 @@
 //
 //	spi.pde:	Bitlash SPI User Function Code
 //
-//	Copyright 2010 by Bill Roy
+//	Copyright 2010-2011 by Bill Roy
 //
 //	Permission is hereby granted, free of charge, to any person
 //	obtaining a copy of this software and associated documentation

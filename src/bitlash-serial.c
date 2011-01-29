@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009, 2010 Bill Roy
+	Copyright (C) 2008-2011 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -173,12 +173,6 @@ void speol(void) { spb(13); spb(10); }
 #define sp(x)
 #define speol(x)
 #endif
-
-
-
-
-
-
 
 
 /*

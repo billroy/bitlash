@@ -336,10 +336,6 @@ int start = STARTDB;
 void cmd_peep(void) {
 int i=0;
 
-#ifdef AVROPENDOUS_BUILD
-	usbMouseOff();
-#endif
-
 	while (i <= ENDEEPROM) {
 		if (!(i&63)) {speol(); printHex(i+0xe000); spb(':'); }
 		if (!(i&7)) spb(' ');
@@ -354,11 +350,6 @@ int i=0;
 		i++;
 	}
 	speol();
-
-#ifdef AVROPENDOUS_BUILD
-	usbMouseOn();
-#endif
-
 }
 
 

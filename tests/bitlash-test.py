@@ -5,10 +5,20 @@
 # also requires pexpect from http://pexpect.sourceforge.net/pexpect.html
 # see also http://www.noah.org/wiki/Pexpect
 
-import serial, fdpexpect, sys, time, os
+import serial, fdpexpect, sys, time, os, commands
 
-device = '/dev/tty.usbserial-A70063Md'
+device = None
+#device = '/dev/tty.usbserial-A7006wXd'
 baud = 57600
+
+if not device:
+	devicelist = commands.getoutput("ls /dev/tty.usbserial*")
+	#devicelist = commands.getoutput("ls /dev/ttyUSB*")		# this works on Linux
+	if devicelist[0] == '/': device = devicelist
+	if not device: 
+		print "Fatal: Can't find usb serial device."
+		sys.exit(0);
+
 serialport = serial.Serial(device, baud, timeout=0)
 c = fdpexpect.fdspawn(serialport.fd)
 c.logfile_read = sys.stdout
@@ -42,7 +52,7 @@ waitprompt()
 
 c.sendline('rm foo')
 waitprompt()
-c.sendline('foo:="switch arg(1) {print 0,;print 1,;print 2,;}"')
+c.sendline('function foo {switch arg(1) {print 0,;print 1,;print 2,;}}')
 c.expect('saved')
 waitprompt()
 c.sendline('i=-2; while i<4 foo(i++); print;')
