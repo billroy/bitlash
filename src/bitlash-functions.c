@@ -41,12 +41,11 @@ extern numvar *arg;
 #define arg3 arg[3]
 #define arg4 arg[4]
 #define arg5 arg[5]
-void req1arg(void)  { if (arg[0] < 1) missing(M_arg); }
-void req2args(void) { if (arg[0] < 2) missing(M_arg); }
-void req3args(void) { if (arg[0] < 3) missing(M_arg); }
-void req4args(void) { if (arg[0] < 4) missing(M_arg); }
-void req5args(void) { if (arg[0] < 5) missing(M_arg); }
 
+void reqargs(byte n) { if (arg[0] < n) missing(M_arg); }
+
+// this costs 500 bytes more!
+//#define reqargs(n) { if (arg[0] < n) missing(M_arg); }
 
 ///////////////////////
 // FUNCTION HANDLERS
@@ -64,7 +63,7 @@ void beep(unumvar pin, unumvar frequency, unumvar duration) {
 }
 #else
 numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
-	req3args();
+	reqargs(3);
 	unsigned long cycles = ((unsigned long) arg2 * (unsigned long) arg3) / 1000UL;
 	unsigned long halfperiod = (500000UL / (unsigned long) arg2) - 7UL;	// 7 fudge
 
@@ -101,7 +100,7 @@ static uint32_t deadbeef_seed = 0xbeefcafe;
 static uint32_t deadbeef_beef = 0xdeadbeef;
 numvar func_random(void) {
 unumvar ret;
-	req1arg();
+	reqargs(1);
 	deadbeef_seed = (deadbeef_seed << 7) ^ ((deadbeef_seed >> 25) + deadbeef_beef);
 	ret = ((numvar) deadbeef_seed & 0x7fffffff) % arg1;
 	deadbeef_beef = (deadbeef_beef << 7) ^ ((deadbeef_beef >> 25) + 0xdeadbeef);
@@ -132,41 +131,41 @@ void dbseed(uint32_t x) {
 //		>print inb(0x53)
 //		2
 //
-numvar func_inb(void) { req1arg(); return *(volatile byte *) arg1; }
-numvar func_outb(void) { req2args(); *(volatile byte *) arg1 = (byte) arg2; }
-numvar func_abs(void) { req1arg(); return arg1 < 0 ? -arg1 : arg1; }
+numvar func_inb(void) { reqargs(1); return *(volatile byte *) arg1; }
+numvar func_outb(void) { reqargs(2); *(volatile byte *) arg1 = (byte) arg2; }
+numvar func_abs(void) { reqargs(1); return arg1 < 0 ? -arg1 : arg1; }
 numvar func_sign(void) {
-	req1arg();
+	reqargs(1);
 	if (arg1 < 0) return -1;
 	if (arg1 > 0) return 1;
 	return 0;
 }
-numvar func_min(void) { req2args(); return (arg1 < arg2) ? arg1 : arg2; }
-numvar func_max() { req2args(); return (arg1 > arg2) ? arg1 : arg2; }
+numvar func_min(void) { reqargs(2); return (arg1 < arg2) ? arg1 : arg2; }
+numvar func_max() { reqargs(2); return (arg1 > arg2) ? arg1 : arg2; }
 numvar func_constrain(void) {
-	req3args();
+	reqargs(3);
 	if (arg1 < arg2) return arg2;
 	if (arg1 > arg3) return arg3;
 	return arg1;
 }
-numvar func_ar(void) { req1arg(); return analogRead(arg1); }
-numvar func_aw(void) { req2args(); analogWrite(arg1, arg2); return 0; }
-numvar func_dr(void) { req1arg(); return digitalRead(arg1); }
-numvar func_dw(void) { req2args(); digitalWrite(arg1, arg2); return 0; }
-numvar func_er(void) { req1arg(); return eeread(arg1); }
-numvar func_ew(void) { req2args(); eewrite(arg1, arg2); return 0; }
-numvar func_pinmode(void) { req2args(); pinMode(arg1, arg2); return 0; }
-numvar func_pulsein(void) { req3args(); return pulseIn(arg1, arg2, arg3); }
-numvar func_snooze(void) { req1arg(); snooze(arg1); return 0; }
-numvar func_delay(void) { req1arg(); delay(arg1); return 0; }
-numvar func_setBaud(void) { req2args(); setBaud(arg1, arg2); return 0; }
-//numvar func_map(void) { req5args; return map(arg1, arg2, arg3, arg4, arg5); }
-//numvar func_shiftout(void) { req4args; shiftOut(arg1, arg2, arg3, arg4); return 0; }
+numvar func_ar(void) { reqargs(1); return analogRead(arg1); }
+numvar func_aw(void) { reqargs(2); analogWrite(arg1, arg2); return 0; }
+numvar func_dr(void) { reqargs(1); return digitalRead(arg1); }
+numvar func_dw(void) { reqargs(2); digitalWrite(arg1, arg2); return 0; }
+numvar func_er(void) { reqargs(1); return eeread(arg1); }
+numvar func_ew(void) { reqargs(2); eewrite(arg1, arg2); return 0; }
+numvar func_pinmode(void) { reqargs(2); pinMode(arg1, arg2); return 0; }
+numvar func_pulsein(void) { reqargs(3); return pulseIn(arg1, arg2, arg3); }
+numvar func_snooze(void) { reqargs(1); snooze(arg1); return 0; }
+numvar func_delay(void) { reqargs(1); delay(arg1); return 0; }
+numvar func_setBaud(void) { reqargs(2); setBaud(arg1, arg2); return 0; }
+//numvar func_map(void) { reqargs(5); return map(arg1, arg2, arg3, arg4, arg5); }
+//numvar func_shiftout(void) { reqargs(4); shiftOut(arg1, arg2, arg3, arg4); return 0; }
 
-numvar func_bitclear(void) { req2args(); return arg1 & ~((numvar)1 << arg2); }
-numvar func_bitset(void) { req2args(); return arg1 | ((numvar)1 << arg2); }
-numvar func_bitread(void) { req2args(); return (arg1 & ((numvar)1 << arg2)) != 0; }
-numvar func_bitwrite(void) { req3args(); return arg3 ? func_bitset() : func_bitclear(); }
+numvar func_bitclear(void) { reqargs(2); return arg1 & ~((numvar)1 << arg2); }
+numvar func_bitset(void) { reqargs(2); return arg1 | ((numvar)1 << arg2); }
+numvar func_bitread(void) { reqargs(2); return (arg1 & ((numvar)1 << arg2)) != 0; }
+numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitclear(); }
 
 
 //////////

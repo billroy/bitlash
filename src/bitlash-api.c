@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009, 2010 Bill Roy
+	Copyright (C) 2008-2011 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,6 @@ jmp_buf env;
 //
 void doCommand(char *cmd) {
 
-	// initialize error code storage
-	errorcode1 = errorcode2 = 0;
-
 	// Exceptions come here via longjmp
 	switch(setjmp(env)) {
 		case 0: break;
@@ -50,23 +47,6 @@ void doCommand(char *cmd) {
 			resetOutput();
 			return;
 #endif
-
-#ifdef TINY85
-			for (;;) {
-				// Error: SOS
-				flash(1,1000);
-				delay(500);
-				flash(3,100);
-				flash(3,300);
-				flash(3,100);
-				delay(500);
-				flash(errorcode1, 200);
-				delay(500);
-				flash(errorcode2, 200);			
-				delay(200);
-			}
-#endif
-
 		}
 	}
 
@@ -82,26 +62,6 @@ void doCommand(char *cmd) {
 }
 
 
-#ifdef TINY85
-void flash(unsigned int count, int ontime) {
-	delay(ontime);
-	while (count--) {
-		digitalWrite(1,1);
-		delay(ontime);
-		digitalWrite(1,0);
-		delay(ontime);
-	}
-}
-#endif
-
-
-#ifdef TINY85
-void initBitlash(void) {
-	// force our eeprom program to be included and run
-	doCommand(kludge((int)startup));
-}
-#else
-
 void initBitlash(unsigned long baud) {
 	beginSerial(baud);
 	displayBanner();
@@ -112,30 +72,4 @@ void initBitlash(unsigned long baud) {
 
 	initlbuf();
 }
-#endif
 
-
-
-#if 0
-//
-// Here is sample code a simple bitlash integration.
-//
-void setup(void) {
-
-	// initialize bitlash and set primary serial port baud
-	// print startup banner and run the startup macro
-	initBitlash(57600);
-
-	// you can execute commands here to set up initial state
-	// bear in mind these execute after the startup macro
-	// doCommand("print(1+1)");
-
-}
-
-void loop(void) {
-	runBitlash();
-}
-#endif
-
-
-// end bitlash.c

@@ -28,15 +28,9 @@
 ***/
 #include "bitlash.h"
 
-// storage for error codes
-byte errorcode1,errorcode2;		// error status errcode1=0 === success
-
 
 void fatal2(char msg1, char msg2) { 
 
-	errorcode1 = msg1;
-	errorcode2 = msg2;
-	
 #ifdef SOFTWARE_SERIAL_TX
 	resetOutput();
 #endif

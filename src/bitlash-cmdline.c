@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009, 2010 Bill Roy
+	Copyright (C) 2008-2011 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -173,6 +173,7 @@ void doCharacter(char c) {
 	}
 }
 
+
 /////////////////////////////
 //
 //	runBitlash
@@ -196,11 +197,12 @@ prog_char banner[] PROGMEM = {
 // Ruler:     1                   2         3         4         5         6         7         8         9        10
 //   12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 #ifdef ARDUINO_BUILD
-	"print \"bitlash here! v1.2g (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\""
+	"print \"bitlash here! v2.0 RC1 (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\""
 #else
-	"print \"bitlash here! v1.2g (c) 2011 Bill Roy\""
+	"print \"bitlash here! v2.0 RC1 (c) 2011 Bill Roy\""
 #endif
 };
+
 
 void displayBanner(void) {
 	// print the banner and copyright notice
@@ -208,8 +210,3 @@ void displayBanner(void) {
 	strncpy_P(lbuf, banner, STRVALLEN);
 	doCommand(lbuf);
 }
-
-
-
-
-

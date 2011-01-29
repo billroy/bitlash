@@ -44,6 +44,8 @@ if (len(sys.argv) >= 2):
 
 # after the file is sent, or if there are no arguments: 
 # interactive mode, ^] to exit (like telnet)
-#c.sendline("");		# get a fresh prompt
-c.interact()
+try:
+	c.interact()
+except:
+	pass
 c.close()
