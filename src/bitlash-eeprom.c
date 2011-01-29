@@ -215,6 +215,7 @@ void writeMacro(char *id) {
 }
 
 
+#if 0
 // Write a macro definition to the eeprom
 // We come here with sym == s_define (the := in id:="value")
 // The global idbuf has the id parsed earlier
@@ -231,6 +232,7 @@ char id[IDLEN+1];
 
 	getsym();						// prefetch next sym past closing quote
 }
+#endif
 
 
 // Parse and store a function definition

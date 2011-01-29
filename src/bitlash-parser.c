@@ -648,19 +648,24 @@ byte thesym = sym;
 
 		// Macro-returning-value used as a factor
 		case s_macro:				// macro returning value
+#if 0
 			if (sym == s_define) {
 				defineMacro();
 				vpush(0);
 			}
-			else domacrocall(thesymval);	// call the macro; its value is on the stack
+			else 
+#endif
+			domacrocall(thesymval);	// call the macro; its value is on the stack
 			break;
 
+#if 0
 		// undefined symbol: define macro
 		case s_undef:
 			if (sym != s_define) unexpected(M_id);
 			defineMacro();
 			vpush(0);
 			break;
+#endif
 
 		case s_apin:					// analog pin reference like a0
 			if (sym == s_equals) { 		// digitalWrite or analogWrite
