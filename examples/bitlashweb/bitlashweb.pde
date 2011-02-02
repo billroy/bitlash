@@ -70,6 +70,13 @@ void sendstring(char *ptr) {
 byte llen;
 char linebuf[LBUFLEN];
 
+byte unlocked;
+byte badpasswordcount;
+
+#define IDBUFLEN 13
+char pagemacro[IDBUFLEN];
+
+
 byte isGET(char *line) {
 	return !strncmp(line, "GET /", 5);
 }
@@ -79,12 +86,6 @@ void handleError(void) {
 	if (getValue(ERROR_MACRO) >= 0) doCommand(ERROR_MACRO);
 	else sendstring("Page not found.\n");
 }
-
-byte unlocked;
-byte badpasswordcount;
-
-#define IDBUFLEN 13
-char pagemacro[IDBUFLEN];
 
 
 void handleInputLine(char *line) {
@@ -101,10 +102,8 @@ void handleInputLine(char *line) {
 		if (strlen(pagemacro) == 1) strcpy(pagemacro, INDEX_MACRO);	// map / to /index thus _index
 		if (getValue(pagemacro) >= 0) {
 			sendstring("HTTP/1.1 200 OK\r\n");
-			sendstring("Content-Type: text/html\r\n\r\n");
-			sendstring("Output for page: ");
-			sendstring(pagemacro);
-			sendstring("\r\n");
+			//sendstring("Content-Type: text/html\r\n\r\n");
+			sendstring("Content-Type: text/plain\r\n\r\n");
 			doCommand(pagemacro);
 		}
 		else handleError();
@@ -115,16 +114,14 @@ void handleInputLine(char *line) {
 	// not a web command: if we're locked, check for the passphrase
 	else if (!unlocked) {
 		if (!strcmp(line, PASSPHRASE)) {
-			sendstring("Unlocked.");
+			sendstring("Unlocked.\r\n");
 			unlocked = 1;
 			prompt();
 		}
+		else if ((strlen(line) > 0) && (++badpasswordcount > BAD_PASSWORD_MAX)) client.stop();
 		else {
-			if (++badpasswordcount > BAD_PASSWORD_MAX) client.stop();
-			else {
-				delay(1000);
-				sendstring("Password: ");
-			}
+			delay(1000 * badpasswordcount);
+			sendstring("Password: ");
 		}
 	}
 	
