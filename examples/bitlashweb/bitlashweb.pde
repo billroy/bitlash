@@ -47,10 +47,12 @@ byte subnet[] 	= {255, 255, 255, 0};
 
 #define INDEX_MACRO "_index"
 #define ERROR_MACRO "_error"
-#define BAD_PASSWORD_MAX 4
+#define BAD_PASSWORD_MAX 3
+
+#define CONTENT_TYPE "Content-Type: text/plain\r\n\r\n"		// enable this for plaintext output
+//#define CONTENT_TYPE "Content-Type: text/html\r\n\r\n"	// enable this for HTML output
 
 extern void prompt(void);
-
 
 Server server = Server(PORT);
 Client client(MAX_SOCK_NUM);		// declare an inactive client
@@ -81,10 +83,16 @@ byte isGET(char *line) {
 	return !strncmp(line, "GET /", 5);
 }
 
+byte isUnsupportedHTTP(char *line) {
+	return !strncmp(line, "PUT /", 5) ||
+		!strncmp(line, "POST /", 6) ||
+		!strncmp(line, "HEAD /", 6);
+}
+
 void handleError(void) {
 	sendstring("HTTP/1.1 404 OK \r\n\r\n");
 	if (getValue(ERROR_MACRO) >= 0) doCommand(ERROR_MACRO);
-	else sendstring("Page not found.\n");
+	else sendstring("Page not found.\r\n");
 }
 
 
@@ -102,14 +110,14 @@ void handleInputLine(char *line) {
 		if (strlen(pagemacro) == 1) strcpy(pagemacro, INDEX_MACRO);	// map / to /index thus _index
 		if (getValue(pagemacro) >= 0) {
 			sendstring("HTTP/1.1 200 OK\r\n");
-			//sendstring("Content-Type: text/html\r\n\r\n");
-			sendstring("Content-Type: text/plain\r\n\r\n");
+			sendstring(CONTENT_TYPE);			// configure this above
 			doCommand(pagemacro);
 		}
 		else handleError();
 		delay(1);
 		client.stop();
 	}
+	else if (isUnsupportedHTTP(line)) client.stop();
 
 	// not a web command: if we're locked, check for the passphrase
 	else if (!unlocked) {
