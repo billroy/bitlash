@@ -1,0 +1,15 @@
+
+rm *
+
+function startup { bpm(120); }
+
+function go { run plink,b*4; }
+
+function plink { play(60+random(12), 64+random(60)) }
+
+function noteon	{print 0x90:y,; print arg(1):y,; print arg(2):y,;}
+function noteoff {print 0x80:y,; print arg(1):y,; print arg(2):y,;}
+function cc {print 0xb0:y,; print arg(1):y,; print arg(2):y,;}
+function play {noteon(arg(1),arg(2)); delay(b); noteoff(arg(1),arg(2));}
+
+function bpm {b=60000/arg(1)/4}
