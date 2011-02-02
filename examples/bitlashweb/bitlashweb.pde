@@ -31,6 +31,12 @@
 #include <Ethernet.h>
 #include "bitlash.h"
 
+// Command line buffer for alternate command input stream
+#define LBUFLEN 140
+byte llen;
+char linebuf[LBUFLEN];
+
+
 ////////////////////////////////////////
 //
 //	Ethernet configuration
@@ -52,6 +58,67 @@ byte subnet[] 	= {255, 255, 255, 0};
 #define CONTENT_TYPE "Content-Type: text/plain\r\n\r\n"		// enable this for plaintext output
 //#define CONTENT_TYPE "Content-Type: text/html\r\n\r\n"	// enable this for HTML output
 
+/////////////////////////////////////////////
+// Static HTML content and template engine
+//
+const prog_char *index_url PROGMEM = "index";
+const prog_char *default_index_page PROGMEM = "Uptime: [print millis]ms";
+
+const prog_char *bitlash_url PROGMEM = "bitlash";
+const prog_char *bitlash_page PROGMEM = "http://bitlash.net";
+
+typedef struct {
+	const prog_char *url;
+	const prog_char *pagetext;
+} static_page;
+
+static_page static_pages[] = {
+	{index_url, default_index_page},
+	{bitlash_url, bitlash_page},
+	{0, 0}
+};
+
+int findStaticPage(char *pagename) {
+int i=0;
+int name;
+	for (;;) {
+		name = pgm_read_word(&static_pages[i].url);
+		if (!name) break;
+		if (!strcmp_P((const char *) pagename, (PGM_P) name)) return i;
+		i++;
+	}
+	return(-1);
+}
+
+
+void sendStaticPage(char *pagename) {
+
+	int pageindex = findStaticPage(pagename);
+	if (pageindex < 0) return;
+
+	PGM_P addr = (PGM_P) pgm_read_word(&static_pages[pageindex].pagetext);
+	for (;;) {
+		byte b = pgm_read_byte(addr++);
+		if (b == '\0') break;
+		else if (b == '[') {
+			char *optr = linebuf;
+			while ((b != ']') && ((optr-linebuf) < LBUFLEN)) {
+				b = pgm_read_byte(addr++);
+				if (b == ']') {
+					*optr = '\0';
+					doCommand(linebuf);
+				}
+				else *optr++ = b;
+			}
+		}
+		else serialHandler(b);
+	}
+}
+
+
+/////////////////////////////////////////////
+
+
 extern void prompt(void);
 
 Server server = Server(PORT);
@@ -67,16 +134,12 @@ void sendstring(char *ptr) {
 }
 
 
-// Command line buffer for alternate command input stream
-#define LBUFLEN 140
-byte llen;
-char linebuf[LBUFLEN];
 
 byte unlocked;
 byte badpasswordcount;
 
 #define IDBUFLEN 13
-char pagemacro[IDBUFLEN];
+char pagename[IDBUFLEN];
 
 
 byte isGET(char *line) {
@@ -101,18 +164,19 @@ void handleInputLine(char *line) {
 	// check for web GET command: GET /macro HTTP/1.1
 	if (isGET(line)) {
 		char *iptr = line+5;	// point to first letter of macro name
-		char *optr = pagemacro;
+		char *optr = pagename;
 		*optr++ = '_';			// given "index" we search for macro "_index"
-		while (*iptr && (*iptr != ' ') && ((optr - pagemacro) < (IDBUFLEN-1))) {
+		while (*iptr && (*iptr != ' ') && ((optr - pagename) < (IDBUFLEN-1))) {
 			*optr++ = *iptr++;
 		}
 		*optr = '\0';
-		if (strlen(pagemacro) == 1) strcpy(pagemacro, INDEX_MACRO);	// map / to /index thus _index
-		if (getValue(pagemacro) >= 0) {
+		if (strlen(pagename) == 1) strcpy(pagename, INDEX_MACRO);	// map / to /index thus _index
+		if (getValue(pagename) >= 0) {
 			sendstring("HTTP/1.1 200 OK\r\n");
 			sendstring(CONTENT_TYPE);			// configure this above
-			doCommand(pagemacro);
+			doCommand(pagename);
 		}
+		else if (findStaticPage(pagename) >= 0) sendStaticPage(pagename);		
 		else handleError();
 		delay(1);
 		client.stop();
@@ -128,7 +192,7 @@ void handleInputLine(char *line) {
 		}
 		else if ((strlen(line) > 0) && (++badpasswordcount > BAD_PASSWORD_MAX)) client.stop();
 		else {
-			delay(1000 * badpasswordcount);
+			if (badpasswordcount) delay(1000 * badpasswordcount);
 			sendstring("Password: ");
 		}
 	}
