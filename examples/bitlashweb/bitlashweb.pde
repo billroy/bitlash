@@ -36,7 +36,6 @@
 byte llen;
 char linebuf[LBUFLEN];
 
-
 ////////////////////////////////////////
 //
 //	Ethernet configuration
@@ -53,19 +52,27 @@ byte subnet[] 	= {255, 255, 255, 0};
 
 #define INDEX_MACRO "_index"
 #define ERROR_MACRO "_error"
+#define ERROR_PAGE  "error"
 #define BAD_PASSWORD_MAX 3
 
-#define CONTENT_TYPE "Content-Type: text/plain\r\n\r\n"		// enable this for plaintext output
-//#define CONTENT_TYPE "Content-Type: text/html\r\n\r\n"	// enable this for HTML output
+#define CONTENT_TYPE_PLAIN "Content-Type: text/plain\r\n\r\n"	// enable this for plaintext output
+#define CONTENT_TYPE_HTML "Content-Type: text/html\r\n\r\n"		// enable this for HTML output
+#define CONTENT_TYPE CONTENT_TYPE_PLAIN
+
+#define HTTP_200_OK "HTTP/1.1 200 OK\r\n"
+#define HTTP_404_ERROR "HTTP/1.1 404 OK\r\n"
 
 /////////////////////////////////////////////
 // Static HTML content and template engine
 //
-const prog_char *index_url PROGMEM = "index";
-const prog_char *default_index_page PROGMEM = "Uptime: [print millis]ms";
+const prog_char index_url[] PROGMEM = { "index\0" };
+const prog_char default_index_page[] PROGMEM = { "Uptime: [print millis,]ms\0" };
 
-const prog_char *bitlash_url PROGMEM = "bitlash";
-const prog_char *bitlash_page PROGMEM = "http://bitlash.net";
+const prog_char error_url[] PROGMEM = { "error\0" };
+const prog_char error_page[] PROGMEM = { "Error 404: Not found.\0" };
+
+const prog_char bitlash_url[] PROGMEM = { "bitlash\0" };
+const prog_char bitlash_page[] PROGMEM = { "http://bitlash.net\0" };
 
 typedef struct {
 	const prog_char *url;
@@ -73,18 +80,19 @@ typedef struct {
 } static_page;
 
 static_page static_pages[] = {
-	{index_url, default_index_page},
-	{bitlash_url, bitlash_page},
-	{0, 0}
+	{ index_url, default_index_page },
+	{ error_url, error_page },
+	{ bitlash_url, bitlash_page },
+	{ 0, 0 }	// marks end, must be last
 };
 
 int findStaticPage(char *pagename) {
 int i=0;
-int name;
+const prog_char *name;
 	for (;;) {
-		name = pgm_read_word(&static_pages[i].url);
+		name = static_pages[i].url;
 		if (!name) break;
-		if (!strcmp_P((const char *) pagename, (PGM_P) name)) return i;
+		if (!strcmp_P((const char *) pagename, name)) return i;
 		i++;
 	}
 	return(-1);
@@ -96,7 +104,7 @@ void sendStaticPage(char *pagename) {
 	int pageindex = findStaticPage(pagename);
 	if (pageindex < 0) return;
 
-	PGM_P addr = (PGM_P) pgm_read_word(&static_pages[pageindex].pagetext);
+	const prog_char *addr = static_pages[pageindex].pagetext;
 	for (;;) {
 		byte b = pgm_read_byte(addr++);
 		if (b == '\0') break;
@@ -115,7 +123,7 @@ void sendStaticPage(char *pagename) {
 	}
 }
 
-
+//
 /////////////////////////////////////////////
 
 
@@ -132,8 +140,6 @@ void serialHandler(byte b) {
 void sendstring(char *ptr) {
 	while (*ptr) serialHandler(*ptr++);
 }
-
-
 
 byte unlocked;
 byte badpasswordcount;
@@ -152,10 +158,36 @@ byte isUnsupportedHTTP(char *line) {
 		!strncmp(line, "HEAD /", 6);
 }
 
-void handleError(void) {
-	sendstring("HTTP/1.1 404 OK \r\n\r\n");
-	if (getValue(ERROR_MACRO) >= 0) doCommand(ERROR_MACRO);
-	else sendstring("Page not found.\r\n");
+
+void servePage(char *pagename) {
+	Serial.print("Web request: ");
+	Serial.print(&pagename[1]);
+	Serial.print(" ");
+	Serial.println(millis());
+
+	if (getValue(pagename) >= 0) {		// _macro
+		sendstring(HTTP_200_OK);
+		sendstring(CONTENT_TYPE);			// configure this above
+		doCommand(pagename);
+	}
+	else if (findStaticPage(&pagename[1]) >= 0) {	// static page
+		sendstring(HTTP_200_OK);
+		sendstring(CONTENT_TYPE);			// configure this above
+		sendStaticPage(&pagename[1]);
+	}
+	else if (getValue(ERROR_MACRO) >= 0) {	// _error macro
+		sendstring(HTTP_404_ERROR);
+		sendstring(CONTENT_TYPE);
+		doCommand(ERROR_MACRO);
+	}
+	else if (findStaticPage(ERROR_PAGE) >= 0) {	// error page
+		sendstring(HTTP_404_ERROR);
+		sendstring(CONTENT_TYPE);
+		sendStaticPage(ERROR_PAGE);
+	}
+	else sendstring("Error: not found.\r\n");	// shouldn't happen!
+	delay(1);
+	client.stop();
 }
 
 
@@ -171,15 +203,7 @@ void handleInputLine(char *line) {
 		}
 		*optr = '\0';
 		if (strlen(pagename) == 1) strcpy(pagename, INDEX_MACRO);	// map / to /index thus _index
-		if (getValue(pagename) >= 0) {
-			sendstring("HTTP/1.1 200 OK\r\n");
-			sendstring(CONTENT_TYPE);			// configure this above
-			doCommand(pagename);
-		}
-		else if (findStaticPage(pagename) >= 0) sendStaticPage(pagename);		
-		else handleError();
-		delay(1);
-		client.stop();
+		servePage(pagename);
 	}
 	else if (isUnsupportedHTTP(line)) client.stop();
 
