@@ -124,7 +124,7 @@ byte chartype(byte c) {
 	if (c > 127) return 4;	// illegal starting char but allowed in strconst
 	byte entry = pgm_read_byte(chartypes + (c/2));
 	if (c&1) return entry & 0xf;
-	else return (entry >> 4) & 0xf;
+	else return (entry >> 4);		// & 0xf;
 }
 
 #if 0

@@ -6,7 +6,7 @@
 # d: dropoffs, bit vector, floors with passengers in elevator waiting to exit
 
 # clear the eeprom
-rm *
+#rm *
 
 # run the sim
 function go {run elevator,500; run demand,10000;}
