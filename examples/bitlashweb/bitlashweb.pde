@@ -32,7 +32,7 @@
 #include "bitlash.h"
 
 // Command line buffer for alternate command input stream
-#define LBUFLEN 140
+#define LBUFLEN 80
 byte llen;
 char linebuf[LBUFLEN];
 
@@ -60,7 +60,7 @@ byte subnet[] 	= {255, 255, 255, 0};
 #define CONTENT_TYPE CONTENT_TYPE_PLAIN
 
 #define HTTP_200_OK "HTTP/1.1 200 OK\r\n"
-#define HTTP_404_ERROR "HTTP/1.1 404 OK\r\n"
+#define HTTP_404_NOTFOUND "HTTP/1.1 404 Not Found\r\n"
 
 /////////////////////////////////////////////
 // Static HTML content and template engine
@@ -160,7 +160,7 @@ byte isUnsupportedHTTP(char *line) {
 
 
 void servePage(char *pagename) {
-	Serial.print("Web request: ");
+	Serial.print("\r\nWeb request: ");
 	Serial.print(&pagename[1]);
 	Serial.print(" ");
 	Serial.println(millis());
@@ -175,17 +175,13 @@ void servePage(char *pagename) {
 		sendstring(CONTENT_TYPE);			// configure this above
 		sendStaticPage(&pagename[1]);
 	}
-	else if (getValue(ERROR_MACRO) >= 0) {	// _error macro
-		sendstring(HTTP_404_ERROR);
+	else {
+		sendstring(HTTP_404_NOTFOUND);
 		sendstring(CONTENT_TYPE);
-		doCommand(ERROR_MACRO);
+		if (getValue(ERROR_MACRO) >= 0) doCommand(ERROR_MACRO);
+		else if (findStaticPage(ERROR_PAGE) >= 0) sendStaticPage(ERROR_PAGE);
+		else sendstring("Error: not found.\r\n");	// shouldn't happen!
 	}
-	else if (findStaticPage(ERROR_PAGE) >= 0) {	// error page
-		sendstring(HTTP_404_ERROR);
-		sendstring(CONTENT_TYPE);
-		sendStaticPage(ERROR_PAGE);
-	}
-	else sendstring("Error: not found.\r\n");	// shouldn't happen!
 	delay(1);
 	client.stop();
 }
