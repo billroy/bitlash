@@ -1,5 +1,39 @@
 Bitlash Release Notes
 
+2.0 RC1
+
+- Syntax overhaul:
+	if (expression) { stmt;...;stmt;} else {stmt;...;stmt;}
+	while (expression) { stmt; }
+	switch (expression) { stmt0; stmt1; ... stmtN; }
+	function hello {print "Hello, world!";}
+
+- Macros are now Functions, they take arguments and can return a value
+	arg(0) is the count of args you got
+	arg(1..n) are the args
+	return expression; to return a value; zero is assumed
+	User Functions in C use this same scheme now
+
+- Function (/macro) definition syntax has changed:
+	function printmyargs {i=0; while ++i<arg(0) {print arg(i);}}
+
+- New Functions
+	bc: bitclear
+	bs: bitset
+	br: bitread
+	bw: bitwrite
+
+- New API calls
+	setOutputHandler() api allows capture of serial output
+	doCharacter() api allows char-at-a-time input to Bitlash
+
+- New Examples
+	- BitChi web and telnet server
+
+- Small Beans
+	Input buffer is 140 characters, up from 80.  twitter is the new Hollerith
+	Binary constants of the form 0b01010101 are supported
+
 1.1
 - User Functions (addBitlashFunction)
 

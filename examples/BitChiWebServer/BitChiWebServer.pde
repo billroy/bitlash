@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-//	bitchi.pde: Bitlash Interactive Telnet Console and HTML Interactor
+//	BitChi WebServer.pde: Bitlash Interactive Telnet Console and HTML Interactor
 //
 //	Copyright 2011 by Bill Roy
 //
@@ -27,6 +27,93 @@
 //
 //////////////////////////////////////////////////////////////////
 //
+
+/*****
+
+BitChi is a Bitlash-powered Ethernet web server and telnet console for Arduino.
+
+It works with the official Arduino Ethernet shield and compatible Arduino boards.
+
+To get started:
+	1. Adjust the IP address and port in the code to be suitable for your network
+	2. Upload this sketch to your Arduino
+		File -> Examples -> Bitlash -> BitChiWebServer
+		File -> Upload
+	3. For debugging, connect via your favorite Serial Monitor at 57600
+		You can watch the web traffic and issue commands
+	4. Navigate to the configured IP/port in your browser
+		The default settings in the code below:
+			http://192.168.1.27:8080
+		If you see the "BitChi here!" banner you've connected
+		You'll see the hit logged on the serial monitor
+	5. For remote maintenance, telnet to the same address/port
+		and provide the password
+		The default password is "open sesame"; please change it below.
+	6. Read the rest and go make pages
+
+There are two ways to define a BitChi page:
+
+	1. You can compile in pages by modifying the builtin_page_list below
+		Built-in pages can contain bitlash code in [ ]
+		BitChi executes the code in [ ] while rendering the page output;
+		any printed output the code generates will show up on the page.
+
+		For example: "The uptime is: [print millis]ms" (see the "index" example below)
+
+	2. Any Bitlash function whose name begins with the underscore character '_' 
+		is considered a valid URL mount point and its output is sent as a response 
+		when that URL is invoked.
+
+		For example: the Bitlash function _uptime is called when the url /uptime is requested
+			function _uptime {print "Uptime is ",millis,"ms";}
+
+			From another terminal window we can test what the browser might see:
+			$ curl http://192.168.1.27:8080/uptime
+			Uptime is 123324 ms
+			$
+
+		For example: send the value of analog input 3 when ".../volt3" is requested:
+			function _volt3 {print a3;}
+
+Special pages _index and _error
+
+	If you define a function named _index it will be rendered when the root url
+		is requested.  Think of it as index.html
+
+	If you define a function named _error it will be rendered when an error occurs,
+		in place of the built-in error page
+
+	Both of these uses depend on an additional feature: a page handler defined
+		as a Bitlash function takes priority over a built-in page.
+		You can use this to mask or override built-in pages.
+
+Telnet access
+
+The password-protected telnet console operating on the same IP/port as the web server
+provides full access to Bitlash, so you can log in with telnet or nc and do bitlash stuff,
+including of course defining a new _function to expose a new web page.
+
+	...$ telnet 192.168.1.27 8080
+	Trying 192.168.1.27...
+	Connected to 192.168.1.27.
+	Escape character is '^]'.
+	open sesame
+	BitChi server here! v0.1
+	> 
+
+The default telnet password is "open sesame"; please change it below or risk
+becoming a security statistic.
+
+Please note that the server is not smart enough to process web requests while a 
+telnet session is open.  (Perhaps this is a feature.)  In any event, you will find 
+it is necessary to quit your telnet connection to test your new page in the browser.
+
+To log out, you may use the "logout" command, or the usual ^] followed by quit if you're
+using old-school telnet.  If you're using nc, ^C will quit.
+
+
+*****/
+
 #include <SPI.h>
 #include <Ethernet.h>
 #include "bitlash.h"
@@ -53,6 +140,7 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 ////////////////////////////////////////
 
+#define BANNER "BitChi server here! v0.1\r\n"
 #define INDEX_MACRO "_index"
 #define ERROR_MACRO "_error"
 #define ERROR_PAGE  "error"
@@ -64,35 +152,56 @@ byte subnet[] 	= {255, 255, 255, 0};
 #define HTTP_200_OK "HTTP/1.1 200 OK\r\n"
 #define HTTP_404_NOTFOUND "HTTP/1.1 404 Not Found\r\n"
 
-/////////////////////////////////////////////
-// Static HTML content and template engine
-//
-const prog_char index_url[] PROGMEM = { "index\0" };
-const prog_char default_index_page[] PROGMEM = { "Uptime: [print millis,]ms\0" };
-
-const prog_char error_url[] PROGMEM = { "error\0" };
-const prog_char error_page[] PROGMEM = { "Error 404: Not found.\0" };
-
-const prog_char bitlash_url[] PROGMEM = { "bitlash\0" };
-const prog_char bitlash_page[] PROGMEM = { "http://bitlash.net\0" };
-
 typedef struct {
 	const prog_char *url;
 	const prog_char *pagetext;
-} static_page;
+} builtin_page;
 
-static_page static_pages[] = {
+
+/////////////////////////////////////////////
+//
+// 	Built-in HTML content: Add your new built-in pages here:
+//
+//	Define a URL mount point and the text of your page like the ones already there
+//	Add them to the builtin_pages table just like the ones already there
+//
+//	Each string needs \0 at the end.  
+//	If you leave one off, you are guaranteed an interesting debugging experience
+//
+//	Lines will run together in text/plain mode without \r\n,
+//	so mind your \r\n line endings.
+//
+
+// This block generates the built-in index page that is called on /
+const prog_char index_url[] PROGMEM = { "index\0" };
+const prog_char default_index_page[] PROGMEM = { 
+	BANNER
+	"Uptime: [print millis,]ms\r\n"
+	"Powered by Bitlash.\r\n\0"
+};
+
+// This block generates the built-in error page
+const prog_char error_url[] PROGMEM = { "error\0" };
+const prog_char error_page[] PROGMEM = { "Not found.\r\n" };
+
+// Add new pages here, just like these
+builtin_page builtin_page_list[] = {
 	{ index_url, default_index_page },
 	{ error_url, error_page },
-	{ bitlash_url, bitlash_page },
 	{ 0, 0 }	// marks end, must be last
 };
+
+//
+//	End of Static HTML content
+//
+/////////////////////////////////////////////
+
 
 int findStaticPage(char *pagename) {
 int i=0;
 const prog_char *name;
 	for (;;) {
-		name = static_pages[i].url;
+		name = builtin_page_list[i].url;
 		if (!name) break;
 		if (!strcmp_P((const char *) pagename, name)) return i;
 		i++;
@@ -106,7 +215,7 @@ void sendStaticPage(char *pagename) {
 	int pageindex = findStaticPage(pagename);
 	if (pageindex < 0) return;
 
-	const prog_char *addr = static_pages[pageindex].pagetext;
+	const prog_char *addr = builtin_page_list[pageindex].pagetext;
 	for (;;) {
 		byte b = pgm_read_byte(addr++);
 		if (b == '\0') break;
@@ -133,6 +242,10 @@ extern void prompt(void);
 
 Server server = Server(PORT);
 Client client(MAX_SOCK_NUM);		// declare an inactive client
+
+numvar func_logout(void) {
+	client.stop();
+}
 
 void serialHandler(byte b) {
 	Serial.print(b, BYTE);
@@ -208,13 +321,13 @@ void handleInputLine(char *line) {
 	// not a web command: if we're locked, check for the passphrase
 	else if (!unlocked) {
 		if (!strcmp(line, PASSPHRASE)) {
-			sendstring("Unlocked.\r\n");
+			sendstring(BANNER);
 			unlocked = 1;
 			prompt();
 		}
 		else if ((strlen(line) > 0) && (++badpasswordcount > BAD_PASSWORD_MAX)) client.stop();
 		else {
-			if (badpasswordcount) delay(1000 * badpasswordcount);
+			if (badpasswordcount) delay(1000);
 			sendstring("Password: ");
 		}
 	}
@@ -233,6 +346,7 @@ void setup(void) {
 	Ethernet.begin(mac, ip, gateway, subnet);
 	server.begin();
 
+	addBitlashFunction("logout", &func_logout);
 	setOutputHandler(&serialHandler);
 }
 
