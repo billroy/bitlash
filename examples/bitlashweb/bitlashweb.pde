@@ -46,17 +46,19 @@ byte ip[]  		= {192, 168, 1, 27};
 byte gateway[] 	= {192, 168, 1, 1};
 byte subnet[] 	= {255, 255, 255, 0};
 #define PORT 8080
+
 #define PASSPHRASE "open sesame"
+#define BAD_PASSWORD_MAX 3
+
 //
 ////////////////////////////////////////
 
 #define INDEX_MACRO "_index"
 #define ERROR_MACRO "_error"
 #define ERROR_PAGE  "error"
-#define BAD_PASSWORD_MAX 3
 
 #define CONTENT_TYPE_PLAIN "Content-Type: text/plain\r\n\r\n"	// enable this for plaintext output
-#define CONTENT_TYPE_HTML "Content-Type: text/html\r\n\r\n"		// enable this for HTML output
+#define CONTENT_TYPE_HTML  "Content-Type: text/html\r\n\r\n"	// enable this for HTML output
 #define CONTENT_TYPE CONTENT_TYPE_PLAIN
 
 #define HTTP_200_OK "HTTP/1.1 200 OK\r\n"
