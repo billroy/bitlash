@@ -263,20 +263,19 @@ char id[IDLEN+1];			// buffer for id
 	void skipstatement(void);
 	skipstatement();				// gobble it up without executing it
 	char *endmark = fetchptr;		// and note the char past '}'
+
+	// endmark is past the closing '}' - back up and find it
+	do {
+		--endmark;
+	} while ((endmark > startmark) && (*endmark != '}'));
 	
-	int addr = findhole(strlen(id) + (endmark-startmark) + 2);	// longjmps on fail
+	int idlen = strlen(id);
+	int addr = findhole(idlen + (endmark-startmark) + 2);	// longjmps on fail
 	if (addr >= 0) {
 		saveString(addr, id);		// write the id and its terminator
-		addr += strlen(id) + 1;		// advance to payload offset
-
-		// reset parse context
-		fetchptr = startmark;
-		primec();
-		while (fetchptr < endmark) {
-			eewrite(addr++, inchar);
-			fetchc();
-		}
-		eewrite(--addr, 0);
+		addr += idlen + 1;		// advance to payload offset
+		while (startmark < endmark) eewrite(addr++, *startmark++);
+		eewrite(addr, 0);
 	}
 
 	msgpl(M_saved);

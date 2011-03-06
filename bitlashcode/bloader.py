@@ -44,8 +44,9 @@ device = None
 baud = 57600
 
 if not device:
-	devicelist = commands.getoutput("ls /dev/tty.usbserial*")
+	#devicelist = commands.getoutput("ls /dev/tty.usbserial*")
 	#devicelist = commands.getoutput("ls /dev/ttyUSB*")		# this works on Linux
+	devicelist = commands.getoutput("ls /dev/tty.usb*")		# this works on Teensy
 	if devicelist[0] == '/': device = devicelist
 	if not device: 
 		print "Fatal: Can't find usb serial device."

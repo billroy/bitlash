@@ -2,7 +2,9 @@ Bitlash Release Notes
 
 2.0 RC1
 
-- Syntax overhaul:
+- Syntax overhaul: the Bitlash 2.0 language is considerably different,
+	and old macros will need to be updated to run in v2
+
 	if (expression) { stmt;...;stmt;} else {stmt;...;stmt;}
 	while (expression) { stmt; }
 	switch (expression) { stmt0; stmt1; ... stmtN; }

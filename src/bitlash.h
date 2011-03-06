@@ -268,7 +268,9 @@ void beginEthernet(unsigned long baud) {
 //	AVROPENDOUS and TEENSY BUILD OPTIONS
 //
 #if defined(__AVR_AT90USB162__)
-#define AVROPENDOUS_BUILD
+
+//#define AVROPENDOUS_BUILD
+#if defined(AVROPENDOUS_BUILD)
 #define MINIMUM_FREE_RAM 20
 #define NUMPINS 24
 #undef HARDWARE_SERIAL_TX
@@ -278,15 +280,23 @@ void beginSerial(unsigned long baud) { ; }
 #define serialRead usbRead
 #define serialWrite usbWrite
 #include <util/delay.h>
+#endif	// defined AVRO
+
+#define TEENSY
+#ifdef TEENSY
+#endif	// defined TEENSY
+
 #endif	// defined '162
 
 
 ///////////////////////////////////////////////////////
 //
-//	AVRopendous2-DIP BUILD OPTIONS
+//	ATMega32U4 BUILD OPTIONS
 //
 #if defined(__AVR_ATmega32U4__)
-#define AVROPENDOUS_BUILD
+
+//#define AVROPENDOUS_BUILD
+#if defined(AVROPENDOUS_BUILD)
 #define MINIMUM_FREE_RAM 50
 #define NUMPINS 40
 #undef HARDWARE_SERIAL_TX
@@ -296,6 +306,12 @@ void beginSerial(unsigned long baud) { ; }
 #define serialRead usbRead
 #define serialWrite usbWrite
 #include <util/delay.h>
+#endif	// AVRO
+
+#define TEENSY2
+#if defined(TEENSY2)
+#endif	// TEENSY2
+
 #endif	// defined '32U4
 
 
