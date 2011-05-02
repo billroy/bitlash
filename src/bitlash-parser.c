@@ -108,7 +108,7 @@ tokenhandler tokenhandlers[TOKENTYPES] = {
 //	The code corresponding to a character specifies which of the token handlers above will
 //	be called when the character is seen as the initial character in a symbol.
 #define np(a,b) ((a<<4)+b)
-prog_char chartypes[] PROGMEM = {    											//0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+prog_char chartypes[] PROGMEM = {    											//    0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 	np(3,4), np(4,4),  np(4,4), np(4,4),  np(4,0), np(0,4),  np(4,0), np(4,4),	//0  NUL SOH STX ETX EOT ENQ ACK BEL BS  HT  LF  VT  FF  CR  SO  SI
 	np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),	//1  DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US
 	np(0,8), np(7,7),  np(4,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,7),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
@@ -262,25 +262,49 @@ void calleeprommacro(int macrotext) {
 ///
 ///		Expression evaluation stack
 ///
-#define vstacklen 64
+#define VSTACKLEN 64
 byte vsptr;			  		// value stack pointer
 numvar *arg;				// argument frame pointer
-numvar vstack[vstacklen];  	// value stack
+numvar vstack[VSTACKLEN];  	// value stack
+
+
+#define STRING_POOL
+////////////////////
+///
+///	String Pool
+///
+///		The string pool lives in the far end of the vstack.
+///		It holds string constants parsed from arg blocks.
+///		The pointers themselves are passed as arg(n) values.
+///		The whole string pool for an argblock is deallocated
+///		when the argblock is released.
+///
+#if defined(STRING_POOL)
+char *stringPool;
+void spush(char c) {	// push a character into the string pool
+	if (stringPool >= (char *) &vstack[vsptr]) overflow(M_string);
+	*stringPool++ = c;
+}
+#endif
+
 
 void vinit(void) { 
-	vsptr = 0; 
-	arg = vstack;	// point the argblock at the stack base
-	vpush(0);		// push a 0 there so arg(0) is 0 at the top
+	vsptr = VSTACKLEN-1;
+	arg = &vstack[vsptr];	// point the argblock at the stack base
+	vpush(0);				// push a 0 there so arg(0) is 0 at the top
+#if defined(STRING_POOL)
+	stringPool = (char *) vstack;	// stringPool starts at unused base of vstack
+#endif
 }
 
 void vpush(numvar x) {
-	if (vsptr >= vstacklen-1) overflow(M_exp);
-	vstack[vsptr++] = x;
+	if (vsptr <= 0) overflow(M_exp);
+	vstack[vsptr--] = x;
 }
 
 numvar vpop(void) {
-	if (vsptr <= 0) underflow(M_exp);
-	return vstack[--vsptr];
+	if (vsptr >= VSTACKLEN-1) underflow(M_exp);
+	return vstack[++vsptr];
 }
 
 void vop(byte op)  {
@@ -310,6 +334,7 @@ numvar x,y;
 }
 
 
+
 ////////////////////
 ///
 /// Argument Block handling
@@ -317,7 +342,7 @@ numvar x,y;
 
 numvar getarg(numvar which) {
 	if (which > arg[0]) missing(M_arg);
-	return arg[which];
+	return arg[-which];
 }
 
 #if 0
@@ -332,6 +357,9 @@ numvar getparentarg(void) {
 #endif
 
 void parsearglist(void) {
+#if defined(STRING_POOL)
+	vpush((numvar) stringPool);			// save stringPool base for later release
+#endif
 	vpush((numvar) arg);				// save base of current argblock
 	numvar *newarg = &vstack[vsptr];	// move global arg pointer to base of new block
 	vpush(0);							// initialize new arg(0) (a/k/a argc) to 0
@@ -339,6 +367,15 @@ void parsearglist(void) {
 	if (sym == s_lparen) {
 		getsym();		// eat arglist '('
 		while ((sym != s_rparen) && (sym != s_eof)) {
+
+#if defined(STRING_POOL)
+			if (sym == s_quote) {
+				vpush((numvar) stringPool);	// push the string pointer
+				parsestring(&spush);		// parse it into the pool
+				spush(0);					// and terminate it
+				getsym();					// resume parsing with next symbol
+			} else 
+#endif
 			vpush(getnum());				// push the value
 			newarg[0]++;					// bump the count
 			if (sym == s_comma) getsym();	// eat arglist ',' and go around
@@ -354,14 +391,12 @@ void parsearglist(void) {
 // release the top argblock once its execution context has expired
 //
 void releaseargblock(void) {
-	if (vsptr <= 0) underflow(M_arg);	// shouldn't happen
-	vsptr -= arg[0] + 1;				// pop all args en masse
-
-	// TODO: test this better alternative that does not rely on arg(0)
-	// if (arg == vstack) underflow(M_arg);	// shouldn't happen
-	// vsptr = arg;							// peel back to where we started
-
+	vsptr += arg[0] + 1;				// pop all args en masse, and the count
 	arg = (numvar *) vpop();			// pop parent arg frame and we're back
+
+#if defined(STRING_POOL)
+	stringPool = (char *) vpop();		// re stringPool base for later release
+#endif
 }
 
 
@@ -487,8 +522,8 @@ byte radix;
 	symval = inchar - '0';
 	for (;;) {
 		inchar = tolower(fetchc());
-		if (inchar == 'x') radix = 16;
-		else if (inchar == 'b') radix = 2;
+		if ((inchar == 'x') && (radix == 10)) radix = 16;
+		else if ((inchar == 'b') && (radix == 10)) radix = 2;
 		else if (isdigit(inchar))
 			symval = (symval*radix) + inchar - '0';
 		else if (radix>10) {
@@ -738,6 +773,50 @@ byte thesym = sym;
 			getfactor();
 			vpush(!vpop());
 			break;
+
+		case s_bitand:		// &var gives address-of-var; &macro gives eeprom address of macro
+			if (sym == s_nvar) vpush((numvar) &vars[symval]);
+			else if (sym == s_macro) vpush(symval);
+			else expected(M_var);
+			getsym();		// eat the var reference
+			break;
+
+#if 1
+		case s_mul:			// *foo is contents-of-address-foo; *foo=bar is byte poke assignment
+
+/*****
+// what is really acceptable for an lvalue here? ;)
+//	*y = 5 is failing now by assigning 5 to y before the * is dereferenced
+//	due to calling getfactor
+//	everything else works :(
+
+			if (sym == s_nvar) {
+				char *fetchmark = fetchptr;
+				byte whichvar = symval;
+				getsym();
+				if (sym == s_equals) {
+					getsym();	// eat '='
+					* (volatile byte *) vpop() = (byte) getnum();
+					vpush(expval);
+				}
+				else {
+					fetchptr = fetchmark;
+					primec();
+					sym = s_nvar;
+					symval = whichvar;
+				}					
+			}
+*****/
+			getfactor();
+			if (sym == s_equals) {
+				getsym();	// eat '='
+				getexpression();
+				* (volatile byte *) vpop() = (byte) expval;
+				vpush((numvar) (byte) expval);
+			} 
+			else vpush((numvar) (* (volatile byte *) vpop()));
+			break;
+#endif
 
 		default: 
 			unexpected(M_number);
