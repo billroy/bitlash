@@ -397,6 +397,7 @@ void releaseargblock(void) {
 #if defined(STRING_POOL)
 	stringPool = (char *) vpop();		// re stringPool base for later release
 #endif
+
 }
 
 
@@ -515,18 +516,22 @@ void eof(void) {
 }
 
 // Parse a numeric constant from the input stream
-// Octal isn't supported.  Use hex.
 void parsenum(void) {
 byte radix;
 	radix = 10;
 	symval = inchar - '0';
 	for (;;) {
 		inchar = tolower(fetchc());
-		if ((inchar == 'x') && (radix == 10)) radix = 16;
-		else if ((inchar == 'b') && (radix == 10)) radix = 2;
-		else if (isdigit(inchar))
-			symval = (symval*radix) + inchar - '0';
-		else if (radix>10) {
+		if ((radix == 10) && (symval == 0)) {
+			if (inchar == 'x') { radix = 16; continue; }
+			else if (inchar == 'b') { radix = 2; continue; }
+		}
+		if (isdigit(inchar)) {
+			inchar = inchar - '0';
+			if (inchar >= radix) break;
+			symval = (symval*radix) + inchar;
+		}
+		else if (radix == 16) {
 			if ((inchar >= 'a') && (inchar <= 'f'))
 				symval = (symval*radix) + inchar - 'a' + 10;
 			else break;
@@ -824,86 +829,7 @@ byte thesym = sym;
 
 }
 
-#ifdef SWITCHING_YARD_PARSER
-//http://en.wikipedia.org/wiki/Shunting_yard_algorithm
 
-#define NUMOPS 21
-char operators[NUMOPS] = {
-	-1,
-	s_mul, s_div, s_mod,
- 	s_add, s_sub,
- 	s_shiftright, s_shiftleft,
-	s_lt, s_gt, s_le, s_ge, s_logicaleq, s_logicalne,
-	s_bitand, s_bitor, s_xor,
-	s_logicaland, s_logicalor, s_logicalor, 0
-};
-
-char precedence[NUMOPS-1] = {
-	0, 6,6,6, 5,5, 4,4, 3,3,3,3,3,3, 2,2,2, 1,1,1
-};
-
-byte findsym(char *table) {
-	if (sym == s_eof) return 0;
-	char *opptr = strchr(table, sym);
-	if (opptr) return opptr-table;
-	return 0;
-}
-
-#define OPSTACKLEN 16
-byte opindex;
-byte optop;
-byte opstack[OPSTACKLEN];
-
-void voptop(void) {
-//	vop(pgm_read_byte(operators + opstack[--optop]));
-	vop(operators[opstack[--optop]]);
-}
-byte getprecedence(byte offset) {
-//	return pgm_read_byte(precedence + offset);
-	return precedence[offset];
-}
-void oppush(byte opindex) {
-	if (optop >= OPSTACKLEN) overflow(M_exp);
-	opstack[optop++] = opindex;	// op: ...then push this one on the op stack
-}
-
-void getexpression(void) {
-
-	for (;;) {
-
-		while (sym == s_lparen) {
-			oppush(s_lparen);
-			getsym();
-		}
-
-		getfactor();
-
-		// is the current symbol an operator?
-		opindex = findsym(operators);
-		if (opindex) {				// op: reduce while precedence < top operator
-			while (optop &&
-					(getprecedence(opindex) <=
-						getprecedence(opstack[optop-1]))) {
-				voptop();
-			}
-			oppush(opindex);
-		}
-		else if (sym == s_lparen) oppush(s_lparen);
-		else if (sym == s_rparen) {
-			while (optop && (opstack[optop-1] != s_lparen)) voptop();
-			if (!optop) unexpected(')');
-			if (opstack[optop-1] == s_lparen) --optop;	// pop '('
-		}
-		else break;
-		getsym();		// eat the operator and move along
-	}
-	while (optop) voptop();
-	exptype = s_nval;
-	expval = vpop();
-}
-
-
-#else
 // parseReduce via a template
 // saves 100 bytes but eats stack like crazy
 // while we're ram-starved this stays off
@@ -1005,8 +931,6 @@ void getexpression(void) {
 	exptype = s_nval;
 	expval = vpop();
 }
-
-#endif	// SWITCHING_YARD_PARSER
 
 
 // Get a number from the input stream.  Result to expval.

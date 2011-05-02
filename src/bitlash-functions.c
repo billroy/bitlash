@@ -36,11 +36,11 @@ extern numvar getarg(numvar);
 
 // 14772 vs 15022
 extern numvar *arg;
-#define arg1 arg[1]
-#define arg2 arg[2]
-#define arg3 arg[3]
-#define arg4 arg[4]
-#define arg5 arg[5]
+#define arg1 arg[-1]
+#define arg2 arg[-2]
+#define arg3 arg[-3]
+#define arg4 arg[-4]
+#define arg5 arg[-5]
 
 void reqargs(byte n) { if (arg[0] < n) missing(M_arg); }
 
