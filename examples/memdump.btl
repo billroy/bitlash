@@ -1,0 +1,6 @@
+# dump first 0x900 locations of RAM
+#
+function pc {print arg(1):y,;print " ",;}
+function px {if arg(1)<16 print "0",; print arg(1):x,;}
+function pxb {c=inb(arg(1));if c>=' '&&c<='~' pc(c); else px(c);}
+function dump {i=0; while i<0x900 {if (!(i&63)) {print; print i:x,": ",;} if (!(i&7)) print " ",; pxb(i++);}

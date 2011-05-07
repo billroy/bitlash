@@ -353,9 +353,12 @@ void cmd_print(void) {
 			// format specifier: :x :b
 			if (sym == s_colon) {
 				getsym();		// cheat and look for var ref to x or b
-				if ((sym == s_nvar) && (symval == 'x'-'a')) printHex((unumvar) expval);
-				else if ((sym == s_nvar) && (symval == 'b'-'a')) printBinary((unumvar) expval);
-				else if ((sym == s_nvar) && (symval == 'y'-'a')) spb(expval);
+				if (sym == s_nvar) {
+					if 		(symval == 'x'-'a') printHex((unumvar) expval);		// :x print hex
+					else if (symval == 'b'-'a') printBinary((unumvar) expval);	// :b print binary
+					else if (symval == 'y'-'a') spb(expval);					// :y print byte
+					else if (symval == 's'-'a') sp((char *)expval);				// :s print string
+				}
 				else if (sym > ' ') while (expval-- > 0) spb(sym);	// any litsym
 				else expected(M_pfmts);
 				getsym();

@@ -156,17 +156,9 @@ byte hexval(char c) {
 byte trace;
 #endif
 
-#if !defined(TINY85)
-unumvar symcount;
-#endif
-
 
 //	Parse the next token from the input stream.
 void getsym(void) {
-
-#if !defined(TINY85)
-	++symcount;	// tally metrics
-#endif
 
 	// dispatch to handler for this type of char
 	(*tokenhandlers[chartype(inchar)])();
@@ -244,12 +236,6 @@ void tb(void) {		// print a mini-trace
 #endif
 
 
-// call a RAM macro
-void callmacro(char *macrotext) {
-	fetchptr = macrotext;
-	primec();		// now the next getsym() comes from the macro
-}
-
 // call macro in eeprom
 void calleeprommacro(int macrotext) {
 	// terrible horrible eeprom kludge
@@ -298,7 +284,12 @@ void vinit(void) {
 }
 
 void vpush(numvar x) {
+
+#if defined(STRING_POOL)
+	if ((char *) &vstack[vsptr] < stringPool) overflow(M_exp);
+#else
 	if (vsptr <= 0) overflow(M_exp);
+#endif
 	vstack[vsptr--] = x;
 }
 
@@ -344,6 +335,7 @@ numvar getarg(numvar which) {
 	if (which > arg[0]) missing(M_arg);
 	return arg[-which];
 }
+
 
 #if 0
 //	returns arg value from parent context
@@ -588,7 +580,7 @@ void parseid(void) {
 	// macro ref or def?
 	else if ((symval=findKey(idbuf)) >= 0) sym = s_macro;
 
-	else sym = s_undef;		// huh?  perhaps it will be a macro definition
+	else sym = s_undef;		// huh?
 }
 
 
@@ -794,32 +786,18 @@ byte thesym = sym;
 //	*y = 5 is failing now by assigning 5 to y before the * is dereferenced
 //	due to calling getfactor
 //	everything else works :(
-
-			if (sym == s_nvar) {
-				char *fetchmark = fetchptr;
-				byte whichvar = symval;
-				getsym();
-				if (sym == s_equals) {
-					getsym();	// eat '='
-					* (volatile byte *) vpop() = (byte) getnum();
-					vpush(expval);
-				}
-				else {
-					fetchptr = fetchmark;
-					primec();
-					sym = s_nvar;
-					symval = whichvar;
-				}					
-			}
 *****/
 			getfactor();
+#if 0
 			if (sym == s_equals) {
 				getsym();	// eat '='
 				getexpression();
 				* (volatile byte *) vpop() = (byte) expval;
 				vpush((numvar) (byte) expval);
 			} 
-			else vpush((numvar) (* (volatile byte *) vpop()));
+			else 
+#endif
+			vpush((numvar) (* (volatile byte *) vpop()));
 			break;
 #endif
 

@@ -602,10 +602,6 @@ extern byte sym;			// current input symbol
 extern byte inchar;		// Current parser character
 #endif
 
-#if !defined(TINY85)
-extern unumvar symcount;
-#endif
-
 #ifdef PARSER_TRACE
 extern byte trace;
 void tb(void);

@@ -180,7 +180,7 @@ void eraseentry(char *id) {
 void countByte(char c) { expval++; }
 void saveByte(char c) { eewrite(expval++, c); }
 
-
+#if 0
 // write id:value, unless value is empty, in which case we erase the id
 void writeMacro(char *id) {
 	eraseentry(id);
@@ -215,7 +215,6 @@ void writeMacro(char *id) {
 }
 
 
-#if 0
 // Write a macro definition to the eeprom
 // We come here with sym == s_define (the := in id:="value")
 // The global idbuf has the id parsed earlier
