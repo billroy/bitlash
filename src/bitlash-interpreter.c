@@ -197,73 +197,6 @@ char *fetchmark;
 
 	chkbreak();
 
-//#define LINEMODE
-#ifdef LINEMODE
-	if (sym == s_while) {
-		// at this point sym is pointing at s_while, before the conditional expression
-		// save fetchptr so we can restart parsing from here as the while iterates
-		char *fetchmark = fetchptr;
-		for (;;) {
-			fetchptr = fetchmark;			// restore to mark
-			primec();						// set up for mr. getsym()
-			getsym(); 						// fetch the start of the conditional
-			if (!getnum()) {					
-				//longjmp(env, X_EXIT);		// get the conditional; exit on false
-				sym = s_eof;				// we're finished here.  move along.
-				return;
-			}
-			if (sym != s_colon) expectedchar(':');
-			getsym();	// eat :
-			getstatementlist();
-		}
-	}
-	else if (sym == s_if) {
-		getsym(); 								// fetch the start of the conditional
-		if (!getnum()) {
-			//longjmp(env, X_EXIT);	// get the conditional; exit on false
-			sym = s_eof;
-			return;
-		}
-		if (sym != s_colon) expectedchar(':');
-		getsym();	// eat :
-		getstatementlist();
-	}
-
-	// The switch statement: call one of N macros based on a selector value
-	// switch <numval>: macroid1, macroid2,.., macroidN
-	// numval < 0: numval = 0
-	// numval > N: numval = N
-
-	else if (sym == s_switch) {
-		getsym();	// eat "switch"
-		numvar selector = getnum();	// evaluate the switch value
-		if (selector < 0) selector = 0;
-		if (sym != s_colon) expectedchar(':');
-
-		// we sit before the first macroid
-		// scan and discard the <selector>'s worth of macro ids 
-		// that sit before the one we want
-		for (;;) {
-			getsym();	// get an id, sets symval to its eeprom addr as a side effect
-			if (sym != s_macro) expected (6);		// TODO: define M_macro instead of 6
-			getsym();	// eat id, get separator; assume symval is untouched
-			if ((sym == s_semi) || (sym == s_eof)) break;	// last case is default so we exit always
-			if (sym != s_comma) expectedchar(',');
-			if (!selector) break;		// ok, this is the one we want to execute
-			selector--;					// one down...
-		}
-
-		// call the macro whose addr is squirreled in symval all this time
-		// on return, the parser is ready to pick up where we left off
-		domacrocall(symval);
-
-		// scan past the rest of the unused switch options, if any
-		// TODO: syntax checking for non-chosen options could be made much tighter at the cost of some space
-		while ((sym != s_semi) && (sym != s_eof)) getsym();		// scan to end of statement without executing
-	}
-
-#else
-	// new statement handling
 	if (sym == s_while) {
 		// at this point sym is pointing at s_while, before the conditional expression
 		// save fetchptr so we can restart parsing from here as the while iterates
@@ -312,9 +245,6 @@ char *fetchmark;
 	else if (sym == s_switch) retval = getswitchstatement();
 
 	else if (sym == s_function) cmd_function();
-
-#endif
-
 
 	else if (sym == s_run) {	// run macroname
 		getsym();
@@ -396,27 +326,9 @@ char *fetchmark;
 //
 //
 numvar getstatementlist(void) {
-//	getstatement();
-//	while (sym == s_semi) {
-//		getsym();
-//		if (sym != s_eof) getstatement();		// quietly allow trailing semicolon
-//	}
-
-#ifdef LINEMODE
-	while (sym != s_eof) {
-		if (sym == s_return) {
-			getsym();
-			if ((sym == s_semi) || (sym == s_eof)) return 0;
-			return getnum();
-		}
-		else getstatement();
-	}
-	return 0;
-#else
 numvar retval = 0;
 	while ((sym != s_eof) && (sym != s_returning)) retval = getstatement();
 	return retval;
-#endif
 }
 
 
