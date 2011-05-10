@@ -180,58 +180,6 @@ void eraseentry(char *id) {
 void countByte(char c) { expval++; }
 void saveByte(char c) { eewrite(expval++, c); }
 
-#if 0
-// write id:value, unless value is empty, in which case we erase the id
-void writeMacro(char *id) {
-	eraseentry(id);
-
-	// we need to know the macro value length to allocate space for it
-	// we don't realistically have enough buffer space handy to parse it into
-	// so this is a two-pass operation: first we measure the text, then on
-	// the second pass we stuff it into the eeprom
-	//
-	// measure length of macro value
-	// we get here with inchar = first char of macro and fetchptr one past that
-	//
-//	char *fetchmark = --fetchptr;		// back up and mark first char of macro text
-//	primec();							// re-prime
-	char *fetchmark = fetchptr;			// mark first char of macro text
-	expval = 0;							// zero the count
-	parsestring(&countByte);			// now expval is the macro value length
-	if (!expval) return;				// empty string? we're done
-	
-	int addr = findhole(strlen(id) + expval + 2);	// longjmps on fail
-	if (addr >= 0) {
-		saveString(addr, id);
-
-		// reset parse context
-		fetchptr = fetchmark;
-		primec();
-
-		expval = addr + strlen(id) + 1;		// set up address for saveByte
-		parsestring(&saveByte);
-		saveByte(0);
-	}
-}
-
-
-// Write a macro definition to the eeprom
-// We come here with sym == s_define (the := in id:="value")
-// The global idbuf has the id parsed earlier
-void defineMacro(void) {
-char id[IDLEN+1];
-	strncpy(id, idbuf, IDLEN+1);	// save id string through value parse
-	getsym();						// scan past := to putative beginning s_quote
-	if (sym != s_quote) expected(M_string);
-	writeMacro(id);					// consumes closing quote
-
-#if defined(SOFTWARE_SERIAL_TX) || defined(HARDWARE_SERIAL_TX)
-	msgpl(M_saved);
-#endif
-
-	getsym();						// prefetch next sym past closing quote
-}
-#endif
 
 
 // Parse and store a function definition

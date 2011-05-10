@@ -266,12 +266,22 @@ numvar vstack[VSTACKLEN];  	// value stack
 ///		when the argblock is released.
 ///
 #if defined(STRING_POOL)
+
 char *stringPool;
-void spush(char c) {	// push a character into the string pool
+
+// push a character into the string pool
+void spush(char c) {
 	if (stringPool >= (char *) &vstack[vsptr]) overflow(M_string);
 	*stringPool++ = c;
 }
-#endif
+
+// push a string into the string pool
+void strpush(char *ptr) {
+	while (*ptr) spush(*ptr++);
+	spush(0);
+}
+
+#endif	// STRING_POOL
 
 
 void vinit(void) { 
@@ -342,17 +352,18 @@ numvar getarg(numvar which) {
 //
 numvar getparentarg(void) {
 	if (arg[0] < 1) underflow(M_arg);
-	numvar *parentArg = *(arg-1);
+	numvar *parentArg = *(arg-2);
 	if (arg[1] > parentArg[0]) overflow(M_arg);
 	return parentArg[arg[1]];
 }
 #endif
 
 void parsearglist(void) {
+	vpush((numvar) arg);				// save base of current argblock
 #if defined(STRING_POOL)
 	vpush((numvar) stringPool);			// save stringPool base for later release
+	strpush(idbuf);						// save called functions name as arg[-1]
 #endif
-	vpush((numvar) arg);				// save base of current argblock
 	numvar *newarg = &vstack[vsptr];	// move global arg pointer to base of new block
 	vpush(0);							// initialize new arg(0) (a/k/a argc) to 0
 
@@ -384,12 +395,14 @@ void parsearglist(void) {
 //
 void releaseargblock(void) {
 	vsptr += arg[0] + 1;				// pop all args en masse, and the count
-	arg = (numvar *) vpop();			// pop parent arg frame and we're back
 
 #if defined(STRING_POOL)
-	stringPool = (char *) vpop();		// re stringPool base for later release
+	// deallocate the string pool slab used by this function
+	// by popping the saved caller's stringPool
+	stringPool = (char *) vpop();
 #endif
 
+	arg = (numvar *) vpop();			// pop parent arg frame and we're back
 }
 
 
@@ -636,8 +649,6 @@ void parsestring(void (*charFunc)(char)) {
 }
 
 
-//#define SWITCHING_YARD_PARSER
-
 
 void getexpression(void);
 
@@ -680,24 +691,8 @@ byte thesym = sym;
 
 		// Macro-returning-value used as a factor
 		case s_macro:				// macro returning value
-#if 0
-			if (sym == s_define) {
-				defineMacro();
-				vpush(0);
-			}
-			else 
-#endif
 			domacrocall(thesymval);	// call the macro; its value is on the stack
 			break;
-
-#if 0
-		// undefined symbol: define macro
-		case s_undef:
-			if (sym != s_define) unexpected(M_id);
-			defineMacro();
-			vpush(0);
-			break;
-#endif
 
 		case s_apin:					// analog pin reference like a0
 			if (sym == s_equals) { 		// digitalWrite or analogWrite
@@ -739,7 +734,6 @@ byte thesym = sym;
 			getsym();		// eat ')'
 			break;
 
-#if !defined(SWITCHING_YARD_PARSER)
 		case s_lparen:  // expression in parens
 			getexpression();
 			if (exptype != s_nval) expected(M_number);
@@ -747,7 +741,6 @@ byte thesym = sym;
 			vpush(expval);
 			getsym();	// eat the )
 			break;
-#endif	
 
 		//
 		// The Family of Unary Operators, which Bind Most Closely to their Factor
@@ -778,7 +771,6 @@ byte thesym = sym;
 			getsym();		// eat the var reference
 			break;
 
-#if 1
 		case s_mul:			// *foo is contents-of-address-foo; *foo=bar is byte poke assignment
 
 /*****
@@ -799,7 +791,6 @@ byte thesym = sym;
 #endif
 			vpush((numvar) (* (volatile byte *) vpop()));
 			break;
-#endif
 
 		default: 
 			unexpected(M_number);
