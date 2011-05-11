@@ -47,7 +47,7 @@ byte scriptread(void);
 //	and in runBackgroundTasks to kick off the background run.
 //
 //
-numvar execscript(byte type, numvar location) {
+numvar execscript(byte scripttype, numvar scriptaddress) {
 numvar fetchmark = markparsepoint();
 
 	// if this is the first stream context in this invocation,
@@ -88,8 +88,8 @@ numvar fetchmark = markparsepoint();
 		}
 		vinit();			// initialize the expression stack
 	}
-	fetchtype = type;
-	fetchptr = location;
+	fetchtype = scripttype;
+	fetchptr = scriptaddress;
 	initparsepoint();
 	getsym();
 
@@ -136,13 +136,19 @@ numvar markparsepoint(void) {
 		fetchptr = scriptgetpos() - 1;
 	}
 
-	sp("mark:");printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
-	spb('>'); printInteger((fetchtype << 28) | fetchptr);
-	speol();
-
 	// stash the fetch context type in the high nibble of fetchptr
 	// LIMIT: longest script is 2^29-1 bytes
-	return ((numvar) fetchtype << 28) | (numvar) fetchptr;
+	numvar ret = ((numvar) fetchtype << 28) | (numvar) fetchptr;
+
+#ifdef PARSER_TRACE
+	if (trace) {
+		sp("mark:");printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
+		spb('>'); printInteger(ret);
+		speol();
+	}
+#endif
+
+	return ret;
 }
 
 
@@ -164,10 +170,14 @@ void returntoparsepoint(numvar fetchmark) {
 	fetchptr = fetchmark & 0xfffffff;		// LIMIT: longest script is 2^29-1 bytes
 	initparsepoint();
 
-	sp("return:");
-	printInteger(fetchmark); spb('>');
-	printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
-	speol();
+#ifdef PARSER_TRACE
+	if (trace) {
+		sp("return:");
+		printInteger(fetchmark); spb('>');
+		printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
+		speol();
+	}
+#endif
 
 }
 

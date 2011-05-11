@@ -694,8 +694,8 @@ extern char idbuf[IDLEN+1];
 #define s_arg			(33 | 0x80)
 #define s_else			(34 | 0x80)
 #define s_script_eeprom	(35 | 0x80)
-#define s_script_progmem	(36 | 0x80)
-#define s_script_file		(37 | 0x80)
+#define s_script_progmem (36 | 0x80)
+#define s_script_file	(37 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols 

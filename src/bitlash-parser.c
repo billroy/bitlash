@@ -704,7 +704,7 @@ byte thesym = sym;
 
 		// Script-function-returning-value used as a factor
 		case s_script_eeprom:				// macro returning value
-			callscriptfunction(SCRIPT_EEPROM, thesymval);
+			callscriptfunction(SCRIPT_EEPROM, findend(thesymval));
 			break;
 
 		case s_script_progmem:
