@@ -573,6 +573,7 @@ void returntoparsepoint(numvar);
 void primec(void);
 void fetchc(void);
 void getsym(void);
+void traceback(void);
 
 prog_char *getmsg(byte);
 void parsestring(void (*)(char));

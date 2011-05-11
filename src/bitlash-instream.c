@@ -83,6 +83,7 @@ numvar fetchmark = markparsepoint();
 #ifdef SOFTWARE_SERIAL_TX
 				resetOutput();		// clean up print module
 #endif
+
 				return (numvar) -1;
 			}
 		}
@@ -157,6 +158,9 @@ void initparsepoint(void) {
 	// handle file transition side effects here, once per transition,
 	// rather than once per character below in primec()
 	if (fetchtype == SCRIPT_FILE) {
+
+		sp("fopen ");sp((char *) fetchptr); speol();
+
 		// ask the file glue to open and position the file for us
 		scriptopen((char *) fetchptr, 0L);
 	}
@@ -194,7 +198,7 @@ void fetchc(void) {
 #ifdef PARSER_TRACE
 	if (trace) {
 		spb('[');
-		printInteger(inchar);
+		printInteger(fetchptr);
 		spb(']');
 	}
 #endif
@@ -233,10 +237,10 @@ void primec(void) {
 //
 //	Print traceback
 //
-void traceback() {
+void traceback(void) {
 numvar *a = arg;
 	while (a) {
-		sp((char *) a[-1]); speol();
-		a = (numvar *) a[-2];
+		sp((char *) (a[-1])); speol();
+		a = (numvar *) (a[-2]);
 	}
 }
