@@ -12,9 +12,15 @@ SdFile myFile;
 byte fetchtype;
 numvar fetchptr;
 
+void exec_script(byte, numvar);
+
 /*****
 
 TODO: SD Support
+
+- get rid of kludge, dekludge
+- get rid of s_macro
+
 
 - doCommand fixes per below
 	- doc:
@@ -31,8 +37,11 @@ TODO: SD Support
 		- char *tasklist[NUMTASKS];			// macro text of the task
 		+ numvar tasklist[NUMTASKS];
 
-- get rid of kludge, dekludge
-- get rid of s_macro
+- getfactor
+	- s_macro -> s_funct_eeprom or what?
+	
+- run command
+	- 
 
 - parseid(): 
 ***	- resolve s_funct passback strategy
@@ -76,27 +85,27 @@ byte scriptFileExists(char *scriptname) {
 }
 
 
-//////////
+/////////
 //
 // doCommand: main entry point to execute a bitlash command
 //
 numvar doCommand(char *cmd) {
-	return exec_stream(FETCH_RAM, cmd);
+	return exec_script(FETCH_RAM, cmd);
 }
 
 
 
 
-//////////
-///
-///	Parse and interpret a stream, and return its value
-///
-///	This is used in doCommand to execute a passed-in or collected text command,
-/// in domacrocommand() when a macro/function is called from within a parse stream,
-///	and in runBackgroundTasks to kick off the background run.
-///
-///
-numvar exec_stream(byte type, numvar location) {
+/////////
+//
+//	Parse and interpret a stream, and return its value
+//
+//	This is used in doCommand to execute a passed-in or collected text command,
+// in domacrocommand() when a macro/function is called from within a parse stream,
+//	and in runBackgroundTasks to kick off the background run.
+//
+//
+numvar exec_script(byte type, numvar location) {
 numvar fetchmark = markParsePoint();
 
 	// if this is the first stream context in this invocation,
@@ -113,8 +122,8 @@ numvar fetchmark = markParsePoint();
 				initTaskList();		// stop all pending tasks
 #ifdef SOFTWARE_SERIAL_TX
 				resetOutput();
-				return;
 #endif
+				return;
 			}
 		}
 		vinit();			// initialize the expression stack
@@ -131,15 +140,34 @@ numvar fetchmark = markParsePoint();
 }
 
 
-//////////
-///
-/// Parse mark and restore
-///
-/// Interpreting the while and switch commands requires backing up to and resuming from
-/// a previous point in the input stream.  So does calling a function in eeprom.
-/// These routines allow the parser to drop anchor at a point in the stream 
-/// and restore back to it.
-///	
+/////////
+//
+// Call a Bitlash script function and push its return value on the stack
+//
+void callscriptfunction(byte scripttype; numvar scriptaddress) {
+	
+	parsearglist();
+	byte thesym = sym;					// save next sym for restore
+	vpush(symval);						// and symval
+
+	numvar ret = exec_script(scripttype, scriptaddress);
+
+	symval = vpop();
+	sym = thesym;
+	releaseargblock();
+	vpush(ret);
+}
+
+
+/////////
+//
+// Parse mark and restore
+//
+// Interpreting the while and switch commands requires backing up to and resuming from
+// a previous point in the input stream.  So does calling a function in eeprom.
+// These routines allow the parser to drop anchor at a point in the stream 
+// and restore back to it.
+//	
 numvar markParsePoint(void) {
 
 	if (fetchtype == FETCH_FILE) {
@@ -180,24 +208,24 @@ void returnToParsePoint(numvar fetchmark) {
 }
 
 
-//////////
-///
-///	fetchc(): 
-///		advance input to next character of input stream
-///		and set inchar to the character found there
-///
+/////////
+//
+//	fetchc(): 
+//		advance input to next character of input stream
+//		and set inchar to the character found there
+//
 void fetchc(void) {
 	++fetchptr;
 	primec();
 }
 
 
-//////////
-///
-///	primec(): 
-///		fetch the current character from the input stream
-///		set inchar to the character or zero on EOF
-///
+/////////
+//
+//	primec(): 
+//		fetch the current character from the input stream
+//		set inchar to the character or zero on EOF
+//
 void primec(void) {
 
 	switch (fetchtype) {
