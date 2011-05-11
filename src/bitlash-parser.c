@@ -194,7 +194,7 @@ void primec(void) {
 
 
 // Fetch and return the next char from input stream.
-char fetchc(void) {
+void fetchc(void) {
 	// terrible horrible eeprom addressing kludge
 	if (isram(fetchptr)) {
 		if (*fetchptr) fetchptr++;
@@ -221,7 +221,7 @@ char fetchc(void) {
 	}
 #endif
 
-	return inchar;
+	//return inchar;
 }
 
 
@@ -362,7 +362,7 @@ void parsearglist(void) {
 	vpush((numvar) arg);				// save base of current argblock
 #if defined(STRING_POOL)
 	vpush((numvar) stringPool);			// save stringPool base for later release
-	strpush(idbuf);						// save called functions name as arg[-1]
+	strpush(idbuf);						// save called function's name as arg[-1]
 #endif
 	numvar *newarg = &vstack[vsptr];	// move global arg pointer to base of new block
 	vpush(0);							// initialize new arg(0) (a/k/a argc) to 0
@@ -376,7 +376,7 @@ void parsearglist(void) {
 				vpush((numvar) stringPool);	// push the string pointer
 				parsestring(&spush);		// parse it into the pool
 				spush(0);					// and terminate it
-				getsym();					// resume parsing with next symbol
+				getsym();					// eat closing "
 			} else 
 #endif
 			vpush(getnum());				// push the value
@@ -475,9 +475,11 @@ void badsym(void) {
 
 // Parse a character constant of the form 'c'
 void chrconst(void) {
-	symval = fetchc();
+	fetchc();
+	symval = inchar;
 	sym = s_nval;
-	if (fetchc() != '\'') expectedchar('\'');
+	fetchc();
+	if (inchar != '\'') expectedchar('\'');
 	fetchc();		// consume "
 }
 
@@ -526,7 +528,8 @@ byte radix;
 	radix = 10;
 	symval = inchar - '0';
 	for (;;) {
-		inchar = tolower(fetchc());
+		fetchc();
+		inchar = tolower(inchar);
 		if ((radix == 10) && (symval == 0)) {
 			if (inchar == 'x') { radix = 16; continue; }
 			else if (inchar == 'b') { radix = 2; continue; }
@@ -551,9 +554,11 @@ byte radix;
 void parseid(void) {
 	char c = *idbuf = tolower(inchar);
 	byte idbuflen = 1;
-	while (isalnum(fetchc()) || (inchar == '.') || (inchar == '_')) {
+	fetchc();
+	while (isalnum(inchar) || (inchar == '.') || (inchar == '_')) {
 		if (idbuflen >= IDLEN) overflow(M_id);
 		idbuf[idbuflen++] = tolower(inchar);
+		fetchc();
 	}
 	idbuf[idbuflen] = 0;
 
@@ -617,7 +622,8 @@ void parsestring(void (*charFunc)(char)) {
 			break;								// done with the big loop
 		}
 		else if (inchar == ASC_BKSLASH) {		// bkslash escape conventions per K&R C
-			switch (fetchc()) {
+			fetchc();
+			switch (inchar) {
 
 				// pass-thrus
 				case ASC_QUOTE:				break;	// just a dbl quote, move along
@@ -629,9 +635,11 @@ void parsestring(void (*charFunc)(char)) {
 				case 'r':	inchar = '\r';	break;
 
 				case 'x':			// bkslash x hexdigit hexdigit	
-					if (ishex(fetchc())) {
+					fetchc();
+					if (ishex(inchar)) {
 						byte firstnibble = hexval(inchar);
-						if (ishex(fetchc())) {
+						fetchc();
+						if (ishex(inchar)) {
 							inchar = hexval(inchar) + (firstnibble << 4);
 							break;
 						}
@@ -644,7 +652,8 @@ void parsestring(void (*charFunc)(char)) {
 		// Process the character we just extracted
 		(*charFunc)(inchar);
 
-		if (!fetchc()) unexpected(M_eof);		// get next else end of input before string terminator
+		fetchc();
+		if (!inchar) unexpected(M_eof);		// get next else end of input before string terminator
 	}
 }
 

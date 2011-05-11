@@ -12,15 +12,16 @@ SdFile myFile;
 byte fetchtype;
 numvar fetchptr;
 
-void exec_script(byte, numvar);
+void execscript(byte, numvar);
 
 /*****
-
+14684
+14688
 TODO: SD Support
 
 - get rid of kludge, dekludge
 - get rid of s_macro
-
+- fetchc() returns void now
 
 - doCommand fixes per below
 	- doc:
@@ -31,7 +32,7 @@ TODO: SD Support
 
 	- runBackgroundMacro
 		- doCommand(kludge(findend(dekludge(tasklist[curtask]))));
-		+ exec_stream(FETCH_EEPROM, tasklist[curtask]);
+		+ execscript(FETCH_EEPROM, tasklist[curtask]);
 
 	- redefine tasklist to hold numvar in the slot
 		- char *tasklist[NUMTASKS];			// macro text of the task
@@ -39,6 +40,7 @@ TODO: SD Support
 
 - getfactor
 	- s_macro -> s_funct_eeprom or what?
+	callscriptfunction(type,location)
 	
 - run command
 	- 
@@ -53,8 +55,6 @@ TODO: SD Support
 	else if ((symval=findKey(idbuf)) >= 0) sym = s_funct_eeprom;
 	else if ((scriptFileExists(idbuf)) sym = s_funct_file;
 
-- need a define
-	- may as well be BITLASH_FILE
 
 ==========
 
@@ -62,10 +62,6 @@ TODO: SD Support
 - feat: commands on the card: ls, rm, create
 - feat: create/write to file
 - feat: tb(): traceback on fatal error
-
-	not working
-	function tb {i=arg(-1);while i {print i:s;i=inb(i-4)-4;}}
-
 - feat: anonymous scripts in progmem -> progmem block device
 
 END TODO LIST
@@ -90,10 +86,20 @@ byte scriptFileExists(char *scriptname) {
 // doCommand: main entry point to execute a bitlash command
 //
 numvar doCommand(char *cmd) {
-	return exec_script(FETCH_RAM, cmd);
+	return execscript(FETCH_RAM, cmd);
 }
 
 
+/////////
+//
+//	Print traceback
+//
+void traceback(numvar *arg) {
+	while (arg) {
+		sp((char *) arg[-1]); speol();
+		arg = arg[-2];
+	}
+}
 
 
 /////////
@@ -105,7 +111,7 @@ numvar doCommand(char *cmd) {
 //	and in runBackgroundTasks to kick off the background run.
 //
 //
-numvar exec_script(byte type, numvar location) {
+numvar execscript(byte type, numvar location) {
 numvar fetchmark = markParsePoint();
 
 	// if this is the first stream context in this invocation,
@@ -119,11 +125,29 @@ numvar fetchmark = markParsePoint();
 		switch(setjmp(env)) {
 			case 0: break;
 			case X_EXIT: {
+
+				// POLICY: Stop all background tasks on any error
+				//
+				// It is not possible to be certain that continuing here will work.
+				// Not all errors leave the interpreter in a working state.  Though most do.
+				// The conservative/deterministic choice is to stop all background tasks
+				// and drop the user back to the command prompt.
+				//
+				// On the other hand, you may find this inconvenient in your application, 
+				// and may be happy taking the risk of continuing.
+				//
+				// In which case, comment out this line and proceed with caution.
+				//	
+				// TODO: if the macro "onerror" exists, call it here instead.  Let it "stop *".
+				//
+				// -br
+				//
 				initTaskList();		// stop all pending tasks
+
 #ifdef SOFTWARE_SERIAL_TX
-				resetOutput();
+				resetOutput();		// clean up print module
 #endif
-				return;
+				return (numvar) -1;
 			}
 		}
 		vinit();			// initialize the expression stack
@@ -150,7 +174,7 @@ void callscriptfunction(byte scripttype; numvar scriptaddress) {
 	byte thesym = sym;					// save next sym for restore
 	vpush(symval);						// and symval
 
-	numvar ret = exec_script(scripttype, scriptaddress);
+	numvar ret = execscript(scripttype, scriptaddress);
 
 	symval = vpop();
 	sym = thesym;

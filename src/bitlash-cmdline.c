@@ -81,7 +81,8 @@ char buf[IDLEN+1];
 	// Run the script named "prompt" if there is one else print "> "
 	strncpy_P(buf, getmsg(M_promptid), IDLEN);	// get the name "prompt" in our cmd buf
 	int entry = findKey(buf);
-	if (entry >= 0) doCommand(kludge(findend(entry)));
+	if (entry >= 0) doCommand(buf);
+	//TODO: execscript(FETCH_EEPROM, findnext(entry));	// TODO: generalize for file
 	else msgp(M_prompt);							// else print default prompt
 }
 

@@ -574,7 +574,7 @@ void assignVar(uint8_t id, numvar value);	// assign value to variable.  id is [0
 numvar incVar(uint8_t id);					// increment variable.  id is [0..25] for [a..z]
 
 void primec(void);
-char fetchc(void);
+void fetchc(void);
 void getsym(void);
 prog_char *getmsg(byte);
 void parsestring(void (*)(char));
