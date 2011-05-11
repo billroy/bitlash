@@ -1,5 +1,5 @@
 /***
-	bitlashsd.pde
+	bitlashsd.pde: Bitlash integration with SD file support
 
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.
@@ -26,50 +26,51 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ***/
 
-// This is a bitlash integration with SD file support
-
+#include "bitlash.h"
 #include <SdFat.h>
 SdFat sd;
 SdFile scriptfile;
-#include "bitlash.h"
 
 byte sd_up;	// true iff SDFat.init() has succeeded
+
+char scriptnamecache[14];	// TODO: proper define here
+
 
 // return true iff script exists
 byte scriptexists(char *scriptname) {
 	if (!sd_up) {
-		if (!(sd.init()) return 0;
+		if (!sd.init()) return 0;
 		sd_up = 1;
 	}
 	return sd.exists(scriptname);
 }
 
 // open and set parse location on input file
-void scriptopen(char *scriptname, numvar position) {
+byte scriptopen(char *scriptname, numvar position) {
 	// open the input file if there is no file open, 
 	// or the open file does not match what we want
-	if (!scriptfile.isOpen() || 
-
-huh?
-		strcmp(scriptname, scriptfile.getFilename(huh?))) {
-		// Q: need to close an open file here before new open?
-		if (!scriptfile.open(scriptname, O_READ)) expected(M_function);	// TODO: err msg
+	if (!scriptfile.isOpen() || strcmp(scriptname, scriptnamecache)) {
+		if (!scriptfile.open(scriptname, O_READ)) return 0;
+		strcpy(scriptnamecache, scriptname);		// cache the name we have open
+		if (position == 0L) return 1;				// save a seek, when we can
 	}
-	if (!scriptfile.seekSet(position)) expected(M_function);	// TODO: file error msg
-
+	return scriptfile.seekSet(position);
 }
 
 numvar scriptgetpos(void) {
-	return scriptfile.getPosition();
+fpos_t pos;
+	pos.position = 0L;		// TODO: remove after debugging
+	scriptfile.getpos(&pos);
+	return pos.position;
 }
 
 byte scriptread(void) {
-byte inchar;
-	if (scriptfile.read(&inchar) == -1) {
+	int input = scriptfile.read();
+	if (input == -1) {
 		//scriptfile.close();		// leave the file open for re-use
-		inchar = 0;		// signal EOF
+		return 0;
 	}
-	return inchar;
+	return (byte) input;
 }
 
 

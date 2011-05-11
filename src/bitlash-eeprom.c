@@ -199,10 +199,11 @@ char id[IDLEN+1];			// buffer for id
 	// measure the macro text using skipstatement
 	// fetchptr is on the character after '{'
 	//
-	char *startmark = fetchptr;		// mark first char of macro text
+	// BUG: This is broken for file scripts
+	char *startmark = (char *) fetchptr;		// mark first char of macro text
 	void skipstatement(void);
 	skipstatement();				// gobble it up without executing it
-	char *endmark = fetchptr;		// and note the char past '}'
+	char *endmark = (char *) fetchptr;		// and note the char past '}'
 
 	// endmark is past the closing '}' - back up and find it
 	do {

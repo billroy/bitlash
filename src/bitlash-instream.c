@@ -29,18 +29,13 @@
 #include "bitlash.h"
 
 
-#if 0
-/////////
-//
-//	Print traceback
-//
-void traceback(numvar *arg) {
-	while (arg) {
-		sp((char *) arg[-1]); speol();
-		arg = arg[-2];
-	}
-}
-#endif
+// forward declaration
+void initparsepoint(void);
+
+byte scriptexists(char *scriptname);
+byte scriptopen(char *scriptname, numvar position);
+numvar scriptgetpos(void);
+byte scriptread(void);
 
 
 /////////
@@ -191,5 +186,18 @@ void primec(void) {
 		case SCRIPT_PROGMEM:	inchar = pgm_read_byte(fetchptr); 	break;
 		case SCRIPT_EEPROM:		inchar = eeread((int) fetchptr);	break;
 		case SCRIPT_FILE:		inchar = scriptread();				break;
+	}
+}
+
+
+/////////
+//
+//	Print traceback
+//
+void traceback() {
+numvar *a = arg;
+	while (a) {
+		sp((char *) a[-1]); speol();
+		a = (numvar *) a[-2];
 	}
 }
