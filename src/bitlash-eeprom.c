@@ -187,12 +187,14 @@ char id[IDLEN+1];			// buffer for id
 	
 	getsym();		// eat the id, move on to '{'
 
+#if 0
 	// provide for function functionname()
 	if (sym == s_lparen) {
 		getsym();	// eat '('
 		if (sym != s_rparen) expectedchar(')');
 		getsym();	// eat ')'
 	}
+#endif
 
 	if (sym != s_lcurly) expected(s_lcurly);
 

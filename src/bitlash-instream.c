@@ -136,9 +136,13 @@ numvar markparsepoint(void) {
 		fetchptr = scriptgetpos() - 1;
 	}
 
+	sp("mark:");printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
+	spb('>'); printInteger((fetchtype << 28) | fetchptr);
+	speol();
+
 	// stash the fetch context type in the high nibble of fetchptr
 	// LIMIT: longest script is 2^29-1 bytes
-	return (fetchtype << 28) | fetchptr;
+	return ((numvar) fetchtype << 28) | (numvar) fetchptr;
 }
 
 
@@ -159,6 +163,12 @@ void returntoparsepoint(numvar fetchmark) {
 	fetchtype = fetchmark >> 28;			// unstash type from top nibble
 	fetchptr = fetchmark & 0xfffffff;		// LIMIT: longest script is 2^29-1 bytes
 	initparsepoint();
+
+	sp("return:");
+	printInteger(fetchmark); spb('>');
+	printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
+	speol();
+
 }
 
 
@@ -170,6 +180,15 @@ void returntoparsepoint(numvar fetchmark) {
 //
 void fetchc(void) {
 	++fetchptr;
+
+#ifdef PARSER_TRACE
+	if (trace) {
+		spb('[');
+		printInteger(inchar);
+		spb(']');
+	}
+#endif
+
 	primec();
 }
 
@@ -187,6 +206,16 @@ void primec(void) {
 		case SCRIPT_EEPROM:		inchar = eeread((int) fetchptr);	break;
 		case SCRIPT_FILE:		inchar = scriptread();				break;
 	}
+
+#ifdef PARSER_TRACE
+	if (trace) {
+		spb('<'); 
+		if (inchar >= 0x20) spb(inchar);
+		else { spb('\\'); printInteger(inchar); }
+		spb('>');
+	}
+#endif
+
 }
 
 
