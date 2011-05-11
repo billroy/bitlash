@@ -32,8 +32,6 @@ millis and delay
 eeprom functions
 	virtual, from a disk file
 pgm_read_byte and pgm_read_word
-kludge and dekludge
-isram
 - needs parser context mods
 
 setbaud

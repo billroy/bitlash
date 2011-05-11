@@ -383,7 +383,7 @@ void initBitlash(unsigned long baud);	// start up and set baud rate
 void initBitlash(void);
 #endif
 void runBitlash(void);					// call this in loop(), frequently
-void doCommand(char *);					// execute a command from your sketch
+numvar doCommand(char *);					// execute a command from your sketch
 void doCharacter(char);					// pass an input character to the line editor
 
 void flash(unsigned int, int);
@@ -435,9 +435,6 @@ extern char lbuf[LBUFLEN];
 int findKey(char *key);				// return location of macro keyname in EEPROM or -1
 int getValue(char *key);			// return location of macro value in EEPROM or -1
 
-char isram(char *);
-char* kludge(int);
-int dekludge(char *);
 int findoccupied(int);
 int findend(int);
 void eeputs(int);
@@ -455,18 +452,6 @@ void eeputs(int);
 //
 #define ENDDB E2END
 #define ENDEEPROM E2END
-
-
-#ifdef TINY85
-/////////////////////////////////////////////
-// bitlash-eh1.c
-//
-#include "bitlash-eh1.h"
-#include "bitlash-requests.h"
-void initStick(void);
-void usbMouse(int8_t, int8_t, uint8_t, int8_t);
-void usbKeystroke(uint8_t);
-#endif
 
 
 /////////////////////////////////////////////
@@ -539,7 +524,7 @@ void cmd_print(void);
 void initTaskList(void);
 void runBackgroundTasks(void);
 void stopTask(byte);
-void startTask(char *, numvar);
+void startTask(int, numvar);
 void snooze(unumvar);
 void showTaskList(void);
 extern byte background;
@@ -573,9 +558,22 @@ numvar getVar(uint8_t id);					// return value of bitlash variable.  id is [0..2
 void assignVar(uint8_t id, numvar value);	// assign value to variable.  id is [0..25] for [a..z]
 numvar incVar(uint8_t id);					// increment variable.  id is [0..25] for [a..z]
 
+// parse context types
+#define SCRIPT_NONE		0
+#define SCRIPT_RAM 		1
+#define SCRIPT_PROGMEM 	2
+#define SCRIPT_EEPROM 	3
+#define SCRIPT_FILE		4
+
+byte scriptfileexists(char *);
+numvar execscript(byte, numvar);
+void callscriptfunction(byte, numvar);
+numvar markparsepoint(void);
+void returntoparsepoint(numvar);
 void primec(void);
 void fetchc(void);
 void getsym(void);
+
 prog_char *getmsg(byte);
 void parsestring(void (*)(char));
 void msgp(byte);
@@ -590,7 +588,8 @@ void releaseargblock(void);
 void parsearglist(void);
 
 // Interpreter globals
-extern char *fetchptr;		// pointer to current char in input buffer
+extern byte fetchtype;		// current script type
+extern numvar fetchptr;		// pointer to current char in input buffer
 extern numvar symval;		// value of current numeric expression
 
 #define USE_GPIORS !defined(UNIX_BUILD)
@@ -679,7 +678,7 @@ extern char idbuf[IDLEN+1];
 #define s_apin			(17 | 0x80)
 #define s_dpin			(18 | 0x80)
 #define s_define		(19 | 0x80)
-#define s_macro			(20 | 0x80)
+#define s_function		(20 | 0x80)
 #define s_rm			(21 | 0x80)
 #define s_run			(22 | 0x80)
 #define s_ps			(23 | 0x80)
@@ -694,7 +693,9 @@ extern char idbuf[IDLEN+1];
 #define s_returning		(32 | 0x80)
 #define s_arg			(33 | 0x80)
 #define s_else			(34 | 0x80)
-#define s_function		(35 | 0x80)
+#define s_script_eeprom	(35 | 0x80)
+#define s_script_progmem	(36 | 0x80)
+#define s_script_file		(37 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols 

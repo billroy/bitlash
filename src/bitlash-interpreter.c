@@ -148,7 +148,8 @@ numvar getstatement(void);
 //
 numvar getswitchstatement(void) {
 numvar thesymval = symval;
-char *fetchmark;
+//char *fetchmark;
+numvar fetchmark;
 numvar retval = 0;
 byte thesym = sym;
 
@@ -163,7 +164,8 @@ byte thesym = sym;
 	// scan and discard the <selector>'s worth of statements 
 	// that sit before the one we want
 	while ((which > 0) && (sym != s_eof) && (sym != s_rcurly)) {
-		fetchmark = fetchptr;
+		//fetchmark = fetchptr;
+		fetchmark = markparsepoint();
 		thesym = sym;
 		thesymval = symval;
 		skipstatement();
@@ -173,8 +175,9 @@ byte thesym = sym;
 	// If the selector is greater than the number of statements,
 	// back up and execute the last one
 	if (which > 0) {					// oops ran out of piddys
-		fetchptr = fetchmark;			// restore to last statement
-		primec();						// set up for getsym()
+		//fetchptr = fetchmark;			// restore to last statement
+		//primec();						// set up for getsym()
+		restoretoparsepoint(fetchmark);
 		sym = thesym;
 		symval = thesymval;
 	}
@@ -193,17 +196,20 @@ byte thesym = sym;
 // Get a statement
 numvar getstatement(void) {
 numvar retval = 0;
-char *fetchmark;
+//char *fetchmark;
+numvar fetchmark;
 
 	chkbreak();
 
 	if (sym == s_while) {
 		// at this point sym is pointing at s_while, before the conditional expression
 		// save fetchptr so we can restart parsing from here as the while iterates
-		fetchmark = fetchptr;
+		//fetchmark = fetchptr;
+		fetchmark = markparsepoint();
 		for (;;) {
-			fetchptr = fetchmark;			// restore to mark
-			primec();						// set up for mr. getsym()
+			//fetchptr = fetchmark;			// restore to mark
+			//primec();						// set up for mr. getsym()
+			restoretoparsepoint(fetchmark);
 			getsym(); 						// fetch the start of the conditional
 			if (getnum()) {
 				retval = getstatement();
@@ -248,7 +254,8 @@ char *fetchmark;
 
 	else if (sym == s_run) {	// run macroname
 		getsym();
-		if (sym != s_macro) unexpected(M_id);
+		if ((sym != s_script_eeprom) && (sym != s_script_progmem) &&
+			(sym != s_script_file)) unexpected(M_id);
 
 		// address of macroid is in symval via parseid
 		// check for [,snoozeintervalms]
@@ -257,9 +264,9 @@ char *fetchmark;
 			vpush(symval);
 			getsym();			// eat the comma
 			getnum();			// get a number or else
-			startTask(kludge(vpop()), expval);
+			startTask(vpop(), expval);
 		}
-		else startTask(kludge(symval), 0);
+		else startTask(symval, 0);
 	}
 
 	else if (sym == s_stop) {
@@ -276,11 +283,9 @@ char *fetchmark;
 	}
 
 	else if (sym == s_boot) reboot();
-
-#if !defined(TINY85)
 	else if (sym == s_rm) {		// rm "sym" or rm *
 		getsym();
-		if (sym == s_macro) {
+		if (sym == s_script_eeprom) {
 			eraseentry(idbuf);
 		} 
 		else if (sym == s_mul) nukeeeprom();
@@ -293,7 +298,6 @@ char *fetchmark;
 	else if (sym == s_help) 	{ getsym(); cmd_help(); }
 	else if (sym == s_print) 	{ getsym(); cmd_print(); }
 	else if (sym == s_semi)		{ ; }	// ;)
-#endif
 
 #ifdef HEX_UPLOAD
 	// a line beginning with a colon is treated as a hex record
@@ -332,7 +336,7 @@ numvar retval = 0;
 }
 
 
-
+#if 0
 // call a macro and push its return value on the stack
 //
 void domacrocall(int macroaddress) {
@@ -359,5 +363,4 @@ void domacrocall(int macroaddress) {
 		vpush(ret);				// send back our return value
 	}
 }
-
-
+#endif

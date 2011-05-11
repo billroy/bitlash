@@ -32,14 +32,11 @@
 #include "avr/eeprom.h"
 #endif
 
-#ifdef TINY85
-#undef eeread
-#define eeread(addr) eeprom_read_byte((unsigned char *) addr)
-#endif
-
 // Interpreter globals
-char *fetchptr;		// pointer to current char in input buffer
+byte fetchtype;		// current script type
+numvar fetchptr;	// pointer to current char in script
 numvar symval;		// value of current numeric expression
+
 #if !USE_GPIORS
 byte sym;			// current input symbol
 byte inchar;		// Current parser character
@@ -171,7 +168,7 @@ void getsym(void) {
 #endif
 }
 
-
+#if 0
 // Re-prime the lookahead character buffer 'inchar'
 void primec(void) {
 	// terrible horrible eeprom addressing kludge
@@ -223,6 +220,7 @@ void fetchc(void) {
 
 	//return inchar;
 }
+#endif
 
 
 
@@ -236,6 +234,7 @@ void tb(void) {		// print a mini-trace
 #endif
 
 
+#if 0
 // call macro in eeprom
 void calleeprommacro(int macrotext) {
 	// terrible horrible eeprom kludge
@@ -243,6 +242,8 @@ void calleeprommacro(int macrotext) {
 	fetchptr = kludge(macrotext);
 	primec();
 }
+#endif
+
 
 ////////////////////
 ///
@@ -595,8 +596,11 @@ void parseid(void) {
 	else if (find_user_function(idbuf)) sym = s_nfunct;
 #endif
 
-	// macro ref or def?
-	else if ((symval=findKey(idbuf)) >= 0) sym = s_macro;
+	// script function in eeprom?
+	else if ((symval=findKey(idbuf)) >= 0) sym = s_script_eeprom;
+
+	// script function in a file?
+	else if (scriptexists(idbuf)) sym = s_script_file;
 
 	else sym = s_undef;		// huh?
 }
@@ -698,9 +702,17 @@ byte thesym = sym;
 			dofunctioncall(thesymval);			// get its value onto the stack
 			break;
 
-		// Macro-returning-value used as a factor
-		case s_macro:				// macro returning value
-			domacrocall(thesymval);	// call the macro; its value is on the stack
+		// Script-function-returning-value used as a factor
+		case s_script_eeprom:				// macro returning value
+			callscriptfunction(SCRIPT_EEPROM, thesymval);
+			break;
+
+		case s_script_progmem:
+			callscriptfunction(SCRIPT_PROGMEM, thesymval);
+			break;
+
+		case s_script_file:
+			callscriptfunction(SCRIPT_FILE, (numvar) idbuf);
 			break;
 
 		case s_apin:					// analog pin reference like a0
@@ -775,7 +787,7 @@ byte thesym = sym;
 
 		case s_bitand:		// &var gives address-of-var; &macro gives eeprom address of macro
 			if (sym == s_nvar) vpush((numvar) &vars[symval]);
-			else if (sym == s_macro) vpush(symval);
+			else if (sym == s_script_eeprom) vpush(symval);
 			else expected(M_var);
 			getsym();		// eat the var reference
 			break;

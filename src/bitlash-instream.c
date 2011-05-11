@@ -1,95 +1,35 @@
-#include <SdFat.h>
-SdFat sd;
-SdFile myFile;
+/***
+	bitlash-instream.c
 
-// parse context types
-#define FETCH_NONE		0
-#define FETCH_RAM 		1
-#define FETCH_PROGMEM 	2
-#define FETCH_EEPROM 	3
-#define FETCH_FILE		4
+	Bitlash is a tiny language interpreter that provides a serial port shell environment
+	for bit banging and hardware hacking.
 
-byte fetchtype;
-numvar fetchptr;
+	See the file README for documentation.
 
-void execscript(byte, numvar);
+	Bitlash lives at: http://bitlash.net
+	The author can be reached at: bill@bitlash.net
 
-/*****
-14684
-14688
-TODO: SD Support
+	Copyright (C) 2008-2011 Bill Roy
 
-- get rid of kludge, dekludge
-- get rid of s_macro
-- fetchc() returns void now
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-- doCommand fixes per below
-	- doc:
-		- returns numvar
-		- is re-entrant
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-- background macros
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-	- runBackgroundMacro
-		- doCommand(kludge(findend(dekludge(tasklist[curtask]))));
-		+ execscript(FETCH_EEPROM, tasklist[curtask]);
-
-	- redefine tasklist to hold numvar in the slot
-		- char *tasklist[NUMTASKS];			// macro text of the task
-		+ numvar tasklist[NUMTASKS];
-
-- getfactor
-	- s_macro -> s_funct_eeprom or what?
-	callscriptfunction(type,location)
-	
-- run command
-	- 
-
-- parseid(): 
-***	- resolve s_funct passback strategy
-
-	- s_macro -> s_funct_eeprom
-		- add s_funct_file
-
-	// macro ref or def?
-	else if ((symval=findKey(idbuf)) >= 0) sym = s_funct_eeprom;
-	else if ((scriptFileExists(idbuf)) sym = s_funct_file;
+***/
+#include "bitlash.h"
 
 
-==========
-
-- feat: detect card insertion and autorun startup function
-- feat: commands on the card: ls, rm, create
-- feat: create/write to file
-- feat: tb(): traceback on fatal error
-- feat: anonymous scripts in progmem -> progmem block device
-
-END TODO LIST
-*****/
-
-
-
-
-byte sd_up;	// true iff SDFat.init() has succeeded
-
-byte scriptFileExists(char *scriptname) {
-	if (!sd_up) {
-		if (!(SDFat.init()) return 0;
-		sd_up = 1;
-	}
-	return SDFat.exists(scriptname);
-}
-
-
-/////////
-//
-// doCommand: main entry point to execute a bitlash command
-//
-numvar doCommand(char *cmd) {
-	return execscript(FETCH_RAM, cmd);
-}
-
-
+#if 0
 /////////
 //
 //	Print traceback
@@ -100,6 +40,7 @@ void traceback(numvar *arg) {
 		arg = arg[-2];
 	}
 }
+#endif
 
 
 /////////
@@ -112,14 +53,14 @@ void traceback(numvar *arg) {
 //
 //
 numvar execscript(byte type, numvar location) {
-numvar fetchmark = markParsePoint();
+numvar fetchmark = markparsepoint();
 
 	// if this is the first stream context in this invocation,
 	// set up our error recovery point and init the value stack
 	// otherwise we skip this to allow nested execution calls 
 	// to properly return to top
 	//
-	if (fetchtype == FETCH_NONE) {
+	if (fetchtype == SCRIPT_NONE) {
 
 		// Exceptions come here via longjmp; see bitlash-error.c
 		switch(setjmp(env)) {
@@ -154,12 +95,12 @@ numvar fetchmark = markParsePoint();
 	}
 	fetchtype = type;
 	fetchptr = location;
-	initParsePoint();
+	initparsepoint();
 	getsym();
 
 	// interpret the function text and collect its result
 	numvar ret = getstatementlist();
-	returnToParsePoint(fetchmark);		// now where were we?
+	returntoparsepoint(fetchmark);		// now where were we?
 	return ret;
 }
 
@@ -168,7 +109,7 @@ numvar fetchmark = markParsePoint();
 //
 // Call a Bitlash script function and push its return value on the stack
 //
-void callscriptfunction(byte scripttype; numvar scriptaddress) {
+void callscriptfunction(byte scripttype, numvar scriptaddress) {
 	
 	parsearglist();
 	byte thesym = sym;					// save next sym for restore
@@ -187,17 +128,17 @@ void callscriptfunction(byte scripttype; numvar scriptaddress) {
 //
 // Parse mark and restore
 //
-// Interpreting the while and switch commands requires backing up to and resuming from
+// Interpreting the while and switch commands requires marking and resuming from
 // a previous point in the input stream.  So does calling a function in eeprom.
 // These routines allow the parser to drop anchor at a point in the stream 
 // and restore back to it.
 //	
-numvar markParsePoint(void) {
+numvar markparsepoint(void) {
 
-	if (fetchtype == FETCH_FILE) {
+	if (fetchtype == SCRIPT_FILE) {
 		// the location we wish to return to is the point from which we read inchar, 
 		// which is one byte before the current file pointer since it auto-advances
-		fetchptr = infile.getPosition() - 1;
+		fetchptr = scriptgetpos() - 1;
 	}
 
 	// stash the fetch context type in the high nibble of fetchptr
@@ -206,29 +147,23 @@ numvar markParsePoint(void) {
 }
 
 
-void initParsePoint(void) {
+void initparsepoint(void) {
 
 	// handle file transition side effects here, once per transition,
 	// rather than once per character below in primec()
-	if (fetchtype == FETCH_FILE) {
-
-		// open the input file if there is no file open, 
-		// or the open file does not match what we want
-		if (!SDFile.isOpen() || strcmp((char *) getarg(-1), SDFile.getFilename(char * name)) {
-			// Q: need to close an open file here before new open?
-			if (!SDFile.open((char *) getarg(-1), O_READ)) expected(M_function);	// TODO: err msg
-		}
-		if (!SDFile.seekSet(fetchptr)) expected(M_function);	// TODO: file error msg
+	if (fetchtype == SCRIPT_FILE) {
+		// ask the file glue to open and position the file for us
+		scriptopen((char *) fetchptr, 0L);
 	}
 	primec();	// re-fetch inchar
 }
 
 
-void returnToParsePoint(numvar fetchmark) {
+void returntoparsepoint(numvar fetchmark) {
 	// restore parse type and location
 	fetchtype = fetchmark >> 28;			// unstash type from top nibble
 	fetchptr = fetchmark & 0xfffffff;		// LIMIT: longest script is 2^29-1 bytes
-	initParsePoint();
+	initparsepoint();
 }
 
 
@@ -251,17 +186,10 @@ void fetchc(void) {
 //		set inchar to the character or zero on EOF
 //
 void primec(void) {
-
 	switch (fetchtype) {
-		case FETCH_RAM:		inchar = *(char *) fetchptr;		break;
-		case FETCH_PROGMEM:	inchar = pgm_read_byte(fetchptr); 	break;
-		case FETCH_EEPROM:	inchar = eeread(fetchptr);			break;
-	
-		case FETCH_FILE:
-			if (SDFile.read(&inchar, 1) == -1) {
-				//infile.close();		// leave the file open for re-use
-				inchar = 0;		// signal EOF
-			}
-			break;
+		case SCRIPT_RAM:		inchar = *(char *) fetchptr;		break;
+		case SCRIPT_PROGMEM:	inchar = pgm_read_byte(fetchptr); 	break;
+		case SCRIPT_EEPROM:		inchar = eeread((int) fetchptr);	break;
+		case SCRIPT_FILE:		inchar = scriptread();				break;
 	}
 }

@@ -33,6 +33,17 @@
 // Syntax and execution errors are handled via longjmp
 jmp_buf env;
 
+#if 1
+
+/////////
+//
+// doCommand: main entry point to execute a bitlash command
+//
+numvar doCommand(char *cmd) {
+	return execscript(SCRIPT_RAM, (numvar) cmd);
+}
+
+#else
 
 // doCommand: main entry point to execute a bitlash command
 //
@@ -60,6 +71,7 @@ void doCommand(char *cmd) {
 	numvar ret = getstatementlist();
 	if (ret) { printInteger(ret); speol(); }
 }
+#endif
 
 
 void initBitlash(unsigned long baud) {

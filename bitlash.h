@@ -34,11 +34,16 @@
 void initBitlash(unsigned long baud);	// start up and set baud rate
 void runBitlash(void);					// call this in loop(), frequently
 
+// Bitlash variables are of type "numvar"
+//
+typedef long int numvar;					// bitlash returns things of type numvar
+typedef unsigned long int unumvar;			// sometimes unsigned interpretation is best (like millis)
+
 
 ///////////////////////
 //	Pass a command to Bitlash for interpretation
 //
-void doCommand(char *);					// execute a command from your sketch
+numvar doCommand(char *);				// execute a command from your sketch
 void doCharacter(char);					// pass an input character to the line editor
 
 ///////////////////////
@@ -46,9 +51,6 @@ void doCharacter(char);					// pass an input character to the line editor
 //
 //	NOTE: access to variables a..z is via an index 0..25, not the variable names.  Got it?
 //
-typedef long int numvar;					// bitlash returns things of type numvar
-typedef unsigned long int unumvar;			// sometimes unsigned interpretation is best (like millis)
-
 numvar getVar(unsigned char);				// return value of bitlash variable.  id is [0..25] for [a..z]
 void assignVar(unsigned char, numvar);		// assign value to variable.  id is [0..25] for [a..z]
 numvar incVar(unsigned char);				// increment variable.  id is [0..25] for [a..z]

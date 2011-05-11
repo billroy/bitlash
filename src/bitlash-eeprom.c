@@ -33,14 +33,6 @@
 	This is a tiny attribute-value pair database for small EEPROM devices.
 ***/
 
-// terrible horrible eeprom addressing kludge
-// we steal a high bit to distinguish eeprom addresses
-#define EEKLUDGE 0x8000
-#define EEMASK   0x7fff
-char isram(char *addr) { return (!((int) addr & EEKLUDGE)); }
-char* kludge(int addr) { return ((char *)(addr | EEKLUDGE)); }
-int dekludge(char *addr) { return ((int) addr & EEMASK); }
-
 
 //////////////////////////////////////////
 //
@@ -188,7 +180,8 @@ void cmd_function(void) {
 char id[IDLEN+1];			// buffer for id
 
 	getsym();				// eat "function", get putative id
-	if ((sym != s_undef) && (sym != s_macro)) unexpected(M_id);
+	if ((sym != s_undef) && (sym != s_script_eeprom) &&
+		(sym != s_script_progmem) && (sym != s_script_file)) unexpected(M_id);
 	strncpy(id, idbuf, IDLEN+1);	// save id string through value parse
 	eraseentry(id);
 	

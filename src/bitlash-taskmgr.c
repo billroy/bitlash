@@ -34,16 +34,16 @@
 byte background;
 byte suspendBackground;
 byte curtask;
-char *tasklist[NUMTASKS];			// macro text of the task
-numvar snoozetime[NUMTASKS];	// time between task invocations
+int tasklist[NUMTASKS];				// EEPROM address of text of the function
+numvar snoozetime[NUMTASKS];		// time between task invocations
 unsigned long waketime[NUMTASKS];	// millis() time this task is eligible to run
 
-void initTaskList(void) { memset(tasklist, 0, NUMTASKS * sizeof(char *)); }
+void initTaskList(void) { memset(tasklist, 0, NUMTASKS * sizeof(int)); }
 
 void stopTask(byte slot) { if (slot < NUMTASKS) tasklist[slot] = 0; }
 
 // add task to run list
-void startTask(char *macroid, numvar snoozems) {
+void startTask(int macroid, numvar snoozems) {
 byte slot;
 	for (slot = 0; (slot < NUMTASKS); slot++) {
 		if (tasklist[slot] == 0) {
@@ -73,7 +73,7 @@ byte i;
 	for (i=0; i<NUMTASKS; i++) {
 		// run one task per call on a round robin basis
 		if (++curtask >= NUMTASKS) curtask = 0;
-		if ((tasklist[curtask] != (char *) 0) && (millis() >= waketime[curtask])) {
+		if ((tasklist[curtask] != 0) && (millis() >= waketime[curtask])) {
 			background = 1;
 			
 			// Broken interrupt routines have (twice now) manifest as spuriously
@@ -86,7 +86,7 @@ byte i;
 			if (!tasklist[curtask]) { 
 				unexpected(M_unexpected);		// unexpected unexpected error
 			}
-			doCommand(kludge(findend(dekludge(tasklist[curtask]))));
+			execscript(SCRIPT_EEPROM, findend(tasklist[curtask]));
 
 			// schedule the next time quantum for this task
 			waketime[curtask] = millis() + snoozetime[curtask];
@@ -102,7 +102,7 @@ byte slot;
 	for (slot = 0; slot < NUMTASKS; slot++) {
 		if (tasklist[slot] != 0) {
 			printInteger(slot); spb(':'); spb(' ');
-			eeputs(dekludge(tasklist[slot])); speol();
+			eeputs(tasklist[slot]); speol();
 		}
 	}
 }
