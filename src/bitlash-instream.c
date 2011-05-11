@@ -16,21 +16,27 @@ numvar fetchptr;
 
 TODO: SD Support
 
+- doCommand fixes per below
+	- doc:
+		- returns numvar
+		- is re-entrant
 
-- doCommand()
-	- published interface is like exec("print 1+1"): executes string in RAM
-	- make doCommand() re-entrant
-		- only register setjmp if previous fetchtype is FETCH_NONE
-		- otherwise save/restore execution context via fetchmark
+- background macros
 
-- runBackgroundMacro
-	- internally we need
-		- exec_stream(byte type, numvar fetchmark, how does the sdfile name get through?)
-		- exec_stream(FETCH_EEPROM, taskslot[curtask]);
-	- does not need re-entrancy; only called at top of task entry		
-	- does need setjmp error catcher
+	- runBackgroundMacro
+		- doCommand(kludge(findend(dekludge(tasklist[curtask]))));
+		+ exec_stream(FETCH_EEPROM, tasklist[curtask]);
+
+	- redefine tasklist to hold numvar in the slot
+		- char *tasklist[NUMTASKS];			// macro text of the task
+		+ numvar tasklist[NUMTASKS];
+
+- get rid of kludge, dekludge
+- get rid of s_macro
 
 - parseid(): 
+***	- resolve s_funct passback strategy
+
 	- s_macro -> s_funct_eeprom
 		- add s_funct_file
 
@@ -47,6 +53,10 @@ TODO: SD Support
 - feat: commands on the card: ls, rm, create
 - feat: create/write to file
 - feat: tb(): traceback on fatal error
+
+	not working
+	function tb {i=arg(-1);while i {print i:s;i=inb(i-4)-4;}}
+
 - feat: anonymous scripts in progmem -> progmem block device
 
 END TODO LIST
@@ -64,6 +74,17 @@ byte scriptFileExists(char *scriptname) {
 	}
 	return SDFat.exists(scriptname);
 }
+
+
+//////////
+//
+// doCommand: main entry point to execute a bitlash command
+//
+numvar doCommand(char *cmd) {
+	return exec_stream(FETCH_RAM, cmd);
+}
+
+
 
 
 //////////
@@ -100,11 +121,6 @@ numvar fetchmark = markParsePoint();
 	}
 	fetchtype = type;
 	fetchptr = location;
-
-sdfat case falters here
-how does filename get in
-comes here in location?
-
 	initParsePoint();
 	getsym();
 
@@ -147,6 +163,7 @@ void initParsePoint(void) {
 		// open the input file if there is no file open, 
 		// or the open file does not match what we want
 		if (!SDFile.isOpen() || strcmp((char *) getarg(-1), SDFile.getFilename(char * name)) {
+			// Q: need to close an open file here before new open?
 			if (!SDFile.open((char *) getarg(-1), O_READ)) expected(M_function);	// TODO: err msg
 		}
 		if (!SDFile.seekSet(fetchptr)) expected(M_function);	// TODO: file error msg
