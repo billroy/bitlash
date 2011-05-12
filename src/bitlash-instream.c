@@ -99,7 +99,7 @@ numvar fetchmark = markparsepoint();
 
 	// interpret the function text and collect its result
 	numvar ret = getstatementlist();
-	returntoparsepoint(fetchmark);		// now where were we?
+	returntoparsepoint(fetchmark, 1);		// now where were we?
 	return ret;
 }
 
@@ -175,18 +175,18 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 }
 
 
-void returntoparsepoint(numvar fetchmark) {
+void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 
 	// restore parse type and location; for script files, pass name from string pool
 	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, 
-		//(char *) arg[1]);
-		(char *) ((numvar *) arg[2]) [1]);
+		returntoparent ?
+			((char *) ((numvar *) arg[2]) [1]) : ((char *) arg[1]) );
 
 #ifdef PARSER_TRACE
 	if (trace) {
 		sp("return:");
 		printHex(fetchmark); spb('>');
-		printHex(fetchtype); spb(' '); printHex(fetchptr); 
+		printHex(fetchtype); spb(' '); printHex(fetchptr); spb(' ');printHex(returntoparent);
 		sp((char *) arg[1]);
 		spb(' ');
 		sp((char *) ((numvar *) arg[2]) [1]);

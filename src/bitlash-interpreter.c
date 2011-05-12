@@ -177,7 +177,7 @@ byte thesym = sym;
 	if (which > 0) {					// oops ran out of piddys
 		//fetchptr = fetchmark;			// restore to last statement
 		//primec();						// set up for getsym()
-		returntoparsepoint(fetchmark);
+		returntoparsepoint(fetchmark, 0);
 		sym = thesym;
 		symval = thesymval;
 	}
@@ -209,7 +209,7 @@ numvar fetchmark;
 		for (;;) {
 			//fetchptr = fetchmark;			// restore to mark
 			//primec();						// set up for mr. getsym()
-			returntoparsepoint(fetchmark);
+			returntoparsepoint(fetchmark, 0);
 			getsym(); 						// fetch the start of the conditional
 			if (getnum()) {
 				retval = getstatement();

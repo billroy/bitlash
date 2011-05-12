@@ -569,7 +569,7 @@ byte scriptfileexists(char *);
 numvar execscript(byte, numvar, char *);
 void callscriptfunction(byte, numvar, char *);
 numvar markparsepoint(void);
-void returntoparsepoint(numvar);
+void returntoparsepoint(numvar, byte);
 void primec(void);
 void fetchc(void);
 void getsym(void);
