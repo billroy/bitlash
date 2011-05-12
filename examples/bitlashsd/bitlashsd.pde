@@ -50,6 +50,10 @@ byte scriptopen(char *scriptname, numvar position) {
 	// open the input file if there is no file open, 
 	// or the open file does not match what we want
 	if (!scriptfile.isOpen() || strcmp(scriptname, scriptnamecache)) {
+		if (scriptfile.isOpen()) scriptfile.close();
+
+		Serial.print("O:"); Serial.println(scriptname);
+
 		if (!scriptfile.open(scriptname, O_READ)) return 0;
 		strcpy(scriptnamecache, scriptname);		// cache the name we have open
 		if (position == 0L) return 1;				// save a seek, when we can

@@ -162,7 +162,7 @@ void initparsepoint(void) {
 		sp("fopen ");sp((char *) fetchptr); speol();
 
 		// ask the file glue to open and position the file for us
-		scriptopen((char *) fetchptr, 0L);
+		if (!scriptopen((char *) fetchptr, 0L)) unexpected(M_oops);		// TODO: error message
 	}
 	primec();	// re-fetch inchar
 }
