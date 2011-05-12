@@ -146,8 +146,8 @@ numvar markparsepoint(void) {
 
 #ifdef PARSER_TRACE
 	if (trace) {
-		sp("mark:");printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
-		spb('>'); printInteger(ret);
+		sp("mark:");printHex(fetchtype); spb(' '); printHex(fetchptr); 
+		spb('>'); printHex(ret);
 		speol();
 	}
 #endif
@@ -177,17 +177,19 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 
 void returntoparsepoint(numvar fetchmark) {
 
-	//Serial.print("ret:"); Serial.println((char *) arg[-1]);
-
-	// restore parse type and location
-	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, (char *) arg[-1]);
+	// restore parse type and location; for script files, pass name from string pool
+	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, 
+		//(char *) arg[1]);
+		(char *) ((numvar *) arg[2]) [1]);
 
 #ifdef PARSER_TRACE
 	if (trace) {
 		sp("return:");
-		printInteger(fetchmark); spb('>');
-		printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
-		sp((char *) arg[-1]);
+		printHex(fetchmark); spb('>');
+		printHex(fetchtype); spb(' '); printHex(fetchptr); 
+		sp((char *) arg[1]);
+		spb(' ');
+		sp((char *) ((numvar *) arg[2]) [1]);
 		speol();
 	}
 #endif
@@ -207,7 +209,7 @@ void fetchc(void) {
 #ifdef PARSER_TRACE
 	if (trace) {
 		spb('[');
-		printInteger(fetchptr);
+		printHex(fetchptr);
 		spb(']');
 	}
 #endif
@@ -250,7 +252,7 @@ void primec(void) {
 void traceback(void) {
 numvar *a = arg;
 	while (a) {
-		sp((char *) (a[-1])); speol();
-		a = (numvar *) (a[-2]);
+		sp((char *) (a[1])); speol();
+		a = (numvar *) (a[2]);
 	}
 }
