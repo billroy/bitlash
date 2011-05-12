@@ -40,7 +40,7 @@ jmp_buf env;
 // doCommand: main entry point to execute a bitlash command
 //
 numvar doCommand(char *cmd) {
-	return execscript(SCRIPT_RAM, (numvar) cmd);
+	return execscript(SCRIPT_RAM, (numvar) cmd, 0);
 }
 
 #else
@@ -76,6 +76,7 @@ void doCommand(char *cmd) {
 
 void initBitlash(unsigned long baud) {
 	beginSerial(baud);
+	vinit();
 	displayBanner();
 
 	// Run the script named "startup" if there is one

@@ -86,7 +86,7 @@ byte i;
 			if (!tasklist[curtask]) { 
 				unexpected(M_unexpected);		// unexpected unexpected error
 			}
-			execscript(SCRIPT_EEPROM, findend(tasklist[curtask]));
+			execscript(SCRIPT_EEPROM, findend(tasklist[curtask]), 0);
 
 			// schedule the next time quantum for this task
 			waketime[curtask] = millis() + snoozetime[curtask];

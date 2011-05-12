@@ -566,8 +566,8 @@ numvar incVar(uint8_t id);					// increment variable.  id is [0..25] for [a..z]
 #define SCRIPT_FILE		4
 
 byte scriptfileexists(char *);
-numvar execscript(byte, numvar);
-void callscriptfunction(byte, numvar);
+numvar execscript(byte, numvar, char *);
+void callscriptfunction(byte, numvar, char *);
 numvar markparsepoint(void);
 void returntoparsepoint(numvar);
 void primec(void);

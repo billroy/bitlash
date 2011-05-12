@@ -30,12 +30,14 @@
 
 
 // forward declaration
-void initparsepoint(void);
+void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname);
 
 byte scriptexists(char *scriptname);
 byte scriptopen(char *scriptname, numvar position);
 numvar scriptgetpos(void);
 byte scriptread(void);
+
+
 
 
 /////////
@@ -47,7 +49,7 @@ byte scriptread(void);
 //	and in runBackgroundTasks to kick off the background run.
 //
 //
-numvar execscript(byte scripttype, numvar scriptaddress) {
+numvar execscript(byte scripttype, numvar scriptaddress, char *scriptname) {
 numvar fetchmark = markparsepoint();
 
 	// if this is the first stream context in this invocation,
@@ -83,15 +85,16 @@ numvar fetchmark = markparsepoint();
 #ifdef SOFTWARE_SERIAL_TX
 				resetOutput();		// clean up print module
 #endif
-
+				// Other cleanups here
+				vinit();			// initialize the expression stack
+				fetchtype = SCRIPT_NONE;	// reset parse context
+				fetchptr = 0L;				// reset parse location
+				// sd_up = 0;				// TODO: reset file system
 				return (numvar) -1;
-			}
-		}
-		vinit();			// initialize the expression stack
+			}							// X_EXIT case
+		}								// switch
 	}
-	fetchtype = scripttype;
-	fetchptr = scriptaddress;
-	initparsepoint();
+	initparsepoint(scripttype, scriptaddress, scriptname);
 	getsym();
 
 	// interpret the function text and collect its result
@@ -105,13 +108,13 @@ numvar fetchmark = markparsepoint();
 //
 // Call a Bitlash script function and push its return value on the stack
 //
-void callscriptfunction(byte scripttype, numvar scriptaddress) {
+void callscriptfunction(byte scripttype, numvar scriptaddress, char *scriptname) {
 	
 	parsearglist();
 	byte thesym = sym;					// save next sym for restore
 	vpush(symval);						// and symval
 
-	numvar ret = execscript(scripttype, scriptaddress);
+	numvar ret = execscript(scripttype, scriptaddress, scriptname);
 
 	symval = vpop();
 	sym = thesym;
@@ -139,7 +142,7 @@ numvar markparsepoint(void) {
 
 	// stash the fetch context type in the high nibble of fetchptr
 	// LIMIT: longest script is 2^29-1 bytes
-	numvar ret = ((numvar) fetchtype << 28) | (numvar) fetchptr;
+	numvar ret = (((numvar) fetchtype << 28) & 0x0fffffffL) | (numvar) fetchptr;
 
 #ifdef PARSER_TRACE
 	if (trace) {
@@ -153,32 +156,38 @@ numvar markparsepoint(void) {
 }
 
 
-void initparsepoint(void) {
+void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
+
+	fetchtype = scripttype;
+	fetchptr = scriptaddress;
+	
+	// if we're restoring to idle, we're done
+	if (fetchtype == SCRIPT_NONE) return;
 
 	// handle file transition side effects here, once per transition,
 	// rather than once per character below in primec()
 	if (fetchtype == SCRIPT_FILE) {
 
-		sp("fopen ");sp((char *) fetchptr); speol();
-
 		// ask the file glue to open and position the file for us
-		if (!scriptopen((char *) fetchptr, 0L)) unexpected(M_oops);		// TODO: error message
+		if (!scriptopen(scriptname, scriptaddress)) unexpected(M_oops);		// TODO: error message
 	}
 	primec();	// re-fetch inchar
 }
 
 
 void returntoparsepoint(numvar fetchmark) {
+
+	//Serial.print("ret:"); Serial.println((char *) arg[-1]);
+
 	// restore parse type and location
-	fetchtype = fetchmark >> 28;			// unstash type from top nibble
-	fetchptr = fetchmark & 0xfffffff;		// LIMIT: longest script is 2^29-1 bytes
-	initparsepoint();
+	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, (char *) arg[-1]);
 
 #ifdef PARSER_TRACE
 	if (trace) {
 		sp("return:");
 		printInteger(fetchmark); spb('>');
 		printInteger(fetchtype); spb(' '); printInteger(fetchptr); 
+		sp((char *) arg[-1]);
 		speol();
 	}
 #endif
@@ -219,6 +228,7 @@ void primec(void) {
 		case SCRIPT_PROGMEM:	inchar = pgm_read_byte(fetchptr); 	break;
 		case SCRIPT_EEPROM:		inchar = eeread((int) fetchptr);	break;
 		case SCRIPT_FILE:		inchar = scriptread();				break;
+		default:				unexpected(M_oops);
 	}
 
 #ifdef PARSER_TRACE
