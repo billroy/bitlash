@@ -142,7 +142,7 @@ numvar markparsepoint(void) {
 
 	// stash the fetch context type in the high nibble of fetchptr
 	// LIMIT: longest script is 2^29-1 bytes
-	numvar ret = (((numvar) fetchtype << 28) & 0x0fffffffL) | (numvar) fetchptr;
+	numvar ret = ((numvar) fetchtype << 28) | (fetchptr & 0x0fffffffL);
 
 #ifdef PARSER_TRACE
 	if (trace) {
