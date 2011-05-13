@@ -208,6 +208,5 @@ prog_char banner[] PROGMEM = {
 void displayBanner(void) {
 	// print the banner and copyright notice
 	// please note the license requires that you maintain this notice
-	strncpy_P(lbuf, banner, STRVALLEN);
-	doCommand(lbuf);
+	execscript(SCRIPT_PROGMEM, (numvar) banner, 0);
 }

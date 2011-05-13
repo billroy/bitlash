@@ -4,8 +4,6 @@
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.
 
-	This is an example demonstrating how to use the Bitlash2 library for Arduino 0015.
-
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
@@ -32,16 +30,19 @@ SdFat sd;
 SdFile scriptfile;
 
 byte sd_up;	// true iff SDFat.init() has succeeded
-
 char scriptnamecache[14];	// TODO: proper define here
 
-
-// return true iff script exists
-byte scriptexists(char *scriptname) {
+byte initsd(void) {
 	if (!sd_up) {
+		// TODO: document the sd.init() options here
 		if (!sd.init()) return 0;
 		sd_up = 1;
 	}
+}
+
+// return true iff script exists
+byte scriptexists(char *scriptname) {
+	if (!(initsd()) return 0;
 	return sd.exists(scriptname);
 }
 
@@ -77,7 +78,47 @@ byte scriptread(void) {
 	return (byte) input;
 }
 
+numvar sdls(void) {
+	if (initsd()) sd.ls(LS_SIZE, 0);		// LS_SIZE, LS_DATE, LS_R, indent
+	return 0;
+}
 
+numvar sdexists(void) { return scriptexists(arg(1)); }
+numvar sdrm(void) { return sd.rm(arg(1)); }
+
+numvar sdwrite(char *filename, char *contents, byte append) {
+	numvar fetchmark = markparsepoint();
+	if (scriptfile.isOpen()) {
+		if (!scriptfile.close()) return 0;
+	}
+	int flags = O_CREAT | O_TRUNC;
+	if (append) flags |= O_APPEND;
+	if (!scriptfile.open(filename, flags)) return 0;
+	if (scriptfile.write(contents, strlen(contents)) < 0) return 0;
+	if (!scriptfile.close()) return 0;
+	restoreParsePoint(fetchmark, 1);
+	return 1;
+}
+
+numvar sdcreate(void) { return sdwrite((char *) arg(1), (char *) arg(2), 0); }
+numvar sdappend(void) { return sdwrite((char *) arg(1), (char *) arg(2), 1); }
+
+numvar sdcat(void) {
+	if (!scriptexists(arg(1)) return 0;
+	numvar fetchmark = markparsepoint();
+	initParsePoint(SCRIPT_FILE, 0L, (char *) arg(1));
+	while (inchar) {
+		spb(inchar);
+		fetchc();
+	}
+	restoreParsePoint(fetchmark, 1);
+	return 1;
+}
+
+// test doCommand() re-entrancy
+numvar exec(void) {
+	return doCommand((char *) getarg(1));
+}
 
 void setup(void) {
 
@@ -85,9 +126,14 @@ void setup(void) {
 	// print startup banner and run the startup macro
 	initBitlash(57600);
 
-	// you can execute commands here to set up initial state
-	// bear in mind these execute after the startup macro
-	// doCommand("print(1+1)");
+	addBitlashFunction("exec", (bitlash_function) exec);
+	addBitlashFunction("sd.ls", (bitlash_function) sdls);
+	addBitlashFunction("sd.exists", (bitlash_function) sdexists);
+	addBitlashFunction("sd.rm", (bitlash_function) sdrm);
+	addBitlashFunction("sd.create", (bitlash_function) sdcreate);
+	addBitlashFunction("sd.append", (bitlash_function) sdappend);
+	addBitlashFunction("sd.cat", (bitlash_function) sdcat);
+
 }
 
 void loop(void) {

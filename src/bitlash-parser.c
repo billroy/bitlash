@@ -291,6 +291,7 @@ void vinit(void) {
 	vpush(0);				// push a 0 there so arg(0) is 0 at the top
 #if defined(STRING_POOL)
 	stringPool = (char *) vstack;	// stringPool starts at unused base of vstack
+	*stringPool = 0;				// make it look empty
 #endif
 }
 
