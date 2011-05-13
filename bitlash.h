@@ -76,3 +76,9 @@ typedef void (*serialOutputFunc)(byte);
 byte serialIsOverridden(void);
 void setOutputHandler(serialOutputFunc);
 void resetOutputHandler(void);
+
+///////////////////////
+//	File functions
+//
+numvar sdcat(void);
+numvar sdwrite(char *filename, char *contents, byte append);

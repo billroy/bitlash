@@ -28,16 +28,17 @@
 ***/
 #include "bitlash.h"
 
+#define O_READ 0x01		// from SdFile.h
 
 // forward declaration
 void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname);
 
+// Trampolines for the SD library
 byte scriptexists(char *scriptname);
-byte scriptopen(char *scriptname, numvar position);
+byte scriptopen(char *scriptname, numvar position, byte flags);
 numvar scriptgetpos(void);
 byte scriptread(void);
-
-
+byte scriptwrite(char *filename, char *contents, byte append);
 
 
 /////////
@@ -169,7 +170,7 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 	if (fetchtype == SCRIPT_FILE) {
 
 		// ask the file glue to open and position the file for us
-		if (!scriptopen(scriptname, scriptaddress)) unexpected(M_oops);		// TODO: error message
+		if (!scriptopen(scriptname, scriptaddress, O_READ)) unexpected(M_oops);		// TODO: error message
 	}
 	primec();	// re-fetch inchar
 }
@@ -255,4 +256,34 @@ numvar *a = arg;
 		sp((char *) (a[1])); speol();
 		a = (numvar *) (a[2]);
 	}
+}
+
+
+/////////
+//
+//	"cat": copy file to serial out
+//
+numvar sdcat(void) {
+	if (!scriptexists((char *) getarg(1))) return 0;
+	numvar fetchmark = markparsepoint();
+	initparsepoint(SCRIPT_FILE, 0L, (char *) getarg(1));
+	while (inchar) {
+		if (inchar == '\n') spb('\r');
+		spb(inchar);
+		fetchc();
+	}
+	returntoparsepoint(fetchmark, 1);
+	return 1;
+}
+
+
+/////////
+//
+//	sdwrite: write or append a line to a file
+//
+numvar sdwrite(char *filename, char *contents, byte append) {
+	numvar fetchmark = markparsepoint();
+	if (!scriptwrite(filename, contents, append)) unexpected(M_oops);
+	returntoparsepoint(fetchmark, 1);
+	return 1;
 }

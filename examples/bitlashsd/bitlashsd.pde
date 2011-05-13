@@ -42,20 +42,22 @@ byte initsd(void) {
 
 // return true iff script exists
 byte scriptexists(char *scriptname) {
-	if (!(initsd()) return 0;
+	if (!(initsd())) return 0;
 	return sd.exists(scriptname);
 }
 
 // open and set parse location on input file
-byte scriptopen(char *scriptname, numvar position) {
+byte scriptopen(char *scriptname, numvar position, byte flags) {
 	// open the input file if there is no file open, 
 	// or the open file does not match what we want
 	if (!scriptfile.isOpen() || strcmp(scriptname, scriptnamecache)) {
-		if (scriptfile.isOpen()) scriptfile.close();
+		if (scriptfile.isOpen()) {
+			if (!scriptfile.close()) return 0;
+		}
 
 		Serial.print("O:"); Serial.println(scriptname);
 
-		if (!scriptfile.open(scriptname, O_READ)) return 0;
+		if (!scriptfile.open(scriptname, flags)) return 0;
 		strcpy(scriptnamecache, scriptname);		// cache the name we have open
 		if (position == 0L) return 1;				// save a seek, when we can
 	}
@@ -78,41 +80,41 @@ byte scriptread(void) {
 	return (byte) input;
 }
 
+byte scriptwrite(char *filename, char *contents, byte append) {
+
+	if (scriptfile.isOpen()) {
+		if (!scriptfile.close()) return 0;
+	}
+
+	byte flags;
+	if (append) flags = O_WRITE | O_CREAT | O_APPEND;
+	else 		flags = O_WRITE | O_CREAT | O_TRUNC;
+
+	if (!scriptopen(filename, 0L, flags)) return 0;
+	if (scriptfile.write(contents, strlen(contents)) < 0) return 0;
+	if (!scriptfile.close()) return 0;
+	return 1;
+}
+
 numvar sdls(void) {
 	if (initsd()) sd.ls(LS_SIZE, 0);		// LS_SIZE, LS_DATE, LS_R, indent
 	return 0;
 }
-
-numvar sdexists(void) { return scriptexists(arg(1)); }
-numvar sdrm(void) { return sd.rm(arg(1)); }
-
-numvar sdwrite(char *filename, char *contents, byte append) {
-	numvar fetchmark = markparsepoint();
-	if (scriptfile.isOpen()) {
-		if (!scriptfile.close()) return 0;
-	}
-	int flags = O_CREAT | O_TRUNC;
-	if (append) flags |= O_APPEND;
-	if (!scriptfile.open(filename, flags)) return 0;
-	if (scriptfile.write(contents, strlen(contents)) < 0) return 0;
-	if (!scriptfile.close()) return 0;
-	restoreParsePoint(fetchmark, 1);
-	return 1;
+numvar sdexists(void) { 
+	if (!initsd()) return 0;
+	return scriptexists((char *) getarg(1)); 
 }
-
-numvar sdcreate(void) { return sdwrite((char *) arg(1), (char *) arg(2), 0); }
-numvar sdappend(void) { return sdwrite((char *) arg(1), (char *) arg(2), 1); }
-
-numvar sdcat(void) {
-	if (!scriptexists(arg(1)) return 0;
-	numvar fetchmark = markparsepoint();
-	initParsePoint(SCRIPT_FILE, 0L, (char *) arg(1));
-	while (inchar) {
-		spb(inchar);
-		fetchc();
-	}
-	restoreParsePoint(fetchmark, 1);
-	return 1;
+numvar sdrm(void) { 
+	if (!initsd()) return 0;
+	return sd.remove((char *) getarg(1)); 
+}
+numvar sdcreate(void) { 
+	if (!initsd()) return 0;
+	return sdwrite((char *) getarg(1), (char *) getarg(2), 0); 
+}
+numvar sdappend(void) { 
+	if (!initsd()) return 0;
+	return sdwrite((char *) getarg(1), (char *) getarg(2), 1); 
 }
 
 // test doCommand() re-entrancy
@@ -126,7 +128,7 @@ void setup(void) {
 	// print startup banner and run the startup macro
 	initBitlash(57600);
 
-	addBitlashFunction("exec", (bitlash_function) exec);
+	//addBitlashFunction("exec", (bitlash_function) exec);
 	addBitlashFunction("sd.ls", (bitlash_function) sdls);
 	addBitlashFunction("sd.exists", (bitlash_function) sdexists);
 	addBitlashFunction("sd.rm", (bitlash_function) sdrm);
