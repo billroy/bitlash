@@ -1,0 +1,13 @@
+print "dump of first 0x900 ram locations:";
+print;
+i=0; 
+while i<0x900 {
+	if (!(i&63)) {print; print i:x,": ",;} 
+	if (!(i&7)) print " ",; 
+	c=inb(i++);
+	if c>=' ' && c<='~' {print c:y,; print " ",;}
+	else {
+		if c<16 print "0",; 
+		print c:x,;
+	}
+}
