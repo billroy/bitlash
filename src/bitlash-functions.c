@@ -296,7 +296,7 @@ user_functab_entry user_functions[MAX_USER_FUNCTIONS];		// the table
 //		148
 //
 void addBitlashFunction(char *name, bitlash_function func_ptr) {
-	if (bf_install_count >= MAX_USER_FUNCTIONS-1) overflow(M_functions);
+	if (bf_install_count >= MAX_USER_FUNCTIONS) overflow(M_functions);
 	user_functions[bf_install_count].name = name;
 	user_functions[bf_install_count].func_ptr = func_ptr;	
 	bf_install_count++;

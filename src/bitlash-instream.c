@@ -147,6 +147,7 @@ numvar markparsepoint(void) {
 
 #ifdef PARSER_TRACE
 	if (trace) {
+		speol();	
 		sp("mark:");printHex(fetchtype); spb(' '); printHex(fetchptr); 
 		spb('>'); printHex(ret);
 		speol();
@@ -158,6 +159,15 @@ numvar markparsepoint(void) {
 
 
 void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
+
+#ifdef PARSER_TRACE
+	if (trace) {
+		speol();
+		sp("init:");printHex(scripttype); spb(' '); printHex(scriptaddress); 
+		if (scriptname) { spb(' '); sp(scriptname); }
+		speol();
+	}
+#endif
 
 	fetchtype = scripttype;
 	fetchptr = scriptaddress;
@@ -185,12 +195,10 @@ void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 
 #ifdef PARSER_TRACE
 	if (trace) {
+		speol();
 		sp("return:");
 		printHex(fetchmark); spb('>');
 		printHex(fetchtype); spb(' '); printHex(fetchptr); spb(' ');printHex(returntoparent);
-		sp((char *) arg[1]);
-		spb(' ');
-		sp((char *) ((numvar *) arg[2]) [1]);
 		speol();
 	}
 #endif

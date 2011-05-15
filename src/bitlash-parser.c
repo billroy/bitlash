@@ -162,7 +162,6 @@ void getsym(void) {
 
 #ifdef PARSER_TRACE
 	if (trace) {
-		//spb('{'); printInteger(sym); spb(' '); printInteger(symval); spb('}');
 		sp(" sym="); printInteger(sym); sp(" v="); printInteger(symval); spb(' ');
 	}
 #endif

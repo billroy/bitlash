@@ -128,14 +128,13 @@ void setup(void) {
 	// print startup banner and run the startup macro
 	initBitlash(57600);
 
-	//addBitlashFunction("exec", (bitlash_function) exec);
+	addBitlashFunction("exec", (bitlash_function) exec);
 	addBitlashFunction("sd.ls", (bitlash_function) sdls);
 	addBitlashFunction("sd.exists", (bitlash_function) sdexists);
 	addBitlashFunction("sd.rm", (bitlash_function) sdrm);
 	addBitlashFunction("sd.create", (bitlash_function) sdcreate);
 	addBitlashFunction("sd.append", (bitlash_function) sdappend);
 	addBitlashFunction("sd.cat", (bitlash_function) sdcat);
-
 }
 
 void loop(void) {
