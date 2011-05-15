@@ -61,7 +61,7 @@
 //
 // Enable PARSER_TRACE to make ^T toggle a parser trace debug print stream
 // cost: ~400 bytes flash
-#define PARSER_TRACE 1
+//#define PARSER_TRACE 1
 
 
 

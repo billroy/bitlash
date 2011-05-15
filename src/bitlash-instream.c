@@ -51,7 +51,11 @@ byte scriptwrite(char *filename, char *contents, byte append);
 //
 //
 numvar execscript(byte scripttype, numvar scriptaddress, char *scriptname) {
-numvar fetchmark = markparsepoint();
+
+	// save parse context
+	numvar fetchmark = markparsepoint();
+	byte thesym = sym;
+	vpush(symval);
 
 	// if this is the first stream context in this invocation,
 	// set up our error recovery point and init the value stack
@@ -101,6 +105,8 @@ numvar fetchmark = markparsepoint();
 	// interpret the function text and collect its result
 	numvar ret = getstatementlist();
 	returntoparsepoint(fetchmark, 1);		// now where were we?
+	sym = thesym;
+	symval = vpop();
 	return ret;
 }
 
@@ -112,13 +118,7 @@ numvar fetchmark = markparsepoint();
 void callscriptfunction(byte scripttype, numvar scriptaddress, char *scriptname) {
 	
 	parsearglist();
-	byte thesym = sym;					// save next sym for restore
-	vpush(symval);						// and symval
-
 	numvar ret = execscript(scripttype, scriptaddress, scriptname);
-
-	symval = vpop();
-	sym = thesym;
 	releaseargblock();
 	vpush(ret);
 }
@@ -196,7 +196,7 @@ void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 #ifdef PARSER_TRACE
 	if (trace) {
 		speol();
-		sp("return:");
+		sp("rest:");
 		printHex(fetchmark); spb('>');
 		printHex(fetchtype); spb(' '); printHex(fetchptr); spb(' ');printHex(returntoparent);
 		speol();
