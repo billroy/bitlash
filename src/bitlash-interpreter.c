@@ -89,8 +89,8 @@ signed char nestlevel = 0;
 		}
 	}
 
-	// skipping the if statement is a little tricky
-	else if (sym == s_if) {
+	// skipping the if statement is a little tricky; same for switch
+	else if ((sym == s_if) || (sym == s_switch)) {
 
 		// find ';', '{', or end
 		while ((sym != s_eof) && (sym != s_semi) && (sym != s_lcurly)) getsym();
