@@ -61,7 +61,7 @@
 //
 // Enable PARSER_TRACE to make ^T toggle a parser trace debug print stream
 // cost: ~400 bytes flash
-//#define PARSER_TRACE 1
+#define PARSER_TRACE 1
 
 
 
@@ -697,6 +697,7 @@ extern char idbuf[IDLEN+1];
 #define s_script_eeprom	(35 | 0x80)
 #define s_script_progmem (36 | 0x80)
 #define s_script_file	(37 | 0x80)
+#define s_comment		(38 | 0x80)
 
 
 // Names for literal symbols: these one-character symbols 

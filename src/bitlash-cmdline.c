@@ -159,7 +159,7 @@ void doCharacter(char c) {
 #ifdef PARSER_TRACE
 	else if (c == 20) {		// ^T toggle trace
 		trace = !trace;
-		spb(7);
+		//spb(7);
 	}
 #endif
 	else if (c == 21) {		// ^U to get last line

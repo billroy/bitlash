@@ -108,7 +108,7 @@ tokenhandler tokenhandlers[TOKENTYPES] = {
 prog_char chartypes[] PROGMEM = {    											//    0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 	np(3,4), np(4,4),  np(4,4), np(4,4),  np(4,0), np(0,4),  np(4,0), np(4,4),	//0  NUL SOH STX ETX EOT ENQ ACK BEL BS  HT  LF  VT  FF  CR  SO  SI
 	np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),	//1  DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US
-	np(0,8), np(7,7),  np(4,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,7),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
+	np(0,8), np(7,7),  np(4,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,8),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
 	np(1,1), np(1,1),  np(1,1), np(1,1),  np(1,1), np(8,7),  np(8,8), np(8,4),	//3   0   1   2   3   4   5   6   7   8   9   :   ;   <   =   >   ?
 	np(4,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,2),	//4   @   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O
 	np(2,2), np(2,2),  np(2,2), np(2,2),  np(2,2), np(2,4),  np(4,4), np(7,2),	//5   P   Q   R   S   T   U   V   W   X   Y   Z   [   \   ]   ^   _
@@ -466,6 +466,21 @@ void skpwhite(void) {
 	getsym();
 }
 
+// Comment: Skip from // to end of line, return next symbol
+void skipcomment(void) {
+	while (sym == s_comment) {
+		while (inchar && (inchar != '\n') && (inchar != '\r')) fetchc();
+		if (!inchar) {
+			sym = s_eof;
+			return;
+		}
+		else {
+			fetchc();	// eat \r or \n
+			getsym();	// and tee up what's next
+		}
+	}
+}
+
 // Handle unexpected character
 void badsym(void) {
 	unexpected(M_char);
@@ -485,10 +500,10 @@ void chrconst(void) {
 }
 
 
-prog_char twochartokens[] PROGMEM = { "&&||==!=++--:=>=>><=<<" };
+prog_char twochartokens[] PROGMEM = { "&&||==!=++--:=>=>><=<<//" };
 prog_uchar twocharsyms[] PROGMEM = {
 	s_logicaland, s_logicalor, s_logicaleq, s_logicalne, s_incr, 
-	s_decr, s_define, s_ge, s_shiftright, s_le, s_shiftleft
+	s_decr, s_define, s_ge, s_shiftright, s_le, s_shiftleft, s_comment
 };
 
 // Parse a one- or two-char operator like >, >=, >>, ...	
@@ -506,6 +521,7 @@ void parseop(void) {
 		if ((sym == c1) && (inchar == c2)) {
 			sym = (byte) pgm_read_byte(twocharsyms + index);
 			fetchc();
+			if (sym == s_comment) skipcomment();
 			return;
 		}
 		index++;
