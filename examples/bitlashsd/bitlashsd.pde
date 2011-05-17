@@ -97,7 +97,8 @@ byte scriptwrite(char *filename, char *contents, byte append) {
 }
 
 numvar sdls(void) {
-	if (initsd()) sd.ls(LS_SIZE, 0);		// LS_SIZE, LS_DATE, LS_R, indent
+//	if (initsd()) sd.ls(LS_SIZE, 0);		// LS_SIZE, LS_DATE, LS_R, indent
+	if (initsd()) sd.ls(LS_SIZE);		// LS_SIZE, LS_DATE, LS_R, indent
 	return 0;
 }
 numvar sdexists(void) { 
@@ -116,8 +117,13 @@ numvar sdappend(void) {
 	if (!initsd()) return 0;
 	return sdwrite((char *) getarg(1), (char *) getarg(2), 1); 
 }
-numvar sdcd(void) { 
-	if (!initsd()) return 0;
+numvar sdcd(void) {
+
+	// close any cached open file handle
+	if (scriptfile.isOpen()) {
+		if (!scriptfile.close()) return 0;
+	}
+	else if (!initsd()) return 0;
 	return sd.chdir((char *) getarg(1));
 }
 numvar sdmd(void) { 
