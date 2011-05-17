@@ -116,6 +116,15 @@ numvar sdappend(void) {
 	if (!initsd()) return 0;
 	return sdwrite((char *) getarg(1), (char *) getarg(2), 1); 
 }
+numvar sdcd(void) { 
+	if (!initsd()) return 0;
+	return sd.chdir((char *) getarg(1));
+}
+numvar sdmd(void) { 
+	if (!initsd()) return 0;
+	return sd.mkdir((char *) getarg(1));
+}
+
 
 // test doCommand() re-entrancy
 numvar exec(void) {
@@ -128,13 +137,15 @@ void setup(void) {
 	// print startup banner and run the startup macro
 	initBitlash(57600);
 
-	addBitlashFunction("exec", (bitlash_function) exec);
-	addBitlashFunction("sd.ls", (bitlash_function) sdls);
-	addBitlashFunction("sd.exists", (bitlash_function) sdexists);
-	addBitlashFunction("sd.rm", (bitlash_function) sdrm);
-	addBitlashFunction("sd.create", (bitlash_function) sdcreate);
-	addBitlashFunction("sd.append", (bitlash_function) sdappend);
-	addBitlashFunction("sd.cat", (bitlash_function) sdcat);
+//	addBitlashFunction("exec", (bitlash_function) exec);
+	addBitlashFunction("dir", (bitlash_function) sdls);
+	addBitlashFunction("exists", (bitlash_function) sdexists);
+	addBitlashFunction("del", (bitlash_function) sdrm);
+	addBitlashFunction("create", (bitlash_function) sdcreate);
+	addBitlashFunction("append", (bitlash_function) sdappend);
+	addBitlashFunction("type", (bitlash_function) sdcat);
+	addBitlashFunction("cd", (bitlash_function) sdcd);
+	addBitlashFunction("md", (bitlash_function) sdmd);
 }
 
 void loop(void) {
