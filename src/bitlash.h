@@ -61,7 +61,7 @@
 //
 // Enable PARSER_TRACE to make ^T toggle a parser trace debug print stream
 // cost: ~400 bytes flash
-#define PARSER_TRACE 1
+//#define PARSER_TRACE 1
 
 
 
@@ -567,7 +567,7 @@ numvar incVar(uint8_t id);					// increment variable.  id is [0..25] for [a..z]
 
 byte scriptfileexists(char *);
 numvar execscript(byte, numvar, char *);
-void callscriptfunction(byte, numvar, char *);
+void callscriptfunction(byte, numvar);
 numvar markparsepoint(void);
 void returntoparsepoint(numvar, byte);
 void primec(void);

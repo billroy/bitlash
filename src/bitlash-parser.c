@@ -720,15 +720,15 @@ byte thesym = sym;
 
 		// Script-function-returning-value used as a factor
 		case s_script_eeprom:				// macro returning value
-			callscriptfunction(SCRIPT_EEPROM, findend(thesymval), 0);
+			callscriptfunction(SCRIPT_EEPROM, findend(thesymval));
 			break;
 
 		case s_script_progmem:
-			callscriptfunction(SCRIPT_PROGMEM, thesymval, 0);
+			callscriptfunction(SCRIPT_PROGMEM, thesymval);
 			break;
 
 		case s_script_file:
-			callscriptfunction(SCRIPT_FILE, (numvar) 0, idbuf);
+			callscriptfunction(SCRIPT_FILE, (numvar) 0);	// name implicitly in idbuf!
 			break;
 
 		case s_apin:					// analog pin reference like a0

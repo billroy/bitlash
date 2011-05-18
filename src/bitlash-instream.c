@@ -111,14 +111,29 @@ numvar execscript(byte scripttype, numvar scriptaddress, char *scriptname) {
 }
 
 
+// how to access the calling and called function names
+//
+#define callername ((char *) ((numvar *) arg[2]) [1])
+#define calleename ((char *) arg[1]) 
+
+
 /////////
 //
 // Call a Bitlash script function and push its return value on the stack
 //
-void callscriptfunction(byte scripttype, numvar scriptaddress, char *scriptname) {
-	
+void callscriptfunction(byte scripttype, numvar scriptaddress) {
+
+	// note on function name management
+	//
+	// we get here with the name of the function we want to call in global idbuf.
+	// parsearglist() pushes a copy of idbuf into the string pool, so
+	// the function's name is the first data in the string pool slab
+	// that will be deallocated when the function returns
+	//
+	// we can refer to this copy of the function's name via the callername macro
+	//
 	parsearglist();
-	numvar ret = execscript(scripttype, scriptaddress, scriptname);
+	numvar ret = execscript(scripttype, scriptaddress, calleename);
 	releaseargblock();
 	vpush(ret);
 }
@@ -190,8 +205,9 @@ void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 
 	// restore parse type and location; for script files, pass name from string pool
 	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, 
-		returntoparent ?
-			((char *) ((numvar *) arg[2]) [1]) : ((char *) arg[1]) );
+		returntoparent ? callername : calleename);
+			//((char *) ((numvar *) arg[2]) [1]) : ((char *) arg[1]) );
+
 
 #ifdef PARSER_TRACE
 	if (trace) {
