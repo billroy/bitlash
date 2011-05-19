@@ -419,12 +419,10 @@ void initlbuf(void);
 #endif
 
 // String value buffer size
-//#define STRVALSIZE 80
-#define STRVALSIZE 140
+#define STRVALSIZE 100
 #define STRVALLEN (STRVALSIZE-1)
 #define LBUFLEN STRVALSIZE
 
-extern byte remoteOperation;
 extern char *lbufptr;
 extern char lbuf[LBUFLEN];
 

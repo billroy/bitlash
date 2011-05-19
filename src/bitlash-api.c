@@ -75,7 +75,12 @@ void doCommand(char *cmd) {
 
 
 void initBitlash(unsigned long baud) {
+
 	beginSerial(baud);
+
+	void zapheap(void);
+	zapheap();
+
 	vinit();
 	displayBanner();
 

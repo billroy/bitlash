@@ -1,1 +1,121 @@
-See the Bitlash documentation online at http://bitlash.net.
+Bitlash Release Notes
+
+
+2.0 RC2 -- 06 March 2011
+
+This release fixes a bug in RC1 which broke function definition in some cases.
+
+Please report bugs to bill@bitlash.net
+
+
+1. BUG: Function definition was broken if the line contained ; or additionalcommands
+
+
+If the command defining the function was the last thing on a line, RC1 worked correctly:
+
+	function hello {print "Hello, world!"}		<-- worked
+
+If there were characters after the closing } of the function definition, the bug
+caused the function text to be mismeasured and spurious text would be appended to
+the function definition, causing it to fail in use:
+
+	> function hello { print "Hello, world!"};	<-- this is legal but it triggered bug in RC1
+	saved
+	> ls
+	function hello { print "Hello, world"}};	<-- BUG: extra } saved at the end
+
+The function text is measured more accurately in RC2.
+
+Users are encouraged to upgrade to fix this bug.  
+
+Existing functions may need to be fixed, as well.  Make sure the {} balance.
+
+
+2. Defining a function within a function fails.  That's ok, for now.
+
+Noting a behavior that may change in a future release: an attempt to define a function
+from within a function will fail silently or worse.  Don't do that.
+
+	function foo {function bar{print "bar"};bar};	<-- don't do this!
+	> foo
+	saved
+	> ls
+	function foo {function bar{print "bar"};bar};
+	function bar {};	<-- sorry, doesn't work in 2.0
+	> bar
+	> 
+
+This isn't new: Bitlash 1.1 has the same internal implementation limitation, but 
+it was nearly impossible for a human to get the backslash-quote combinations right 
+to attempt the test.
+
+
+2.0 RC1 -- 05 Feb 2011
+
+- Syntax overhaul: the Bitlash 2.0 language is considerably different,
+	and old macros will need to be updated to run in v2
+
+	if (expression) { stmt;...;stmt;} else {stmt;...;stmt;}
+	while (expression) { stmt; }
+	switch (expression) { stmt0; stmt1; ... stmtN; }
+	function hello {print "Hello, world!";}
+
+- Macros are now Functions, they take arguments and can return a value
+	arg(0) is the count of args you got
+	arg(1..n) are the args
+	return expression; to return a value; zero is assumed
+	User Functions in C use this same scheme now
+
+- Function (/macro) definition syntax has changed:
+	function printmyargs {i=0; while ++i<arg(0) {print arg(i);}}
+
+- New Functions
+	bc: bitclear
+	bs: bitset
+	br: bitread
+	bw: bitwrite
+
+- New API calls
+	setOutputHandler() api allows capture of serial output
+	doCharacter() api allows char-at-a-time input to Bitlash
+
+- New Examples
+	- Bitlash web and telnet server
+
+- Small Beans
+	Input buffer is 140 characters, up from 80.  twitter is the new Hollerith
+	Binary constants of the form 0b01010101 are supported
+
+1.1 -- 04 Feb 2010
+- User Functions (addBitlashFunction)
+
+1.0 -- 17 Jan 2010
+- Fixed filenames in the examples/ folder to remove '-'
+- Updated copyright date in signon banner
+- Doc set update: see http://bitlash.net
+
+1.0rc2 -- 22 Jun 2009
+- Fixed bug which botched handling of escaped characters in string constants.
+
+1.0rc1 -- 01 Jun 2009
+- See http://bitlash.net for updates
+
+0.9 -- 23 Nov 2008
+
+- License updated to LGPL 2.1 
+- Added functions: 
+	- beep(pin, freq, duration)
+	- shiftout()
+- SOFTWARE_SERIAL_RX: build-time configurable software serial rx on pins D0-D7
+	- to support Ethernet integration
+- Adafruit XPort Direct Ethernet integration works pretty well
+- Sanguino integration
+	- Compile for Sanguino Does The Right Thing re: serial ports
+	- (there are some serial port interrupt issues pending)
+
+0.8 -- 31 Oct 2008
+
+- SOFTWARE_TX:
+	- baud(pin, baud)
+	- print #pin:expr
+...

@@ -89,6 +89,13 @@ numvar ret;
 #endif
 }
 
+void zapheap(void) {
+int heaptop;
+extern int __bss_end;
+	Serial.println((int) &__bss_end, DEC);
+	memset(((char *)&__bss_end)+1, 0xbb, (&heaptop - &__bss_end) - 6);
+}
+
 
 ///////////////////////////////////////////////
 //	Dead Beef Random Number Generator
