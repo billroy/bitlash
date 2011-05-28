@@ -399,7 +399,7 @@ byte nextarg = 2;		// first optional arg is in slot #2
 	while (*fptr) {
 		if (*fptr == '%') {
 			++fptr;
-			byte width = 0;
+			numvar width = 0;
 			while (isdigit(*fptr)) {
 				width = (width * 10) + (*fptr++ - '0');
 			}
@@ -413,7 +413,19 @@ byte nextarg = 2;		// first optional arg is in slot #2
 				case '%':	spb('%');							break;	// escaped '%'
 
 #ifdef SOFTWARE_SERIAL_TX
-				case '#':	setOutput(width);					break;	// %13# prints to pin 13
+				// print-to-digital-output-pin
+				// "%#" - print to pin designated by next argument
+				// 	printf("%#Hello, world!",3);		// prints to pin 3
+				// "%4800#" - set baud and print to pin
+				//	printf("%4800#Hello, world!", 3);
+				//
+				case '#':		// printf("%115200# %s %d", 3, "time:",millis)
+					{
+						byte pin = getarg(nextarg);
+						if (width) setBaud(pin, width);
+						setOutput(pin);
+					}
+					break;
 #endif
 
 				default: 	spb('%'); spb(*fptr);				break;	// ??
