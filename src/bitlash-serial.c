@@ -382,3 +382,54 @@ void cmd_print(void) {
 }
 #endif
 
+//////////
+//
+//	printf("format string", item, item, item)
+//
+//
+numvar func_printf(void) {
+byte nextarg = 2;		// first optional arg is in slot #2
+
+// todo: get rid of m_pfmts
+// todo: get rid of s_pound
+
+	if (getarg(0) < 1) { speol(); return 0; }
+	char *fptr = (char *) getarg(1);		// format string pointer
+
+	while (*fptr) {
+		if (*fptr == '%') {
+			++fptr;
+			byte width = 0;
+			while (isdigit(*fptr)) {
+				width = (width * 10) + (*fptr++ - '0');
+			}
+			switch (*fptr) {
+				case 'd':	printInteger(getarg(nextarg));		break;	// decimal
+//				case 'u':	printInteger(getarg(nextarg));		break;	// unsigned decimal (TODO: primitive)
+				case 'x':	printHex(getarg(nextarg));			break;	// hex
+				case 's':	sp((char *) getarg(nextarg));		break;	// string
+				case 'c':	spb(getarg(nextarg));				break;	// byte ("char")
+				case 'b':	printBinary(getarg(nextarg));		break;	// binary
+				case '%':	spb('%');							break;	// escaped '%'
+
+#ifdef SOFTWARE_SERIAL_TX
+				case '#':	setOutput(width);					break;	// %13# prints to pin 13
+#endif
+
+				default: 	spb('%'); spb(*fptr);				break;	// ??
+			}
+			nextarg++;
+		}
+		else spb(*fptr);
+		++fptr;
+	}
+
+#ifdef SOFTWARE_SERIAL_TX
+	resetOutput();
+#endif
+
+	return 0;
+}
+
+
+
