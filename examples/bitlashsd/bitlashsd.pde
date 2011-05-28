@@ -24,6 +24,12 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ***/
 
+#if defined(ARDUINO) && ARDUINO >= 100
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
 #include "bitlash.h"
 #include <SdFat.h>
 SdFat sd;
@@ -55,7 +61,7 @@ byte scriptopen(char *scriptname, numvar position, byte flags) {
 			if (!scriptfile.close()) return 0;
 		}
 
-		Serial.print("O:"); Serial.println(scriptname);
+		//Serial.print("O:"); Serial.println(scriptname);
 
 		if (!scriptfile.open(scriptname, flags)) return 0;
 		strcpy(scriptnamecache, scriptname);		// cache the name we have open

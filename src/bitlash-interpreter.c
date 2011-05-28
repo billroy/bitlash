@@ -336,31 +336,3 @@ numvar retval = 0;
 }
 
 
-#if 0
-// call a macro and push its return value on the stack
-//
-void domacrocall(int macroaddress) {
-	if (macroaddress >= 0) {
-	
-		parsearglist();
-		byte thesym = sym;					// save sym for restore
-		vpush(symval);						// and symval
-		char *fetchmark = fetchptr;			// save the current parse pointer
-
-		// call the macro
-		calleeprommacro(findend(macroaddress));	// register the macro into the parser stream
-		getsym();								// fetch its first symbol
-		
-		numvar ret = getstatementlist();		// parse and execute the macro code here
-//		if (sym != s_eof) expected(M_eof);
-
-		// restore parsing context so we can resume cleanly
-		symval = vpop();		// restore symval
-		sym = thesym;			// restore saved sym
-		releaseargblock();		// drop the args
-		fetchptr = fetchmark;	// restore pointer
-		primec();				// and inchar
-		vpush(ret);				// send back our return value
-	}
-}
-#endif

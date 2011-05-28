@@ -585,6 +585,8 @@ byte is_end(void);
 numvar getarg(numvar);
 void releaseargblock(void);
 void parsearglist(void);
+extern prog_char reservedwords[];
+
 
 // Interpreter globals
 extern byte fetchtype;		// current script type

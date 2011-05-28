@@ -34,26 +34,6 @@
 ***/
 
 
-//////////////////////////////////////////
-//
-//	Reading from the EEPROM
-//
-
-#if 0
-#define getString(addr, str, buflen) strcpy_P(addr, str)
-#else
-// Fetch a string from EEPROM at addr into buffer at str
-void getString(int addr, char *str, int buflen) {
-	while (--buflen) {
-		byte c = eeread(addr++);
-		if ((c == 0) || (c == 255)) break;
-		*str++ = c;
-	}
-	*str = 0;
-}
-#endif
-
-
 // scan from addr for an occupied byte
 int findoccupied(int addr) {
 	while (addr < ENDDB) {

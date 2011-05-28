@@ -33,7 +33,6 @@
 // Syntax and execution errors are handled via longjmp
 jmp_buf env;
 
-#if 1
 
 /////////
 //
@@ -43,43 +42,10 @@ numvar doCommand(char *cmd) {
 	return execscript(SCRIPT_RAM, (numvar) cmd, 0);
 }
 
-#else
-
-// doCommand: main entry point to execute a bitlash command
-//
-void doCommand(char *cmd) {
-
-	// Exceptions come here via longjmp
-	switch(setjmp(env)) {
-		case 0: break;
-		case X_EXIT: {
-			initTaskList();		// stop the infernal machine
-#ifdef SOFTWARE_SERIAL_TX
-			resetOutput();
-			return;
-#endif
-		}
-	}
-
-	vinit();			// initialize the expression stack
-	fetchptr = cmd;		// point to it; next round pre-increments	
-	primec();			// prime inchar
-	getsym();
-	if (sym == s_eof) return;
-
-	// run the macro and print the result if nonzero
-	numvar ret = getstatementlist();
-	if (ret) { printInteger(ret); speol(); }
-}
-#endif
-
 
 void initBitlash(unsigned long baud) {
 
 	beginSerial(baud);
-
-	void zapheap(void);
-	zapheap();
 
 	vinit();
 	displayBanner();

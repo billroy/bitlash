@@ -60,8 +60,6 @@ void displayBanner(void);
 void cmd_help(void) {
 	displayBanner();
 	showdict(helptext);
-	// TODO: extern this puppy
-	extern prog_char reservedwords[];
 	showdict(reservedwords);
 	msgp(M_functions);
 #ifdef LONG_ALIASES

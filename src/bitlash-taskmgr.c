@@ -38,15 +38,17 @@ int tasklist[NUMTASKS];				// EEPROM address of text of the function
 numvar snoozetime[NUMTASKS];		// time between task invocations
 unsigned long waketime[NUMTASKS];	// millis() time this task is eligible to run
 
-void initTaskList(void) { memset(tasklist, 0, NUMTASKS * sizeof(int)); }
+#define SLOT_FREE -1
 
-void stopTask(byte slot) { if (slot < NUMTASKS) tasklist[slot] = 0; }
+void initTaskList(void) { memset(tasklist, 0xff, NUMTASKS * sizeof(tasklist[0])); }
+
+void stopTask(byte slot) { if (slot < NUMTASKS) tasklist[slot] = SLOT_FREE; }
 
 // add task to run list
 void startTask(int macroid, numvar snoozems) {
 byte slot;
 	for (slot = 0; (slot < NUMTASKS); slot++) {
-		if (tasklist[slot] == 0) {
+		if (tasklist[slot] == SLOT_FREE) {
 			tasklist[slot] = macroid;
 			waketime[slot] = millis();		// eligible to run now
 			snoozetime[slot] = snoozems;
@@ -73,19 +75,10 @@ byte i;
 	for (i=0; i<NUMTASKS; i++) {
 		// run one task per call on a round robin basis
 		if (++curtask >= NUMTASKS) curtask = 0;
-		if ((tasklist[curtask] != 0) && (millis() >= waketime[curtask])) {
+		if ((tasklist[curtask] != SLOT_FREE) && (millis() >= waketime[curtask])) {
+
+			// run it with the background flag set
 			background = 1;
-			
-			// Broken interrupt routines have (twice now) manifest as spuriously
-			// firing background macros, i.e., we get RIGHT HERE with no background
-			// macros running, presumably because the test above passed incorrectly
-			// due to register corruption in the interrupt handler.  
-			//
-			// So, let's do a little assertion test and raise 'Unexpected unexpected'.
-			//
-			if (!tasklist[curtask]) { 
-				unexpected(M_unexpected);		// unexpected unexpected error
-			}
 			execscript(SCRIPT_EEPROM, findend(tasklist[curtask]), 0);
 
 			// schedule the next time quantum for this task
@@ -100,7 +93,7 @@ byte i;
 void showTaskList(void) {
 byte slot;
 	for (slot = 0; slot < NUMTASKS; slot++) {
-		if (tasklist[slot] != 0) {
+		if (tasklist[slot] != SLOT_FREE) {
 			printInteger(slot); spb(':'); spb(' ');
 			eeputs(tasklist[slot]); speol();
 		}

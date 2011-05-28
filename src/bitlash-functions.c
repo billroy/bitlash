@@ -27,7 +27,6 @@
 #include "bitlash.h"
 
 // syntactic sugar for func_handlers()
-extern numvar getarg(numvar);
 #if 0	// 15022 bytes
 #define arg1 getarg(1)
 #define arg2 getarg(2)
@@ -92,7 +91,7 @@ numvar ret;
 void zapheap(void) {
 int heaptop;
 extern int __bss_end;
-	Serial.println((int) &__bss_end, DEC);
+	//Serial.println((int) &__bss_end, DEC);
 	memset(((char *)&__bss_end)+1, 0xbb, (&heaptop - &__bss_end) - 6);
 }
 
