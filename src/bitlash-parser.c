@@ -612,13 +612,27 @@ void parseid(void) {
 	else if (find_user_function(idbuf)) sym = s_nfunct;
 #endif
 
+	else findscript(idbuf);
+}
+
+
+//////////
+//
+//	findscript: look up a script, with side effects
+//
+byte findscript(char *idbuf) {
+
 	// script function in eeprom?
-	else if ((symval=findKey(idbuf)) >= 0) sym = s_script_eeprom;
+	if ((symval=findKey(idbuf)) >= 0) sym = s_script_eeprom;
 
 	// script function in a file?
-	else if (scriptexists(idbuf)) sym = s_script_file;
+	else if (scriptfileexists(idbuf)) sym = s_script_file;
 
-	else sym = s_undef;		// huh?
+	else {
+		sym = s_undef;		// huh?
+		return 0;
+	}
+	return sym;
 }
 
 

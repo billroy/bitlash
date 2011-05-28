@@ -47,7 +47,7 @@ byte initsd(void) {
 }
 
 // return true iff script exists
-byte scriptexists(char *scriptname) {
+byte scriptfileexists(char *scriptname) {
 	if (!(initsd())) return 0;
 	return sd.exists(scriptname);
 }
@@ -109,7 +109,7 @@ numvar sdls(void) {
 }
 numvar sdexists(void) { 
 	if (!initsd()) return 0;
-	return scriptexists((char *) getarg(1)); 
+	return scriptfileexists((char *) getarg(1)); 
 }
 numvar sdrm(void) { 
 	if (!initsd()) return 0;

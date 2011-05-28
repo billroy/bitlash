@@ -28,17 +28,26 @@
 ***/
 #include "bitlash.h"
 
+// Enable this for script-in-file support
+#define SDFILE
+
+#if defined(SDFILE)
+
 #define O_READ 0x01		// from SdFile.h
 
-// forward declaration
-void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname);
-
 // Trampolines for the SD library
-byte scriptexists(char *scriptname);
+byte scriptfileexists(char *scriptname);
 byte scriptopen(char *scriptname, numvar position, byte flags);
 numvar scriptgetpos(void);
 byte scriptread(void);
 byte scriptwrite(char *filename, char *contents, byte append);
+#else
+byte scriptfileexists(char *scriptname) { return 0; }
+#endif
+
+
+// forward declaration
+void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname);
 
 
 /////////
@@ -150,11 +159,13 @@ void callscriptfunction(byte scripttype, numvar scriptaddress) {
 //	
 numvar markparsepoint(void) {
 
+#if defined(SDFILE)
 	if (fetchtype == SCRIPT_FILE) {
 		// the location we wish to return to is the point from which we read inchar, 
 		// which is one byte before the current file pointer since it auto-advances
 		fetchptr = scriptgetpos() - 1;
 	}
+#endif
 
 	// stash the fetch context type in the high nibble of fetchptr
 	// LIMIT: longest script is 2^29-1 bytes
@@ -190,6 +201,7 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 	// if we're restoring to idle, we're done
 	if (fetchtype == SCRIPT_NONE) return;
 
+#if defined(SDFILE)
 	// handle file transition side effects here, once per transition,
 	// rather than once per character below in primec()
 	if (fetchtype == SCRIPT_FILE) {
@@ -197,6 +209,8 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 		// ask the file glue to open and position the file for us
 		if (!scriptopen(scriptname, scriptaddress, O_READ)) unexpected(M_oops);		// TODO: error message
 	}
+#endif
+
 	primec();	// re-fetch inchar
 }
 
@@ -254,7 +268,11 @@ void primec(void) {
 		case SCRIPT_RAM:		inchar = *(char *) fetchptr;		break;
 		case SCRIPT_PROGMEM:	inchar = pgm_read_byte(fetchptr); 	break;
 		case SCRIPT_EEPROM:		inchar = eeread((int) fetchptr);	break;
+
+#if defined(SDFILE)
 		case SCRIPT_FILE:		inchar = scriptread();				break;
+#endif
+
 		default:				unexpected(M_oops);
 	}
 
@@ -283,12 +301,14 @@ numvar *a = arg;
 }
 
 
+#if defined(SDFILE)
+
 /////////
 //
 //	"cat": copy file to serial out
 //
 numvar sdcat(void) {
-	if (!scriptexists((char *) getarg(1))) return 0;
+	if (!scriptfileexists((char *) getarg(1))) return 0;
 	numvar fetchmark = markparsepoint();
 	initparsepoint(SCRIPT_FILE, 0L, (char *) getarg(1));
 	while (inchar) {
@@ -311,3 +331,5 @@ numvar sdwrite(char *filename, char *contents, byte append) {
 	returntoparsepoint(fetchmark, 1);
 	return 1;
 }
+
+#endif	// SDFILE

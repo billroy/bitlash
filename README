@@ -1,6 +1,36 @@
 Bitlash Release Notes
 
 
+2.0 RC3d Release Notes -- May, 2011
+
+- BUGFIX: 0xb broken by 0b1000!
+	print 0xbbbbbbbb
+	0
+
+- BUGFIX: MAX_USER_FUNCTIONS error allowed only n-1 functions
+	- bumped MAX_USER_FUNCTIONS to 8
+
+- string arguments
+	- printing strings with :s
+- unary & operator
+- unary * operator
+- // comments
+- doCommand()
+	- is re-entrant
+	- returns numvar (-1L on error)
+- sd card demo
+	dir, exists, del, create, append, type, cd, md
+- scripts on sd card
+
+- REQUIRES SDFat Beta 20110512 available from:
+	- download  from:
+		http://beta-lib.googlecode.com/files/SdFatBeta20110512.zip
+
+	- to install, copy the "SDFat" library from the SDFatBeta distribution
+		into the Arduino/libraries directory and restart Arduino
+
+----------
+
 2.0 RC2 -- 06 March 2011
 
 This release fixes a bug in RC1 which broke function definition in some cases.

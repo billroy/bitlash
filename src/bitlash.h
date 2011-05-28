@@ -563,6 +563,7 @@ numvar incVar(uint8_t id);					// increment variable.  id is [0..25] for [a..z]
 #define SCRIPT_EEPROM 	3
 #define SCRIPT_FILE		4
 
+byte findscript(char *);
 byte scriptfileexists(char *);
 numvar execscript(byte, numvar, char *);
 void callscriptfunction(byte, numvar);
@@ -586,6 +587,7 @@ numvar getarg(numvar);
 void releaseargblock(void);
 void parsearglist(void);
 extern prog_char reservedwords[];
+
 
 
 // Interpreter globals

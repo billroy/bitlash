@@ -1,7 +1,8 @@
+// memdump
 print "dump of first 0x900 ram locations:";
 print;
 i=0; 
-while i<0x900 {
+while i<0x900 {		// for the '328
 	if (!(i&63)) {print; print i:x,": ",;} 
 	if (!(i&7)) print " ",; 
 	c=inb(i++);
