@@ -12,3 +12,5 @@ while i<0x900 {		// for the '328
 		print c:x,;
 	}
 }
+print;
+

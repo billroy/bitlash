@@ -53,7 +53,7 @@ void initBitlash(unsigned long baud) {
 	// Run the script named "startup" if there is one
 	strncpy_P(lbuf, getmsg(M_startup), STRVALLEN);	// get the name "startup" in our cmd buf
 	//if (findKey(lbuf) >= 0) doCommand(lbuf);		// look it up.  exists?  call it.
-	if (findscript(lbuf) >= 0) doCommand(lbuf);		// look it up.  exists?  call it.
+	if (findscript(lbuf)) doCommand(lbuf);			// look it up.  exists?  call it.
 
 	initlbuf();
 }

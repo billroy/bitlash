@@ -211,6 +211,7 @@ prog_char functiondict[] PROGMEM = {
 	"min\0"
 	"outb\0"
 	"pinmode\0"
+	"printf\0"
 	"pulsein\0"
 	"random\0"
 //	"shiftout\0"
@@ -248,6 +249,7 @@ bitlash_function function_table[] PROGMEM = {
 	func_min,
 	func_outb,
 	func_pinmode,
+	func_printf,
 	func_pulsein,
 	func_random,
 //	func_shiftout,

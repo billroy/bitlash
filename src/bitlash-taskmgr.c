@@ -40,7 +40,12 @@ unsigned long waketime[NUMTASKS];	// millis() time this task is eligible to run
 
 #define SLOT_FREE -1
 
-void initTaskList(void) { memset(tasklist, 0xff, NUMTASKS * sizeof(tasklist[0])); }
+void initTaskList(void) { 
+	memset(tasklist, 0xff, NUMTASKS * sizeof(tasklist[0]));
+
+	//+60 bytes
+	//for (byte slot = 0; (slot < NUMTASKS); slot++) tasklist[slot] = SLOT_FREE;
+}
 
 void stopTask(byte slot) { if (slot < NUMTASKS) tasklist[slot] = SLOT_FREE; }
 

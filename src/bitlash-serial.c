@@ -432,6 +432,7 @@ byte nextarg = 2;		// first optional arg is in slot #2
 			}
 			nextarg++;
 		}
+		else if (*fptr == '\n') speol();
 		else spb(*fptr);
 		++fptr;
 	}

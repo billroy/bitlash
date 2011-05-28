@@ -496,6 +496,8 @@ void spb(char c);
 void sp(const char *);
 void speol(void);
 
+numvar func_printf(void); 
+
 #ifdef SOFTWARE_SERIAL_TX
 void resetOutput(void);
 numvar setBaud(numvar, unumvar);
