@@ -34,6 +34,8 @@
 byte background;
 byte suspendBackground;
 byte curtask;
+
+// BUG: this fails for eeproms > 64k in size
 int tasklist[NUMTASKS];				// EEPROM address of text of the function
 numvar snoozetime[NUMTASKS];		// time between task invocations
 unsigned long waketime[NUMTASKS];	// millis() time this task is eligible to run

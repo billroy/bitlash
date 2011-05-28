@@ -47,6 +47,7 @@ void initBitlash(unsigned long baud) {
 
 	beginSerial(baud);
 
+	initTaskList();
 	vinit();
 	displayBanner();
 
