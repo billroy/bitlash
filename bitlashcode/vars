@@ -1,0 +1,10 @@
+// vars
+print "variables at t=",millis;
+print;
+print "a=",a,"b=",b,"c=",c,"d=",d,"e=",e;
+print "f=",f,"g=",g,"h=",h,"i=",i,"j=",j;
+print "k=",k,"l=",l,"m=",m,"n=",n,"o=",o;
+print "p=",p,"q=",q,"r=",r,"s=",s,"t=",t;
+print "u=",u,"v=",v,"w=",w,"x=",x,"y=",y;
+print "z=",z;
+print;

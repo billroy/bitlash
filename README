@@ -21,6 +21,7 @@ Bitlash Release Notes
 - sd card demo
 	dir, exists, del, create, append, type, cd, md
 - scripts on sd card
+	- startup and prompt on sd card
 
 - REQUIRES SDFat Beta 20110512 available from:
 	- download  from:
@@ -28,6 +29,10 @@ Bitlash Release Notes
 
 	- to install, copy the "SDFat" library from the SDFatBeta distribution
 		into the Arduino/libraries directory and restart Arduino
+
+	- to disable, turn off the SDFAT define in bitlash-instream.c and recompile
+
+- printf()
 
 ----------
 
