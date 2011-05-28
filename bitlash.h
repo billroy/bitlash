@@ -62,6 +62,7 @@ numvar incVar(unsigned char);				// increment variable.  id is [0..25] for [a..z
 // Lookup id and return TRUE if it exists
 //
 byte findscript(char *);		// returns TRUE if a script exists with this ID
+int getValue(char *key);			// return location of macro value in EEPROM or -1
 
 ///////////////////////
 //	Add a user function to Bitlash

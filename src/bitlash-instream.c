@@ -29,7 +29,7 @@
 #include "bitlash.h"
 
 // Enable this for script-in-file support
-#define SDFILE
+//#define SDFILE
 
 #if defined(SDFILE)
 

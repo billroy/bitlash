@@ -36,7 +36,11 @@ SdFat sd;
 SdFile scriptfile;
 
 byte sd_up;	// true iff SDFat.init() has succeeded
-char scriptnamecache[14];	// TODO: proper define here
+
+// filename buffer for 8.3 + \0
+#define FNAMELEN 13
+char scriptnamecache[FNAMELEN];
+
 
 byte initsd(void) {
 	if (!sd_up) {

@@ -60,8 +60,11 @@ def waitprompt():
 	c.expect('\n> ')
 	time.sleep(0.1)
 
-#c.sendline('boot')
-#waitprompt()
+# synch with the command prompt
+c.sendline('')
+waitprompt()
+c.sendline('')
+waitprompt()
 
 #######################
 
@@ -71,9 +74,9 @@ if (len(sys.argv) >= 2):
 	f=open(filename)
 	lines = f.readlines()
 	for line in lines:
-		line = line.strip()
-		if (len(line) > 0) and (line[0] != '#'):
-			c.sendline(line.strip())
+		testline = line.strip()
+		if (len(testline) > 0) and (testline[0] != '#'):
+			c.sendline(line)
 			waitprompt()
 
 ##########################

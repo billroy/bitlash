@@ -10,6 +10,10 @@ Bitlash Release Notes
 - BUGFIX: MAX_USER_FUNCTIONS error allowed only n-1 functions
 	- bumped MAX_USER_FUNCTIONS to 8
 
+- BUGFIX: bloader.py was not well-synchronized at the start of a file upload
+	as a result it could lose the first several lines of a file
+	it now syncs correctly with the command prompt on the arduino
+
 - string arguments
 	- printing strings with :s
 - unary & operator
