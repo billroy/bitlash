@@ -84,13 +84,26 @@
 #define beginSerial Serial.begin
 #define serialAvailable Serial.available
 #define serialRead Serial.read
-#define serialWrite Serial.print
+
+#if defined(ARDUINO) && ARDUINO >= 100
+	#define serialWrite Serial.write
+#else
+	#define serialWrite Serial.print
+#endif
+
 #endif
 
 // Arduino version: 11 - enable by hand if needed; see bitlash-serial.h
 //#define ARDUINO_VERSION 11
 
-#include "WProgram.h"
+
+#if defined(ARDUINO) && ARDUINO >= 100
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
+
 #include "WConstants.h"
 //#include "EEPROM.h"
 //#define eeread EEPROM.read

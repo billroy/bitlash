@@ -63,13 +63,32 @@ def waitprompt():
 # synch with the command prompt
 c.sendline('')
 waitprompt()
-c.sendline('')
-waitprompt()
 
 #######################
 
-# if a filename argument was provided, open the file and send it line by line to Bitlash
-if (len(sys.argv) >= 2):
+# if a source and target filename argument were provided, 
+# open the file and send it line by line to Bitlash
+#
+#	FATAL BUG: doesn't work due to /" issue
+#
+if (len(sys.argv) >= 3):
+	filename = sys.argv[1]
+	f=open(filename)
+	lines = f.readlines()
+	target = sys.argv[2]
+	c.sendline('create("' + target + '","")')
+	waitprompt()
+	for line in lines:
+		line = line.strip()
+		if (len(line) > 0) and (line[0] != '#'):
+			line = line.replace('"','\\\"')
+			c.sendline('append("' + target + '","' + line + '\\n")')
+			waitprompt()
+
+# if just a source filename argument was provided, 
+# open the file and send it line by line to Bitlash
+#
+elif (len(sys.argv) >= 2):
 	filename = sys.argv[1]
 	f=open(filename)
 	lines = f.readlines()

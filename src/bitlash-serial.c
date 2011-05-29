@@ -407,7 +407,15 @@ byte nextarg = 2;		// first optional arg is in slot #2
 				case 'd':	printInteger(getarg(nextarg));		break;	// decimal
 //				case 'u':	printInteger(getarg(nextarg));		break;	// unsigned decimal (TODO: primitive)
 				case 'x':	printHex(getarg(nextarg));			break;	// hex
-				case 's':	sp((char *) getarg(nextarg));		break;	// string
+
+				case 's': {			// string
+					char *sptr = (char *) getarg(nextarg);
+					width -= strlen(sptr);
+					while (width-- > 0) spb(' ');
+					sp(sptr);
+					break;	// string
+				}
+
 				case 'c':	spb(getarg(nextarg));				break;	// byte ("char")
 				case 'b':	printBinary(getarg(nextarg));		break;	// binary
 				case '%':	spb('%');							break;	// escaped '%'
