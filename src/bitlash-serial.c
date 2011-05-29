@@ -387,41 +387,40 @@ void cmd_print(void) {
 //	printf("format string", item, item, item)
 //
 //
-numvar func_printf(void) {
-byte nextarg = 2;		// first optional arg is in slot #2
+numvar func_printf_handler(byte formatarg, byte optionalargs) {
 
 // todo: get rid of m_pfmts
 // todo: get rid of s_pound
 
-	if (getarg(0) < 1) { speol(); return 0; }
-	char *fptr = (char *) getarg(1);		// format string pointer
+	if (getarg(0) < formatarg) { speol(); return 0; }
+	char *fptr = (char *) getarg(formatarg);		// format string pointer
 
 	while (*fptr) {
 		if (*fptr == '%') {
 			++fptr;
 			numvar width = 0;
 			if (*fptr == '*') {
-				width = getarg(nextarg++);
+				width = getarg(optionalargs++);
 				fptr++;
 			}
 			else while (isdigit(*fptr)) {
 				width = (width * 10) + (*fptr++ - '0');
 			}
 			switch (*fptr) {
-				case 'd':	printInteger(getarg(nextarg));		break;	// decimal
-				case 'x':	printHex(getarg(nextarg));			break;	// hex
-				case 'u':	printIntegerInBase(getarg(nextarg), 10);	break;	// unsigned decimal (TODO: primitive)
-				case 'b':	printBinary(getarg(nextarg));		break;	// binary
+				case 'd':	printInteger(getarg(optionalargs));		break;	// decimal
+				case 'x':	printHex(getarg(optionalargs));			break;	// hex
+				case 'u':	printIntegerInBase(getarg(optionalargs), 10);	break;	// unsigned decimal (TODO: primitive)
+				case 'b':	printBinary(getarg(optionalargs));		break;	// binary
 
 				case 's': {			// string
-					char *sptr = (char *) getarg(nextarg);
+					char *sptr = (char *) getarg(optionalargs);
 					width -= strlen(sptr);
 					while (width-- > 0) spb(' ');	// pre-pad with blanks
 					sp(sptr);
 					break;	// string
 				}
 
-				case 'c':	spb(getarg(nextarg));				break;	// byte ("char")
+				case 'c':	spb(getarg(optionalargs));				break;	// byte ("char")
 				case '%':	spb('%');							break;	// escaped '%'
 
 #ifdef SOFTWARE_SERIAL_TX
@@ -433,7 +432,7 @@ byte nextarg = 2;		// first optional arg is in slot #2
 				//
 				case '#':		// printf("%115200# %s %d", 3, "time:",millis)
 					{
-						byte pin = getarg(nextarg);
+						byte pin = getarg(optionalargs);
 						if (width) setBaud(pin, width);
 						setOutput(pin);
 					}
@@ -442,7 +441,7 @@ byte nextarg = 2;		// first optional arg is in slot #2
 
 				default: 	spb('%'); spb(*fptr);				break;	// ??
 			}
-			nextarg++;
+			optionalargs++;
 		}
 		else if (*fptr == '\n') speol();
 		else spb(*fptr);
@@ -456,5 +455,7 @@ byte nextarg = 2;		// first optional arg is in slot #2
 	return 0;
 }
 
-
+numvar func_printf(void) {
+	return func_printf_handler(1,2);	// format=arg(1), optional args start at 2
+}
 

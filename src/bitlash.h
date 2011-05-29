@@ -510,6 +510,7 @@ void sp(const char *);
 void speol(void);
 
 numvar func_printf(void); 
+numvar func_printf_handler(byte,byte);
 
 #ifdef SOFTWARE_SERIAL_TX
 void resetOutput(void);
@@ -588,6 +589,8 @@ void primec(void);
 void fetchc(void);
 void getsym(void);
 void traceback(void);
+
+numvar func_fprintf(void);
 
 prog_char *getmsg(byte);
 void parsestring(void (*)(char));

@@ -103,10 +103,18 @@ byte scriptwrite(char *filename, char *contents, byte append) {
 	else 		flags = O_WRITE | O_CREAT | O_TRUNC;
 
 	if (!scriptopen(filename, 0L, flags)) return 0;
-	if (scriptfile.write(contents, strlen(contents)) < 0) return 0;
+	if (strlen(contents)) {
+		if (scriptfile.write(contents, strlen(contents)) < 0) return 0;
+	}
 //	if (!scriptfile.close()) return 0;
 	return 1;
 }
+
+void scriptwritebyte(byte b) {
+	// TODO: error check here
+	scriptfile.write(&b, 1);
+}
+
 
 numvar sdls(void) {
 //	if (initsd()) sd.ls(LS_SIZE, 0);		// LS_SIZE, LS_DATE, LS_R, indent

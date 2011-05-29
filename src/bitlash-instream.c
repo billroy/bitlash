@@ -41,6 +41,7 @@ byte scriptopen(char *scriptname, numvar position, byte flags);
 numvar scriptgetpos(void);
 byte scriptread(void);
 byte scriptwrite(char *filename, char *contents, byte append);
+void scriptwritebyte(byte b);
 #else
 byte scriptfileexists(char *scriptname) { return 0; }
 #endif
@@ -330,6 +331,26 @@ numvar sdwrite(char *filename, char *contents, byte append) {
 	if (!scriptwrite(filename, contents, append)) unexpected(M_oops);
 	returntoparsepoint(fetchmark, 1);
 	return 1;
+}
+
+//////////
+//
+//	func_fprintf(): implementation of fprintf() function
+//
+//
+numvar func_fprintf(void) {
+	numvar fetchmark = markparsepoint();
+
+	scriptwrite((char *) getarg(1), "", 1);		// open the file for append (but append nothing)
+
+	//serialOutputFunc saved_handler = serial_override_handler;	// save previous output handler
+	setOutputHandler(scriptwritebyte);			// set file output handler
+
+	func_printf_handler(2,3);	// format=arg(2), optional args start at 3
+
+	//setOutputHandler(saved_handler);// restore output handler
+	resetOutputHandler();
+	returntoparsepoint(fetchmark, 1);
 }
 
 #endif	// SDFILE
