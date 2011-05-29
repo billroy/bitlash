@@ -39,8 +39,8 @@ byte sd_up;	// true iff SDFat.init() has succeeded
 
 // filename buffer for 8.3 + \0
 #define FNAMELEN 13
-char scriptnamecache[FNAMELEN];
-
+char cachedname[FNAMELEN];
+byte cachedflags;
 
 byte initsd(void) {
 	if (!sd_up) {
@@ -60,23 +60,25 @@ byte scriptfileexists(char *scriptname) {
 byte scriptopen(char *scriptname, numvar position, byte flags) {
 	// open the input file if there is no file open, 
 	// or the open file does not match what we want
-	if (!scriptfile.isOpen() || strcmp(scriptname, scriptnamecache)) {
+	if (!scriptfile.isOpen() || strcmp(scriptname, cachedname) || (flags != cachedflags)) {
 		if (scriptfile.isOpen()) {
 			if (!scriptfile.close()) return 0;
 		}
 
-		//Serial.print("O:"); Serial.println(scriptname);
+		Serial.print("O:"); Serial.print(flags,DEC);
+		Serial.print(' ',BYTE); Serial.println(scriptname);
 
 		if (!scriptfile.open(scriptname, flags)) return 0;
-		strcpy(scriptnamecache, scriptname);		// cache the name we have open
-		if (position == 0L) return 1;				// save a seek, when we can
+		strcpy(cachedname, scriptname);		// cache the name we have open
+		cachedflags = flags;				// and the mode
+		if (position == 0L) return 1;		// save a seek, when we can
 	}
 	return scriptfile.seekSet(position);
 }
 
 numvar scriptgetpos(void) {
 fpos_t pos;
-	pos.position = 0L;		// TODO: remove after debugging
+	//pos.position = 0L;		// TODO: remove after debugging
 	scriptfile.getpos(&pos);
 	return pos.position;
 }
@@ -92,9 +94,9 @@ byte scriptread(void) {
 
 byte scriptwrite(char *filename, char *contents, byte append) {
 
-	if (scriptfile.isOpen()) {
-		if (!scriptfile.close()) return 0;
-	}
+///	if (scriptfile.isOpen()) {
+///		if (!scriptfile.close()) return 0;
+///	}
 
 	byte flags;
 	if (append) flags = O_WRITE | O_CREAT | O_APPEND;
@@ -102,7 +104,7 @@ byte scriptwrite(char *filename, char *contents, byte append) {
 
 	if (!scriptopen(filename, 0L, flags)) return 0;
 	if (scriptfile.write(contents, strlen(contents)) < 0) return 0;
-	if (!scriptfile.close()) return 0;
+//	if (!scriptfile.close()) return 0;
 	return 1;
 }
 

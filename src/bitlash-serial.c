@@ -400,24 +400,28 @@ byte nextarg = 2;		// first optional arg is in slot #2
 		if (*fptr == '%') {
 			++fptr;
 			numvar width = 0;
-			while (isdigit(*fptr)) {
+			if (*fptr == '*') {
+				width = getarg(nextarg++);
+				fptr++;
+			}
+			else while (isdigit(*fptr)) {
 				width = (width * 10) + (*fptr++ - '0');
 			}
 			switch (*fptr) {
 				case 'd':	printInteger(getarg(nextarg));		break;	// decimal
-//				case 'u':	printInteger(getarg(nextarg));		break;	// unsigned decimal (TODO: primitive)
 				case 'x':	printHex(getarg(nextarg));			break;	// hex
+				case 'u':	printIntegerInBase(getarg(nextarg), 10);	break;	// unsigned decimal (TODO: primitive)
+				case 'b':	printBinary(getarg(nextarg));		break;	// binary
 
 				case 's': {			// string
 					char *sptr = (char *) getarg(nextarg);
 					width -= strlen(sptr);
-					while (width-- > 0) spb(' ');
+					while (width-- > 0) spb(' ');	// pre-pad with blanks
 					sp(sptr);
 					break;	// string
 				}
 
 				case 'c':	spb(getarg(nextarg));				break;	// byte ("char")
-				case 'b':	printBinary(getarg(nextarg));		break;	// binary
 				case '%':	spb('%');							break;	// escaped '%'
 
 #ifdef SOFTWARE_SERIAL_TX

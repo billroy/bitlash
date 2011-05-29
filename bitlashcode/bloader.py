@@ -68,8 +68,7 @@ waitprompt()
 
 # if a source and target filename argument were provided, 
 # open the file and send it line by line to Bitlash
-#
-#	FATAL BUG: doesn't work due to /" issue
+# (requires the bitlashsd demo on the Arduino)
 #
 if (len(sys.argv) >= 3):
 	filename = sys.argv[1]

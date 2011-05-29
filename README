@@ -3,6 +3,8 @@ Bitlash Release Notes
 
 2.0 RC3d Release Notes -- May, 2011
 
+- Tested on Arduino 0022
+
 - BUGFIX: 0xb broken by 0b1000!
 	print 0xbbbbbbbb
 	0
