@@ -1,0 +1,299 @@
+Bitlash To-Do
+Personal working notes (c) 2011 Bill Roy
+6/4/11 -br
+=============================
+
+
+BLOCKING BUGS
+
+- BUG: Web site documentation update for this release is not complete
+
+- BUG: ram, and therefore stack, is very tight.
+	- 330 bytes free with SDFILE enabled, vs. 1021 without
+	- some things fail in the SDFILE version that work otherwise
+	- BUG: CRASH: bitlashcode/elevator2.btl crashes on "show" with sdcard support enabled
+		- callat/workabove/workbelow work ok
+		- looks like it ran out of stack, hard
+		- works without SDFILE support
+
+- BUG: can't define a function from within a function
+	- BUG: cmd_function issue measuring text
+	- test: function definition from script file, probably fails
+
+- BUG: need an easy way to build an SD-free version
+	- workaround: manually turn off SDFAT define in bitlash-instream.c
+	- Q: how to distribute a library with conditional compiles
+	- it may not be possible in the arduino build system
+		- backwards compatible 0022 vs. 1.0
+		- sd vs. non sd core
+	- 15192 bitlashdemo with SDFAT define off
+	- 27472 bitlashsd with SDFAT on
+
+- BUG: stack dump on error has stale traceback data
+
+- BUG: "run" command doesn't work on SDFILE scripts
+	- workaround: use an EEPROM function as a trampoline.
+
+=============================
+
+- BUG: list of bugs/changes required for arduino v1 beta support
+
+	- master list here: http://code.google.com/p/arduino/wiki/Arduino1
+	- .ino extension on the library master and all examples
+	- WProgram.h -> Arduino.h requires touching library master and all examples
+	+ serial.print becomes serial.write if you want the byte to go!
+	- ethernet: can't say (client==NULL), replace with !client
+	
+		#if defined(ARDUINO) && ARDUINO >= 100
+		  #include "Arduino.h"
+		#else
+		  #include "WProgram.h"
+		#endif
+
+=============================
+
+=============================
+open issues
+
+- BUG: chkbrk lookahead bug: chkbrk gobbles keystrokes
+	- Serial.peek() is implemented in 0022, might help
+
+- BUG: it takes >45 bytes of stack to recurse foo:="print free;foo;"
+	it should take less
+
+- FEAT: revise task manager to support file and progmem contexts
+	- requires storing file name...
+
+- BUG: ^C terminates wierdly
+- BUG: ^B doesn't work.  sigh.
+
+- BUG: *x++ = *y++ :greedy assignment in getfactor" fix
+
+- FEAT: string pool coalescing
+
+==========
+
+- feat: detect card insertion and autorun startup function
+- test: handling of card removal
+- feat: virtual block device for progmem, SPI eeprom, ...
+
+=============================
+Feat: Local Functions for File Scripts
+
+- make note of the locations of function statements as they go by
+	- build a local symbol table in the string pool, with name/offset pairs
+
+
+=============================
+feat: event handling
+	onerror macro
+		call with error code and subcode
+		it can "stop *"
+		could be implemented in progmem words
+		error-in-error case is ugly, may need boot recovery (ugh)
+	onkey macro
+		returns 0 or key to process
+	print-to-bitlash-handler
+		- function to handle printed output
+
+=============================
+Platform Issues
+
+- BUG: teensy2 bug 5/15/10: problem with toggle macro
+
+- feat: Wiring 0027 changes
+- feat: Mega168 support, after the dust settles
+	- STRVALSIZE
+	- vstacklen
+	- function suite
+- BUG: 168 doesn't run (stack oflo) but it could (smaller e-stack)
+- TEST: Sanguino
+- TEST: MEGA 2560
+	numpins
+	eeprom
+unix or processing shell
+tiny85 code integration
+tiny84 hardware interface file
+
+=============================
+feat: option for inverted software serial output
+q: rename snooze() to idle()?
+input() function
+
+=============================
+feat: PROGMEM built-ins / virtual block device
+	- debugging functions?
+		vars	dump a..z
+		hd		hex dump memory (memdump)	
+=============================
+Q: Should macro def say "saved" or silently return to prompt?
+=============================
+
+BUG: defining a function within a function fails
+
+> ls
+> function foo {function bar{print "bar"};bar};print millis
+saved
+102946
+> ls
+function foo {function bar{print "bar"};bar};
+> foo
+saved
+> ls
+function foo {function bar{print "bar"};bar};
+function bar {};
+
+*** BUG
+*** a function saved from a function from eeprom doesn't work
+*** the "backup to '}'" code doesn't handle EEPROM as execution context
+
+> rm bar
+> ls
+function foo {function bar{print "bar"};bar};
+> foo
+saved
+> ls
+function foo {function bar{print "bar"};bar};
+function bar {};
+> bar
+> 
+
+=============================
+2.0 Doc todo
+
+blog
+	bitlash web server
+	bloader.py
+
+macros/
+	bloader.py macro loader and interactive terminal
+	elevator.btl and elevator2.btl elevator state machine example Bitlash code
+	trafficlight.btl and trafficlight2.btl traffic light state machine example
+tests/
+	bitlash-test.py
+
+bitlfu forum?
+
+---
+
+
+examples
+	counter using attachInterrupt, user function to expose count
+
+setoutput(pin)
+
+---
+TODO: Bitlash web server
+
+pages from SD card (with [script] interpretation)
+configurable IP and port
+log request IP
+	http://arduino.cc/forum/index.php/topic,54378.msg391180.html
+allow GET /foo(arg1,arg2)
+	- transcribe the arg list if present
+	- limit to integer values and commas
+		- GET /play(66,65,66,67,66,65,69,71,68)
+	- improve end-of-url detection
+favicon image
+PUT or POST from Bitlash function
+	hardwired server IP per pachube example
+	POST overrides print
+	requires: command override (or patch)
+head and foot macros
+content-type control
+accept POST requests (ignore body?)
+	for pages with buttons
+
+---
+TODO: examples
+
+Teensy Morse-In to Keyboard
+Teensy MIDI generator
+
+Processing MIDI example
+	- requires midi input hook
+	midi in -> note_on, note_off macros
+Processing Serial example
+	- requires return value parsing
+Improve spi to cover the new SPI.h
+bitlash logger
+	capture printed output to SD
+	http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1293975555/0#0
+
+---
+---
+==========
+Space analysis
+==========
+
+arduino-0022
+13954 bytes bitlash v1.1
+14550 first compile, no arg checking
+14716 with working macro args, return, set
+14212 without parser trace
+14900 with args and new statement handling + trace
+14616 without trace
+14880 rc1
+	14336 is the max for a '168 Due
+
+now it's 143xx again??
+
+
+==========
+Floating Point Bitlash
+==========
+
+14292 long int
+16134 with floating point (ugly hack)
+
+fixes:
+
+- ivar hack: need a way for forced-integer parameters internally
+- logical ops and floating point operands ?!
+- printIntegerInBase
+- parseInteger, ok, but ParseFloat
+
+floating point bitlash
+	how much trig?
+	
+floating point formatting
+	precision: print z:2,f:4
+	z:2x,f:4b,
+
+floating point constant parsing
+
+pi(), ee(),
+
+
+==========
+
+processing ide
+	good terminal interface window
+		scrollback
+		file capture
+		execute selected text
+		vt-100 ansi escape sequences(!)
+	send a command, capture the result
+	edit/update functions
+	
+---
+==========
+HOLD:
+switchingyard  expression parser
+==========
+	space: 14566 -> 14540 -> 14584 (notrace)
+	960 vs. 928 w/ trace
+
+stack foo
+old parser	46/foo
+new			30/foo
+
+todo:get rid of isrelop
+BUG: 1+2*3 errs
+stack usage is down 15 bytes/iteration but still at 35
+BUG: getstatement is a stack piggy
+TODO: pass minitest
+is ostop under control?
+may need local stack
+	for recursive (expr) call
+	or put parens handling into the loop
