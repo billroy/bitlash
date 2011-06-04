@@ -65,8 +65,8 @@ byte scriptopen(char *scriptname, numvar position, byte flags) {
 			if (!scriptfile.close()) return 0;
 		}
 
-		Serial.print("O:"); Serial.print(flags,DEC);
-		Serial.print(' ',BYTE); Serial.println(scriptname);
+		//Serial.print("O:"); Serial.print(flags,DEC);
+		//Serial.print(' ',BYTE); Serial.println(scriptname);
 
 		if (!scriptfile.open(scriptname, flags)) return 0;
 		strcpy(cachedname, scriptname);		// cache the name we have open

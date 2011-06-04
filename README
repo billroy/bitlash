@@ -1,9 +1,33 @@
 Bitlash Release Notes
 
 
-2.0 RC3d Release Notes -- May, 2011
+2.0 RC3d Release Notes -- June 4, 2011
 
-- Tested on Arduino 0022
+Summary for this version:
+
+	- Runs scripts from SDCard file systems
+	- Has a language worth running from a file
+	- String arguments!
+		printf("%d:%d:%d\n",h,m,s)
+	- Can write SDFILE from script, too:
+		fprintf("logfile.dat","%d:%d:%d\n",h,m,s)
+
+- Tested on and requires Arduino 0022
+
+- This version runs scripts from SDCARD as well as EEPROM
+
+- bitlashsd sd card demo REQUIRES SDFat Beta 20110604 available from:
+	- download link: http://beta-lib.googlecode.com/files/SdFatBeta20110604.zip
+
+	- to install, copy the "SDFat" library from the SDFatBeta distribution
+		into the Arduino/libraries directory and restart Arduino
+		
+	- open the "bitlashsd" example and upload
+
+	- to disable SDFILE support:
+		- turn off the SDFAT define in bitlash-instream.c
+		- open and upload the bitlashdemo example
+
 
 - BUGFIX: 0xb broken by 0b1000!
 	print 0xbbbbbbbb
@@ -21,24 +45,57 @@ Bitlash Release Notes
 - unary & operator
 - unary * operator
 - // comments
+
 - doCommand()
 	- is re-entrant
 	- returns numvar (-1L on error)
-- sd card demo
-	dir, exists, del, create, append, type, cd, md
+
+- printf("format string\n", "foo", "bar",3)
+	- format specifiers %s %d %u %x %c %b %% work as per C printf()
+	- BUG/FEAT: width specifier is not handled for numeric printing
+		- %4s works but %4d or anything else doesn't
+	- see also fprintf() below for printing to file on sd card
+
+- EXAMPLE: commands supported in the bitlashsd sd card demo
+
+	dir
+	exists("filename") 
+	del("filename") 
+	create("filename", "first line\nsecondline\n")
+	append("filename", "another line\n")
+	type("filename") 
+	cd("dirname")
+	md("dirname")
+	fprintf("filename", "format string %s%d\n", "foo", millis);
+
 - scripts on sd card
-	- startup and prompt on sd card
 
-- REQUIRES SDFat Beta 20110512 available from:
-	- download  from:
-		http://beta-lib.googlecode.com/files/SdFatBeta20110512.zip
+	- put your multi-line script on an SD card and run it from the command line
+		- example: bitlashcode/memdump
+		- example: bitlashcode/vars
 
-	- to install, copy the "SDFat" library from the SDFatBeta distribution
-		into the Arduino/libraries directory and restart Arduino
+	- //comments work (comment to end of line)
 
-	- to disable, turn off the SDFAT define in bitlash-instream.c and recompile
+	- functions are looked up in this priority / order:
+		- internal function table
+		- user C function table (addBitlashFunction(...))
+		- Bitlash functions in EEPROM
+		- Bitlash functions in files on SD card
 
-- printf()
+	- beware name conflicts: a script on SD card can't override a function in EEPROM
+
+	- BUG: the run command only works with EEPROM functions
+		- it does not work with file functions
+		- for now, to use run with a file function, use this workaround:
+			- make a small EEPROM function to call your file function
+			- run the the EEPROM function
+
+	- startup and prompt functions on sd card are honored, if they exist
+
+	- you can upload files using bitlashcode/bloader.py
+		- python bloader.py memdump md
+			... uploads memdump as "md"
+
 
 ----------
 
