@@ -2,12 +2,19 @@
 #
 #	bloader.py: python serial port loader and interactive tty
 #
-# 	usage: 
+# 	Usage:
+#
 #	1. Send a file of commands to Bitlash, line by line
 #		python bloader.py elevator2.btl
 #
 #	2. Upload file memdump to "bitlashsd" as md:
 #		python bloader.py memdump md
+#
+#	3. Open a serial terminal session with Bitlash:
+#		python bloader.py
+#
+#	To exit: Control+] (just like telnet)
+#
 #
 # 	Requires:
 #		1. Python
