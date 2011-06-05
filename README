@@ -1,7 +1,23 @@
 Bitlash Release Notes
+June 4, 2011 -br
 
+----------
 
 2.0 RC3d Release Notes -- June 4, 2011
+
+Quick Start for SD Card Support:
+	- Download and install Bitlash 2.0 RC3d from http://bitlash.net
+	- Download and install SD Card library from http://beta-lib.googlecode.com/files/SdFatBeta20110604.zip
+	- Restart Arduino 0022, open examples->bitlash->bitlashsd and upload to your Arduino
+
+Quick Start without SD Card Support:
+	- Download and install Bitlash 2.0 RC3d from http://bitlash.net
+	- Edit libraries/bitlash/src/bitlash-instream.c to turn off the SDFILE define
+		at or near line 32, make this:
+			#define SDFILE
+		look like this:
+			//#define SDFILE
+	- Restart Arduino 0022, open examples->bitlash->bitlashdemo and upload to your Arduino
 
 Summary for this version:
 
@@ -15,6 +31,7 @@ Summary for this version:
 - Tested on and requires Arduino 0022
 
 - This version runs scripts from SDCARD as well as EEPROM
+	- Tested on Sparkfun OpenLog 1.0 and Adafruit Datalogger Shield hardware
 
 - bitlashsd sd card demo REQUIRES SDFat Beta 20110604 available from:
 	- download link: http://beta-lib.googlecode.com/files/SdFatBeta20110604.zip
