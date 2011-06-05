@@ -2,7 +2,12 @@
 #
 #	bloader.py: python serial port loader and interactive tty
 #
-# 	usage: python bloader.py foobar.btl
+# 	usage: 
+#	1. Send a file of commands to Bitlash, line by line
+#		python bloader.py elevator2.btl
+#
+#	2. Upload file memdump to "bitlashsd" as md:
+#		python bloader.py memdump md
 #
 # 	Requires:
 #		1. Python
