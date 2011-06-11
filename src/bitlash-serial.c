@@ -301,12 +301,13 @@ void printIntegerInBase(unumvar n, uint8_t base, numvar width) {
 
 	while (--ptr >= buf) spb((*ptr < 10) ? (*ptr + '0') : (*ptr - 10 + 'A'));
 }
-void printInteger(numvar n){
+void printInteger(numvar n, numvar width){
 	if (n < 0) {
 		spb('-');
 		n = -n;
+		--width;
 	}
-	printIntegerInBase(n, 10, 0);
+	printIntegerInBase(n, 10, width);
 }
 void printHex(unumvar n) { printIntegerInBase(n, 16, 0); }
 void printBinary(unumvar n) { printIntegerInBase(n, 2, 0); }
@@ -370,7 +371,7 @@ void cmd_print(void) {
 				else expected(M_pfmts);
 				getsym();
 			}
-			else printInteger(expval);
+			else printInteger(expval, 0);
 		}
 		if ((sym == s_semi) || (sym == s_eof)) {
 			speol();
@@ -414,10 +415,10 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 				width = (width * 10) + (*fptr++ - '0');
 			}
 			switch (*fptr) {
-				case 'd':	printIntegerInBase(getarg(optionalargs), 10, width); break;	// decimal
+				case 'd':	printInteger(getarg(optionalargs), width); 			 break;	// decimal
 				case 'x':	printIntegerInBase(getarg(optionalargs), 16, width); break;	// hex
 				case 'u':	printIntegerInBase(getarg(optionalargs), 10, width); break;	// unsigned decimal (TODO: primitive)
-				case 'b':	printIntegerInBase(getarg(optionalargs),  2, width);break;	// binary
+				case 'b':	printIntegerInBase(getarg(optionalargs),  2, width); break;	// binary
 
 				case 's': {			// string
 					char *sptr = (char *) getarg(optionalargs);

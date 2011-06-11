@@ -33,6 +33,8 @@ BLOCKING BUGS
 
 - BUG: "run" command doesn't work on SDFILE scripts
 	- workaround: use an EEPROM function as a trampoline.
+	- FEAT: revise task manager to support file and progmem contexts
+		- requires storing file name...
 
 =============================
 
@@ -60,9 +62,6 @@ open issues
 
 - BUG: it takes >45 bytes of stack to recurse foo:="print free;foo;"
 	it should take less
-
-- FEAT: revise task manager to support file and progmem contexts
-	- requires storing file name...
 
 - BUG: ^C terminates wierdly
 - BUG: ^B doesn't work.  sigh.
@@ -204,6 +203,8 @@ head and foot macros
 content-type control
 accept POST requests (ignore body?)
 	for pages with buttons
+
+PACHUBE integration examples
 
 ---
 TODO: examples

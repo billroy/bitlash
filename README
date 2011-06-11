@@ -3,6 +3,13 @@ June 6, 2011 -br
 
 ----------
 
+2.0 RC4 Release Notes
+
+- printf() and fprintf() now respect the width argument:
+	> printf("%3d\n", 99);
+	099
+	>
+
 2.0 RC3d Release Notes -- June 4, 2011
 
 Quick Start for SD Card Support:
