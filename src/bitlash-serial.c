@@ -281,7 +281,7 @@ void beginSoftSerial(unsigned long baud) {
 // From Arduino 0011/wiring_serial.c
 // These apparently were removed from wiring_serial.c in 0012
 
-void printIntegerInBase(unumvar n, uint8_t base) {
+void printIntegerInBase(unumvar n, uint8_t base, numvar width) {
 	char buf[8 * sizeof(numvar)];		// stack for the digits
 	char *ptr = buf;
 	if (n == 0) {
@@ -292,6 +292,13 @@ void printIntegerInBase(unumvar n, uint8_t base) {
 		*ptr++ = n % base;
 		n /= base;
 	}
+
+	// pad to width with leading zeroes
+	if (width) {
+		width -= (ptr-buf);
+		while (width-- > 0) spb('0');
+	}
+
 	while (--ptr >= buf) spb((*ptr < 10) ? (*ptr + '0') : (*ptr - 10 + 'A'));
 }
 void printInteger(numvar n){
@@ -299,10 +306,10 @@ void printInteger(numvar n){
 		spb('-');
 		n = -n;
 	}
-	printIntegerInBase(n, 10);
+	printIntegerInBase(n, 10, 0);
 }
-void printHex(unumvar n) { printIntegerInBase(n, 16); }
-void printBinary(unumvar n) { printIntegerInBase(n, 2); }
+void printHex(unumvar n) { printIntegerInBase(n, 16, 0); }
+void printBinary(unumvar n) { printIntegerInBase(n, 2, 0); }
 #endif
 
 
@@ -407,10 +414,10 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 				width = (width * 10) + (*fptr++ - '0');
 			}
 			switch (*fptr) {
-				case 'd':	printInteger(getarg(optionalargs));		break;	// decimal
-				case 'x':	printHex(getarg(optionalargs));			break;	// hex
-				case 'u':	printIntegerInBase(getarg(optionalargs), 10);	break;	// unsigned decimal (TODO: primitive)
-				case 'b':	printBinary(getarg(optionalargs));		break;	// binary
+				case 'd':	printIntegerInBase(getarg(optionalargs), 10, width); break;	// decimal
+				case 'x':	printIntegerInBase(getarg(optionalargs), 16, width); break;	// hex
+				case 'u':	printIntegerInBase(getarg(optionalargs), 10, width); break;	// unsigned decimal (TODO: primitive)
+				case 'b':	printIntegerInBase(getarg(optionalargs),  2, width);break;	// binary
 
 				case 's': {			// string
 					char *sptr = (char *) getarg(optionalargs);
@@ -420,7 +427,12 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 					break;	// string
 				}
 
-				case 'c':	spb(getarg(optionalargs));				break;	// byte ("char")
+				case 'c':			// byte ("char")
+					do {
+						spb(getarg(optionalargs));
+					} while (width-- > 0);
+					break;
+
 				case '%':	spb('%');							break;	// escaped '%'
 
 #ifdef SOFTWARE_SERIAL_TX

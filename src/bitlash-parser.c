@@ -248,7 +248,11 @@ void calleeprommacro(int macrotext) {
 ///
 ///		Expression evaluation stack
 ///
+#if defined(MEGA)
+#define VSTACKLEN 256
+#else
 #define VSTACKLEN 64
+#endif
 byte vsptr;			  		// value stack pointer
 numvar *arg;				// argument frame pointer
 numvar vstack[VSTACKLEN];  	// value stack

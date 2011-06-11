@@ -1,5 +1,5 @@
 Bitlash Release Notes
-June 4, 2011 -br
+June 6, 2011 -br
 
 ----------
 
@@ -17,6 +17,8 @@ Quick Start without SD Card Support:
 			#define SDFILE
 		look like this:
 			//#define SDFILE
+	- If you are using a Mega2560, edit SdFat/../SdFatConfig.h @ line 85, make this change:
+		#define MEGA_SOFT_SPI 1
 	- Restart Arduino 0022, open examples->bitlash->bitlashdemo and upload to your Arduino
 
 Summary for this version:

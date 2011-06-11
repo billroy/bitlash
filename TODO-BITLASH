@@ -93,6 +93,7 @@ feat: event handling
 		error-in-error case is ugly, may need boot recovery (ugh)
 	onkey macro
 		returns 0 or key to process
+	attachInterrupt handler?
 	print-to-bitlash-handler
 		- function to handle printed output
 

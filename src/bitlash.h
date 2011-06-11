@@ -230,12 +230,14 @@ void beginEthernet(unsigned long baud) {
 //
 ///////////////////////////////////////////////////////
 //
-// MEGA is auto-enabled to build for the Arduino Mega
-// if the '1280 define is present
+// MEGA is auto-enabled to build for the Arduino Mega or Mega2560
+// if the '1280/'2560 define is present
 //
-#if defined(__AVR_ATmega1280__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #define MEGA 1
+#endif
 
+#if defined(MEGA)
 #define beginSerial Serial.begin
 #define serialAvailable Serial.available
 #define serialRead Serial.read
