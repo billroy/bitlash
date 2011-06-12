@@ -11,15 +11,24 @@ Bitlash2 migration notes
 	- around 18+ kbytes
 	- intermittent packet loss at close range
 
+- BUG: can't setid("foo") from startup since the user functions aren't registered
+	- prevents "setid from startup"
+
+	- initBitlash calls startup so it wants setid() defined
+	- initParfait hasn't been called by then so setid() is overwritten by later initialization
+	- initParfait wants Bitlash to go first
+
+- bug: issues with looking past end of short node ids
+	
+
+- docnote: call addBitlashFunction before initBitlash
+
 - radio interface could be cleaner
 	- radio.h with API
 
-- BLOCK: node ID / addressing not working
-	- setid()
-	- char nodeid[...]
+- BUG: auto-\n on tell will save a lot of pain
+	***TEST
 
-- feat: rfstat(): dump rf registers as well as counters
-	- or write a function
 
 - feat: rf control functions
 	setfreq()

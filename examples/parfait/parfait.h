@@ -2,7 +2,7 @@
 //
 //	parfait.h:	Parfait - Bitlash Integration Definitions
 //
-//	Copyright (C) 2010 Palmeta Productions LLC
+//	Copyright (C) 2010-2011 by Bill Roy
 //
 //	This library is free software; you can redistribute it and/or
 //	modify it under the terms of the GNU Lesser General Public

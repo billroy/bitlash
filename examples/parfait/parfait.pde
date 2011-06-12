@@ -37,16 +37,6 @@
 
 //////////
 //
-//	setid("id"): set node id
-//
-numvar func_setid(void) {
-	rf_set_rx_address((char *) getarg(1));
-	return 0;
-}
-
-
-//////////
-//
 //	tell command:
 //		tell("addr" | "*", "command string", optional_arg1, optional_arg2,...);
 //
@@ -57,6 +47,7 @@ numvar func_tell(void) {
 	rf_set_tx_address((char *) getarg(1));		// todo: verify this handles broadcast right
 	setOutputHandler(&send_command_byte);	// engage the command forwarding logic
 	func_printf_handler(2,3);				// format=arg(2), optional args start at 3
+	send_command_byte('\n');				// terminate the command
 	pkt_flush();							// push the caboose
 	resetOutputHandler();					// restore the print handler
 	return 0;
@@ -73,6 +64,16 @@ numvar func_rprintf(void) {
 	func_printf_handler(1,2);	// format=arg(1), optional args start at 2
 	pkt_flush();
 	resetOutputHandler();
+	return 0;
+}
+
+
+//////////
+//
+//	setid("id"): set node id
+//
+numvar func_setid(void) {
+	rf_set_rx_address((char *) getarg(1));
 	return 0;
 }
 
@@ -163,10 +164,16 @@ void runParfait(void) {
 // Parfait + Bitlash main
 //
 void setup(void) {
+
+	// We need setid() to be available from startup, called in initBitlash()...
+	// It's generally bad to add functions before initBitlash since errors can't be reported.
+	// Just this one is safe...
+	//
+	addBitlashFunction("setid", (bitlash_function) func_setid);
+
 	initBitlash(57600);		// must be first to initialize serial port
 	initParfait();			// must be after initBitlash()
 
-	addBitlashFunction("setid", (bitlash_function) func_setid);
 	addBitlashFunction("tell", (bitlash_function) func_tell);
 	addBitlashFunction("rfget", (bitlash_function) func_rfget);
 	addBitlashFunction("rfset", (bitlash_function) func_rfset);
@@ -174,6 +181,7 @@ void setup(void) {
 	addBitlashFunction("degf", (bitlash_function) func_degf);
 	addBitlashFunction("rflog", (bitlash_function) func_rflog);
 	addBitlashFunction("rfstat", (bitlash_function) func_pktstat);
+
 }
 
 

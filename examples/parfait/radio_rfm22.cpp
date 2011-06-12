@@ -2,7 +2,7 @@
 //
 //	radio-rfm22.c:	Parfait Radio Interface for HopeRF RFM22
 //
-//	Copyright (C) 2009, 2010 Palmeta Productions LLC
+//	Copyright (C) 2009-2011 by Bill Roy
 //
 //	This library is free software; you can redistribute it and/or
 //	modify it under the terms of the GNU Lesser General Public
@@ -250,7 +250,11 @@ uint8_t *buf = (uint8_t *) pkt;
 }
 
 
-
+////////////////////
+//
+//	Radio State Management
+//
+//
 //////////
 // set_rx_mode: turn on the packet receiver and enable the packet-ready interrupt
 //
@@ -463,9 +467,9 @@ void log_packet(char tag, pkt_t *pkt, byte length) {
 		spb('[');
 		spb(tag); 
 		sp("X ");
-		spb(length); spb(' ');
-		spb(pkt->type); spb(' ');
-		spb(pkt->sequence); spb(' ');
+		printInteger(length, 0); spb(' ');
+		printInteger(pkt->type, 0); spb(' ');
+		printInteger(pkt->sequence, 0); spb(' ');
 		while (i < last-RF_PACKET_HEADER_SIZE) {
 			lpb(pkt->data[i++]);
 		}
@@ -566,6 +570,8 @@ void tx_send_pkt(pkt_t *pkt, uint8_t length) {
 //
 #define RF_ADDRESS_LENGTH 4
 
+char nodeid[RF_ADDRESS_LENGTH];
+
 #define DEFAULT_RX_ADDRESS "noob"
 #define BROADCAST_ADDRESS "\xff\xff\xff\xff"
 
@@ -579,7 +585,7 @@ void rf_put_address(byte whichaddr, byte *rf_address) {
 	// RFM22 Broadcast Address handling
 	// 	If we see a null address here, point it to the BROADCAST_ADDRESS
 	//
-	if (!rf_address || !(*rf_address)) {
+	if (!rf_address || !(*rf_address) || !strcmp("*", rf_address)) {
 		rf_address = (byte *) BROADCAST_ADDRESS;
 	}
 
@@ -590,7 +596,12 @@ void rf_put_address(byte whichaddr, byte *rf_address) {
 }
 
 void rf_set_rx_address(char *my_address) {
-	rf_put_address(REG_RX_ADDR, (byte *) my_address);
+
+	if (radio_go) rf_put_address(REG_RX_ADDR, (byte *) my_address);
+	else {
+		// cache the nodeid for init_radio
+		strncpy(nodeid, my_address, RF_ADDRESS_LENGTH);		// trailing pads with zeroes
+	}
 }
 
 void rf_set_tx_address(char *to_address) {
@@ -881,12 +892,15 @@ void init_radio(void) {
 	// Sync Pattern and Length
 	// we use the default sync pattern of 2dd4 with 2 byte check
 
+	// Enable the radio so rf_set_rx_address is a pass-thru below
+	radio_go = 1;		// mark the radio as UP
+
 	// Receive address setup: listen on NOOB, and the broadcast address,
 	// until setid() is called to provide an updated address.
+	// If setid() was called before now, use the cached value.
 	// (Tx address is set up per packet)
 	//
-	rf_set_rx_address(DEFAULT_RX_ADDRESS);
-	set_rx_mode();		// engage the listening apparatus
-	
-	radio_go = 1;		// mark the radio as UP	
+	if (*nodeid) rf_set_rx_address(nodeid);
+	else rf_set_rx_address(DEFAULT_RX_ADDRESS);
+	set_rx_mode();		// engage the listening apparatus	
 }
