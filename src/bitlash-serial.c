@@ -465,7 +465,7 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 	resetOutput();
 #endif
 
-	return 0;
+	return optionalargs;
 }
 
 numvar func_printf(void) {

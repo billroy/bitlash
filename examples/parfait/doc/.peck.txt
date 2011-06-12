@@ -1,0 +1,63 @@
+pecking order algo
+
+starting with N units with values m=0,
+end with each unit assigned a unique id in [1..N]
+no monkey involved
+
+====
+consider:
+
+m:	current identity, initially random
+f:	pecking force; a measure of internal/intrinsic fitness,
+	a randomly distributed, fixed, visible trait
+p:	proposed new identity
+q:	challenge fitness: challenger, or fitness of bigger hen if she exists
+
+
+constants:
+
+D:	percent of time we defend instead of attacking
+
+each round of egopeck is as follows:
+	if we are king (m==1) or D% of the time we defend our current value of m
+	otherwise we attack the next smaller value of m
+
+=====
+init:="... m=rfget(0x26)&0x31;run ego"
+
+# defend if we're king, or D% of the time if we're not;
+# else peck one rank up to see if we can improve our lot
+#
+peck := 
+	p=m-((m>1)&&(random(100)<95));
+	q=0;
+	snooze(200);
+	tell * "p=",p,"q=",q,";onpeck"
+
+reap :=
+	if q<f:m=p;beep(3,2048,25)
+	snooze(random(2000))
+
+# add a little ego every pass?
+ego :=
+	switch e++&1:peck,reap
+
+
+# on receipt of a peck for our pecklevel:
+#	if we're weaker, cede the level silently
+#	if we're equal
+#	if we're stronger, peck back
+giveway :=
+	--m;beep(3,1024,25)
+birdfight:=
+	i=20;while i--:beep(3,100*i,30)
+standon :=
+	tell * \"q=max(q,\",f,\")\"
+onpeck:=
+	if m==p:switch sign(f-q)+1:giveway,birdfight,standon
+
+
+===
+
+how to eliminate duplicates:
+

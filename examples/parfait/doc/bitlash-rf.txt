@@ -1,0 +1,333 @@
+Bitlash-RF Alpha Release
+Preliminary Documentation
+-------------------------
+June 29, 2009 
+Copyright 2009 Palmeta Productions LLC
+
+
+About Bitlash-RF
+================
+
+Bitlash-RF is an extension of Bitlash for use on wireless networks.  This implementation of Bitlash-RF supports the Nordic Semiconductor nRF24L01+ 2.4 GHz transceiver on Arduino version 0016.
+
+The extensions to Bitlash allow you to:
+	- Configure a local wireless network of multiple named nodes
+	- Run Bitlash programs on each node
+	- Send Bitlash commands between nodes to communicate status and Do Stuff
+
+The networking paradigm is "broadcast mostly" with unicast and routing extensions.  It can be used in ways that are mesh-like without mesh overhead.  Think bird, not ant: ants invest heavily in route grooming via pheromone marking; birds squawk at anybody in earshot.
+
+Nodes communicate over a pre-agreed network address within a broadcast domain.  Domains can be linked by nodes serving as repeaters, and a node connected to a PC via USB can serve as an internet gateway.
+
+Read on for details about Bitlash-RF.
+
+
+Addressing: Node and Net Identifiers
+====================================
+
+There are two addresses you need to understand to configure a Bitlash-RF wireless network: the node id and the net id.  The node id identifies the node itself, and the net id is the local broadcast address for your wireless node cluster.
+
+Bitlash-RF nodes listen on both their individual node address and the net address for incoming traffic.  They can therefore receive and act on either node-specific or net-broadcast data and commands.
+
+When sending data, Bitlash-RF transmits to the net address, unless the repeater function is configured (see Advanced Topics).
+
+Both node id and net id are preconfigured with workable defaults; read on for details on setting them yourself.
+
+
+Specifying Addresses
+=====================
+
+Addresses (in the Nordic implementation) are string constants up to five bytes long.  For ease of use you may specify ascii characters in the address, so you can refer to nodes by common names:
+
+<div class='code'>
+id := "curly"
+</div>
+
+Uppercase counts!  These ids are different:
+
+<div class='code'>
+id := "larry"
+id := "Larry"
+</div>
+
+Non-printable characters in the range [0..0x1f] and [0x80..0xff] are also legal in addresses.  This example sets the default "E7E7E7E7E7" Nordic address:
+
+<div class='code'>
+id := "\xE7\xE7\xE7\xE7\xE7"
+</div>
+
+Short addresses are padded to length with zeroes, so this is ok:
+
+<div class='code'>
+id:="moe"
+</div>
+
+
+NOTE: Reboot Node After Changing Address!
+=========================================
+
+Addresses are committed when the node boots, so you must restart the node after changing the id or net addresses for the change to take effect:
+
+<div class='code'>
+> id := "moe"
+> boot
+bitlash here! ....
+>
+</div>
+
+Of course, cycling the power works too.
+
+
+Node ID
+=======
+
+The node id is the node's identifier.  If you don't provide one, the node makes up a name for itself (currently "talky").
+
+Node identifiers should generally be unique, though this is neither required nor enforced, and there are use cases requiring multiple nodes with the same id.  Use caution for easy self-confusion if you do have multiple nodes with the same name.
+
+To set the node id you assign the value to the "id" macro, like this:
+
+<div class='code'>
+> id := "moe"
+> print id
+moe
+> boot
+</div>
+
+It's easiest to do this using a terminal program on a PC, with the node attached via USB.
+
+
+Net ID
+======
+
+The net id is the broadcast domain address for your cluster of wireless nodes.  Nodes generally transmit to the net id address so that everyone can hear them.
+
+The default net address is "\xba\xd6\xe0\xb0\xb0".  You could change this to "house" like this:
+
+<div class='code'>
+> net := "house"
+> boot
+</div>
+
+Be sure to change the net assignment to the same value on all the nodes you want engaged.
+
+Please use caution not to confuse the network address with the "rf channel" or frequency on which the network rf link operates.
+
+
+Commands
+========
+
+Bitlash-RF adds several commands to Bitlash to enable radio- and network-related functionality.  This section documents the say, tell, and print #1 commands.
+
+
+The say command
+---------------
+
+The "say" command broadcasts a command to all listening units for immediate execution.  In combination with the Bitlash macro feature it is key to using Bitlash-RF.  Basically, it's how one node tells another (or the whole network) that something has happened, or to do something.
+
+To start with the simplest example: Suppose we have three nodes, moe, larry, and curly.  On moe's console, type this:
+
+<div class='code'>
+> say "print millis()"
+</div>
+
+Larry and Curly will execute "print millis()" and type their local uptime on their consoles.  Nothing appears to happen at A (correctly).
+
+More interestingly, Larry and Curly might be
+
+
+
+
+
+(The escaped quote \" combination is required to embed a quote in a quoted string.)
+
+
+
+
+
+<div class='code'>
+> say "tone(random(2000), 1000))"
+</div>
+
+
+The tell command
+================
+
+(Not yet implemented)
+
+The "tell" command transmits a command to a specific listening address.  
+
+<div class='code'>
+> tell fred "print id"
+fred
+>
+</div>
+
+Advanced example: To cause a remote node named "fred" to print some serial output to a non-default serial port (let's say pin 3) at 1200 baud:
+
+<div class='code'>
+> tell "fred" "setBaud(3,1200); print #3:\"Nice LCD you have there.\""
+</div>
+
+
+
+
+Broadcast Print: print #1
+-------------------------
+
+You can broadcast printed output to all nodes using the print redirection feature with the special pin number "1".  (Yes, this is a kludge, and it will likely change in a future version.)
+
+
+<div class='code'>
+> print #1:"The cellar temperature is", ar(3)
+</div>
+
+The printed output is sent to the serial port of each node receiving the transmission just as if it had been generated locally with a "print" statement.
+
+This is intended for informative or logging purposes.  To send commands between nodes, use say or tell.  
+
+
+
+
+
+Example: Marco Polo
+===================
+
+On node 1:
+
+<div class='code'>
+> marco := "say \"polo\""
+> 
+</div>
+
+Then on node 2:
+
+<div class='code'>
+> polo := "say \"marco\""
+> polo
+</div>
+
+:)
+
+
+Fobby: Nordic Fob Integration
+=============================
+
+Fobby is a parallel project to Bitlash-RF that provides an alternate firmware load for the SparkFun Nordic Fob.  A fobby-enabled Nordic Fob uses the "say" command to trigger macros in Bitlash-RF devices on the network.
+
+A fobby plus a single Bitlash-RF enabled node is all you need to build a five-channel remote control.
+
+When you press a button, let's say the "up" button, fobby transmits the command:
+
+<div class='code'>
+> say "f_up"		// f_up, f_down, f_left, f_right, or f_center
+</div>
+
+Any device hearing the command will attempt to execute the f_up macro, if one is defined; likewise for the other keys f_down, f_left, f_right, and f_center.  
+
+This makes it easy to map the fob buttons to anything you can do with Bitlash; for example, suppose you have a node connected to a garage door opener, you could connect the fob's up button to trigger your "open_door" macro like this:
+
+<div class='code'>
+> f_up := "open_door"		// trigger the open_door macro
+</div>
+
+Fobby comes preconfigured for the default Bitlash-RF network; changing to a different network or repeater configuration is currently a compile-time option.
+
+
+
+
+Advanced Topics
+===============
+
+The rfget() and rfset() functions
+---------------------------------
+
+The rfget() and rfset() functions provide direct access to the radio's control registers, which are documented at page 58 ff in the data sheet.
+
+Please use caution with rfget() and rfset().  It's easy to wedge the system in an inconsistent state using these functions, and may even be possible to let the magic smoke out, so be careful and know what you're doing.
+
+(Note: Because rfget() and rfset() only transfer one byte to/from the radio, you cannot transfer all five bytes of the address registers this way.)
+
+
+
+Example: RF Channel control
+---------------------------
+
+You can read the current value of a register with rfget().  Here is an example that reads register 5, the RF_CH register, and prints it to the console.
+
+<div class='code'>
+> print rfget(5)
+2
+</div>
+
+This node is on the default channel, 2.  To set the channel, use rfset():
+
+<div class='code'>
+> rfset(5, 33)		// move to channel 33
+> print rfget(5)
+33
+</div>
+
+Now it is (all alone?) on channel 33.
+
+
+Example: Dump RF Registers
+==========================
+
+Here's an example showing the use of rfget to print out all the registers in hex:
+
+<div class='code'>
+> i=0; while i<0x20: print i:x, rfget(i):x; i++
+</div>
+
+You might want to make this a macro:
+
+<div class='code'>
+> rfdump := "i=0; while i<0x20: print i:x, rfget(i):x; i++"
+> rfdump
+0 0
+...
+</div>
+
+Repeater Function
+-----------------
+
+Bitlash-RF contains (experimental) support for one-hop routed networks.  You can set up a repeater in the center of an area of interest to extend the range of coverage.
+
+(In principle, multi-hop hierarchical networks will work, too, once we have enough nodes to test with.)
+
+The principle is that all units transmit to the repeater, which retransmits to the local net address on which the units listen.  The repeater address is specified in each node using what is called the "via" address.
+
+Any node can be configured as a repeater (though you probably only want one repeater in your network!).  Repeating packets will impact battery life and slow the node a bit but otherwise the node will continue to be be usable in the customary ways.
+
+You make a node into a repeater by setting "rpt" to "1".  Here we set up a node named "rptr0" and engage its repeat function:
+
+<div class='code'>
+> id := "rptr0"		// repeater configuration
+> rpt := "1"
+> boot
+</div>
+
+Now other units can establish routing "via" this node:
+
+<div class='code'>
+> id  := "curly"	// node configuration
+> via := "rptr0"
+> boot
+</div>
+
+
+=================================
+
+
+Codec Functions
+
+<div class='code'>
+volume()
+mute()
+cdget(), cdset()
+tone()
+xtone()
+tx()
+</div>
+
