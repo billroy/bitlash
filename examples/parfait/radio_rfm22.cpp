@@ -29,7 +29,7 @@
 
 ////////////////////////////////////
 // Turn this on to enable debug spew
-//#define RFM22_DEBUG
+//#define RADIO_DEBUG
 
 // RFM-22 Radio Module Register Definitions
 // from "RFM22 ISM Transceiver Module" v1.1
@@ -485,7 +485,7 @@ byte rx_check_pkt(pkt_t *pkt) {
 		return 0;
 	}
 
-#ifdef RFM22_DEBUG
+#ifdef RADIO_DEBUG
 	sp("rx_ got _packet");
 #endif
 
@@ -681,6 +681,7 @@ void init_radio(void) {
 			break;
 		} else {
 			sp("No radio."); speol();
+			return;
 		}
 	}
 
