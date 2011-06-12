@@ -22,13 +22,13 @@
 //
 #ifndef _PARFAIT_H
 #define _PARFAIT_H
-#include "bitlash.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
 #include "WProgram.h"
 #endif
+
 
 // RF HARDWARE SETUP
 //
@@ -65,7 +65,7 @@
 //	undefine LED_RF to omit the activity light feature
 // 	(saves 128 bytes!)
 //
-#define LED_RF	7
+//#define LED_RF	7
 
 #ifdef LED_RF
 #define led_on() digitalWrite(LED_RF,1)

@@ -1,6 +1,7 @@
 //////////////////////////////////////////////////////////////////
 //
-//	parfaitdemo.pde:	Parfait - Bitlash Integration
+//	parfait.pde:	Bitlash Integration for the Parfait RFM22
+//					Wireless Shield
 //
 //	Copyright 2010-2011 by Bill Roy
 //
@@ -30,14 +31,11 @@
 //
 #include "WProgram.h"
 #include "bitlash.h"
+#include "../../libraries/bitlash/src/bitlash.h"
 #include "parfait.h"
 
-//#include "pkt.c"
-//#include "radio-rfm22.c"	// ...which in turn includes radio-base.c
-//#include "parfaitmain.c"
-
-extern numvar func_printf_handler(byte,byte);
-
+//#include "../pkt.ccc"
+//#include "../radio_rfm22.ccc"
 
 //////////
 //

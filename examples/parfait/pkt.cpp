@@ -20,6 +20,9 @@
 //
 //////////////////////////////////////////////////////////////////
 //
+#include "WProgram.h"
+#include "bitlash.h"
+#include "../../libraries/bitlash/src/bitlash.h"
 #include "parfait.h"
 
 

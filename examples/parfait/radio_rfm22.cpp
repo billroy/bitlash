@@ -20,8 +20,11 @@
 //
 //////////////////////////////////////////////////////////////////
 //
-
+#include "WProgram.h"
+#include "bitlash.h"
+#include "../../libraries/bitlash/src/bitlash.h"
 #include "parfait.h"
+#include "pkt.h"
 
 
 ////////////////////////////////////
@@ -136,6 +139,112 @@ byte rf_read_status(void) {
 //#define ENIDM	2
 #define FFCLRRX	1
 //#define FFCLRTX 0
+
+
+
+
+/////////////////////////////////////////////////////////////////
+//
+//	SPI Radio Interface
+//
+/////////////////////////////////////////////////////////////////
+
+#define spi_ready() (SPSR & (1<<SPIF))
+
+uint8_t spi_write(uint8_t outgoing) {
+uint8_t status;
+
+#ifdef RADIO_DEBUG
+    Serial.print("spi:");
+    Serial.print(outgoing,HEX);
+    Serial.print("<");
+#endif
+
+	SPDR = outgoing;
+	// TODO: a spin counter here might produce interesting amounts of entropy
+	while (!spi_ready()) {;}
+	status = SPDR;
+
+#ifdef RADIO_DEBUG
+	Serial.println(status, HEX);
+#endif
+
+	return status;	
+}
+
+
+// Send a command-of-one-argument, return status
+//
+uint8_t send_command(uint8_t cmd, uint8_t data) {
+uint8_t status;
+
+	// "Every new command must be started by a high to low transition on CSN"
+	rf_begin();
+	spi_write(cmd);
+	status = spi_write(data);
+	rf_end();
+
+#ifdef RADIO_DEBUG
+	Serial.print("rf: ");
+	Serial.print(cmd, HEX);
+	Serial.print(",");
+	Serial.print(data, HEX);
+	Serial.print(" -> ");
+	Serial.println(status, HEX);
+#endif
+
+	return(status);
+}
+
+
+// Send a one byte command (no args), return status
+//
+uint8_t send_command_noarg(uint8_t cmd) {
+uint8_t status;
+	rf_begin(); //Select chip
+	status = spi_write(cmd);
+	rf_end(); //Deselect chip
+
+#ifdef RADIO_DEBUG
+	Serial.print("rf: ");
+	Serial.print(cmd, HEX);
+	Serial.print(" -> ");
+	Serial.println(status, HEX);
+#endif
+
+	return(status);
+}
+
+
+// Sends a number of bytes of payload
+//
+void tx_send_payload(uint8_t cmd, uint8_t bytes, uint8_t *data) {
+
+#ifdef RADIO_DEBUG
+	Serial.println("tx_send_payload");
+#endif
+
+	rf_begin();
+	spi_write(cmd);
+	while (bytes--) spi_write(*data++);
+	rf_end();
+}
+
+// Read incoming data
+//
+void rx_get_pkt(uint8_t cmd, uint8_t nbytes, pkt_t *pkt) {
+uint8_t *buf = (uint8_t *) pkt;
+
+#ifdef RADIO_DEBUG
+	Serial.println("rx_get_packet");
+#endif
+
+	rf_begin();
+	spi_write(cmd);
+	while (nbytes--) *buf++ = spi_write(0);
+	rf_end();
+}
+
 
 
 //////////
@@ -501,8 +610,10 @@ byte rf_address[RF_ADDRESS_LENGTH+1];
 	memset(rf_address, 0, RF_ADDRESS_LENGTH+1);
 
 	int idptr = getValue(addr_id);
-	if (idptr >= 0) getString((int) idptr, (char *) rf_address, RF_ADDRESS_LENGTH+1);
-	else strncpy((char *) rf_address, default_address, RF_ADDRESS_LENGTH);
+// todo: sort out node ID management
+//	if (idptr >= 0) getString((int) idptr, (char *) rf_address, RF_ADDRESS_LENGTH+1);
+//	else 
+	strncpy((char *) rf_address, default_address, RF_ADDRESS_LENGTH);
 
 	rf_put_address(whichaddr, rf_address);
 }
