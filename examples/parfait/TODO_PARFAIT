@@ -1,0 +1,339 @@
+TODO-parfait
+Working notes
+Copyright 2011 Palmeta Productions LLC
+June 12, 2011 -br
+==============================
+
+Bitlash2 migration notes
+
+- status
+	- up and working on RC3d
+	- around 18+ kbytes
+	- intermittent packet loss at close range
+
+- radio interface could be cleaner
+	- radio.h with API
+
+- BLOCK: node ID / addressing not working
+	- setid()
+	- char nodeid[...]
+
+- feat: rfstat(): dump rf registers as well as counters
+	- or write a function
+
+- feat: rf control functions
+	setfreq()
+	setdeviation()
+	setdatarate()
+	rssi()
+
+- feat: ook() keying
+
+tell("addr", "command")
+rprintf("format", val1,val2,...)
+rfset()
+rfget()
+degf()
+rflog()
+rfstat()
+
+---
+connect("foo")
+disconnect() / logout()
+
+- feat: VirtualWire driver
+
+
+===== Notes below here from 2009 prototype project
+
+
+eight node army
+
+ISSUE: pecking order
+	- automatic selection of id's
+		m=rfget(0x26) ??
+
+---
+---
+variable usage
+m:		"me", the unit's numeric id, index into rgb bit vectors
+r,g,b: light status, one bit per unit
+
+---
+
+startup:="init"
+init:="setid;pinmode(5,1);pinmode(6,1)"
+setid:="m=0"
+
+show:="dw(6,r&m);dw(5,g&m);dw(7,b&m)Ó
+syncl:="sp;tell * \"r=\",r,\";g=\",g,\";b=\",b,\";show\""
+
+on:="r=g=b=255;syncl"
+off:="r=g=b=0;syncl"
+tgl:="r=g=b=!r;syncl"
+rc:="r=random(255);g=random(255);b=random(255);syncl"
+
+rr:="r=r<<1;if !r||r>0x80:r=1"
+gr:="g=g<<1;if !g||g>0x80:g=1"
+scanr:="rr;syncl"
+scang:="gr;syncl"
+
+rb:="beep(3,200+random(2000),25)"
+
+do:="f=523"
+re:="f=587"
+mi:="f=659"
+fa:="f=698"
+so:="f=784"
+la:="f=880"
+ti:="f=988"
+do2:="f=1047"
+scale:="switch t++&7:do,re,mi,fa,so,la,ti,do2;beep(3,f,25)"
+pn:="beep(3,f,t)"
+
+
+nn:="f=(f*100057)/100000"
+rrb:="tell * \"if m==\",z++&7,\":rb\""
+=====
+=====
+cleanups:
+
+- toggle blue LED, don't set it on/off
+
+- TODO: probe the 60-byte packet size for correctness
+
+- it is an error to attempt to start an override while one is in effect
+	- TODO: error check/enforce
+
+=====
+standard eeprom contents
+
+startup:="run bcn"
+bcn:="print#b:id,millis,degf;snooze(10000+random(2000))"
+rfdump (or a function)
+temperature trim
+
+=====
+size tracking
+on 0018 @ 16796
+
+- review strings table in bitlash-parser.c
+==========
+DOC
+
+- features to document
+	node addressing
+		id := "moby"
+	tell [<id> | *] "command" (printlist!)
+	broadcast print: print #b
+	rfget(), rfset(), rfstat()
+	temperature: degf()
+	cloning the macro set: rfclone()
+
+- degf(): temperature
+	degf works but seems biased high on many nodes
+	rfset(0x13, -14) to set offset of -14
+	p.55
+
+- current consumption
+	board with no accessories draws 24.3 ma at 4.5v idle
+	oops make that 4.08v input idle
+	24.3 with radio 4.7 without radio "at rx" is 19.6ma
+		aaa holds 1250 mah so we get 50 hrs at this rate
+		transmit (60ma spec) will be difficult to measure due to short durations
+		aa @ 2890 would be about ~115 hours
+
+==========
+Bitlash 1.2
+
+document examples for setSerialHandler
+	- morse output
+	- SPI output to led array
+
+line editing improvements 
+	- (UDLR from screen kill the line buffer)
+		- 1B 5B 41 1B 5B 42 1B 5B 44 1B 5B 43 
+
+parfait wormhole
+
+==========
+radio futures
+
+- net addressing
+	via:='rout'
+
+- futures:
+	low battery detect
+	radio sleep / periodic wakeup
+		- sleep() bitlash function
+	debugging
+		packet log (hex dump)
+	------
+	serial passthrough (+++ exit)
+	packet handler passthrough (PKT_USER)
+
+- tiny84 board (the fob?)
+==========
+
+- what prevents reverting to 1.0 and using it?
+	- doCharacter revisions
+	- TODO: do a diff and make a list
+
+- untangle bitlash improvements
+
+	- backport-to-1.0-making 1.1 list
+		- bitlash-cmdline.c::doCharacter
+		- PORTED: bitlash-functions.c::functionDispatch
+
+	- bitlash-functions.c
+		- DONE: import new function dispatcher
+		- DONE: clean out old cruft functions
+		- DONE: add extension mechanism functionNG
+		- add rfget(), rfset() IN THE SKETCH via extension mechanism
+
+	- bitlash-interpreter.c
+		- DONE/OK: tell command parsing and address setup
+		- DONE: tell has to send the whole command in one packet if possible
+
+	- bitlash-cmdline.c
+		- review doCharacter revisions for backport to bitlash mainline	
+		- expose doCharacter in the API
+		- forwardingSerial hacks in initlbuf() (forego prompt)
+		- and doCharacter to the api (bitlash.h)
+
+	- bitlash-serial.c
+		- serialOverrideHandler could be backported
+==========
+
+Pinout for daughterboard lashup
+
+1: 		GND
+2: 		VCC (3V3)
+3: d10	NSEL		output
+4: d11	MOSI		output
+5: d12	MISO		input
+6: d13	SCK			output
+7: d8	SDN			output	note: add jumper from d8 pin to a0 pin
+8: d2	NIRQ		input	note: add jumper from d2 pin to a1 pin
+
+==========
+
+Additional pins for test unit run:
+
+d7:	blue led, rf activity light, 47 ohms, 4.3 ma (6.8ma wide open)
+	754-1248-ND
+d6: red led, 100 ohms, 9.12ma
+	C503B-RAS-CY0B0AA1-ND
+d5: green led, 100 ohms, 3.4ma
+	C503B-GAS-CB0F0791
+d4: pushbutton
+d3: buzzer
+
+TODO: change RF LED uses to quick-toggle d7
+
+
+------------
+
+Still to get working:
+
+- Sec 4.6: "If Asynchronous FSK is used the TX_DR register should be set to its maximum value. "
+
+- sec 4.3, FIFO mode:
+	"When in FIFO mode the module will automatically exit the TX or RX State when either the ipksent or ipkvalid interrupt occurs."
+
+- questions
+	- output power: p.133 txpow[2] "used in 4x31 output power programming"
+		- by default it is engaged and 0x6d = 7 (17dbm plus this bit set)
+
+- power management
+	- we're always either in tx or rx
+	- need a macro to go into standby?
+
+- data rate setting
+	- currently working at factory default of 40k
+	- experimental 100k radio settings in code
+		- 300k deviation: losing many packets
+		- 100k deviaton: losing packets too
+
+Notes:
+- reg 31 ezmac status can read the pksent and pkvalid bits without resetting the interrupt
+- read up on GFSK transmit data path
+
+-----
+
+- next board thoughts
+	- single crystal off GPIO2
+		- BOM impact?
+		- look at drive strength issues
+		- 10 mhz processor configuration issues
+			- proc is ok at 10 mhz above 2.7v
+			- startup transition issues?
+	- status LED on tx and rx
+
+==============================
+Bitlash-RF open issues
+==============================
+
+----------------
+serial_passthrough mode
+	a means to enter a mode in which serial data is transparently sent to the endpoints as serial data
+	how to get out? (+++?!)	
+-------------------------------------
+Open
+	how to handle multiple units responding?  
+		(auto response delay?)
+
+
+==========
+DOCUMENTATION TODO
+
+
+- rules for using setSerialOverride
+
+	- sending a command: tell id cmd, where sendingCommand is set by cmd_tell
+		the handler is send_command_byte
+	- execution of a sent command, where forwardingSerial is set by runParfait
+		to direct all the output to the network
+	- print to broadcast: print #b, where forwardingSerial is set by cmd_print
+	- print #pin is completely separate
+	- normal print to default pin, no #
+
+- rules for printed output in nested macros
+
+ntest:="n=0;print \"top\";nest;print\"top\""
+nest:="pt6;print \"in\",n;if n<3:n++;nest;n--;print \"bk\",n"
+pt6:="print #6:20:*"
+
+> tell czo "ntest"
+> topo
+in 0
+in 1
+in 2
+in 3
+bk 2
+bk 1
+bk 0
+top
+
+----
+DOC: MACRO ID IN PRINT LIST
+
+special case print to print macro value
+>id:="moe"
+>print id
+moe
+>
+
+
+- DOC: atomic command transaction issues
+	- accepting a command while there are user-entered characters in the edit buffer just won't work
+	- multiple units sending command fragments will be BAD
+	- atomic commands?
+		- requires either accepting 60 byte limit or long-packet handling
+		- BUSY status
+	- really need a full lbuf size command buffer to use with doCommand
+
+- DOC: document tell <addr> <exprlist>
+		tell foo "h=",h
+
+

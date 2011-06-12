@@ -53,4 +53,8 @@ typedef struct {
 	};
 } pkt_t;
 
+
+numvar func_pktstat(void);
+
+
 #endif		// _PKT_H

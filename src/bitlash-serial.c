@@ -301,7 +301,7 @@ void printIntegerInBase(unumvar n, uint8_t base, numvar width) {
 
 	while (--ptr >= buf) spb((*ptr < 10) ? (*ptr + '0') : (*ptr - 10 + 'A'));
 }
-void printInteger(numvar n, numvar width){
+void printInteger(numvar n, numvar width) {
 	if (n < 0) {
 		spb('-');
 		n = -n;

@@ -504,7 +504,7 @@ extern char startup[];
 /////////////////////////////////////////////
 // bitlash-serial.c
 //
-void printInteger(numvar);
+void printInteger(numvar,numvar);
 void printHex(unumvar);
 void printBinary(unumvar);
 void spb(char c);

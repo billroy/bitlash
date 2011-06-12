@@ -26,6 +26,10 @@
 #include "parfait.h"
 #include "pkt.h"
 
+// forward decls
+byte rf_read_register(uint8_t);
+void rf_set_register(uint8_t, uint8_t);
+
 
 ////////////////////////////////////
 // Turn this on to enable debug spew
@@ -430,7 +434,8 @@ numvar func_degf(void) {
 byte rf_logbytes;
 
 // a function handler to expose the control
-void rflog(numvar logbytes) { rf_logbytes = logbytes; }
+numvar func_rflog(void) { rf_logbytes = getarg(1); }
+
 void lpb(byte b) {
 	if (b == '\\') {
 		spb('\\');
@@ -471,14 +476,14 @@ void log_packet(char tag, pkt_t *pkt, byte length) {
 
 
 //////////////////////
-// rx_check_pkt: read packet into buffer if available
+// rx_fetch_pkt: read packet into buffer if available
 //
 //	returns number of bytes transferred to pkt, 0 if no data available
 //
-byte rx_check_pkt(pkt_t *pkt) {
+byte rx_fetch_pkt(pkt_t *pkt) {
 
 	// Does the radio have business for us?
-	if (!rf_interrupt()) return 0;		// quick out if our packet interrupt hasn't fired
+	if (!rx_pkt_ready()) return 0;		// quick out if our packet interrupt hasn't fired
 
 	if (!(rf_read_status() & (1<<IPKVALID))) {
 		sp("rx: int no pkt!");
@@ -557,22 +562,11 @@ void tx_send_pkt(pkt_t *pkt, uint8_t length) {
 // We also engage "broadcast match" to accept all broadcast packets, which are addressed
 // to the all-ones broadcast address ("\xff\xff\xff\xff")
 //
-// 	On the transmit side:
-// 	If a VIA is present we default to the VIA; 
-//	otherwise we default to the all-ones broadcast address
-//
-// 	[print #b] and [tell *] transmit to the all-ones broadcast address
-//
-// TODO: figure out if tell * goes to VIA if there, or just broadcast
-//
-// 	[tell tk42 "beep"] transmits to the specified node address
+// 	[rprintf()] and [tell("*","...")] transmit to the all-ones broadcast address
 //
 #define RF_ADDRESS_LENGTH 4
 
-// ID is the address of the node
-// TODO: these should live in the string table
-#define NODE_ID (char *) "id"
-#define DEFAULT_NODE_ADDRESS "noob"
+#define DEFAULT_RX_ADDRESS "noob"
 #define BROADCAST_ADDRESS "\xff\xff\xff\xff"
 
 // Set transmit or receive address
@@ -582,15 +576,12 @@ void tx_send_pkt(pkt_t *pkt, uint8_t length) {
 //
 void rf_put_address(byte whichaddr, byte *rf_address) {
 
-#if 0
 	// RFM22 Broadcast Address handling
 	// 	If we see a null address here, point it to the BROADCAST_ADDRESS
 	//
 	if (!rf_address || !(*rf_address)) {
-		sp("BROADCASTING..."); speol();	// debug 
 		rf_address = (byte *) BROADCAST_ADDRESS;
 	}
-#endif
 
 	rf_set_register(whichaddr+0, rf_address[0]);
 	rf_set_register(whichaddr+1, rf_address[1]);
@@ -598,6 +589,16 @@ void rf_put_address(byte whichaddr, byte *rf_address) {
 	rf_set_register(whichaddr+3, rf_address[3]);
 }
 
+void rf_set_rx_address(char *my_address) {
+	rf_put_address(REG_RX_ADDR, (byte *) my_address);
+}
+
+void rf_set_tx_address(char *to_address) {
+	rf_put_address(REG_TX_ADDR, (byte *) to_address);
+}
+
+
+#if 0
 //////////
 // rf_set_address: set address from EEPROM macro or use default
 //
@@ -617,15 +618,7 @@ byte rf_address[RF_ADDRESS_LENGTH+1];
 
 	rf_put_address(whichaddr, rf_address);
 }
-
-
-//////////
-// Set up transmit address
-//
-void rf_init_tx_address(void) {
-	// Transmit address: initialize to broadcast at boot time
-	rf_put_address(REG_TX_ADDR, (byte *) BROADCAST_ADDRESS);
-}
+#endif
 
 
 
@@ -888,11 +881,11 @@ void init_radio(void) {
 	// Sync Pattern and Length
 	// we use the default sync pattern of 2dd4 with 2 byte check
 
-	// Set up transmit address
-	rf_init_tx_address();
-
-	// Receive address setup: listen on our 'self' address (+broadcast)
-	rf_set_address(REG_RX_ADDR, NODE_ID, DEFAULT_NODE_ADDRESS);
+	// Receive address setup: listen on NOOB, and the broadcast address,
+	// until setid() is called to provide an updated address.
+	// (Tx address is set up per packet)
+	//
+	rf_set_rx_address(DEFAULT_RX_ADDRESS);
 	set_rx_mode();		// engage the listening apparatus
 	
 	radio_go = 1;		// mark the radio as UP	

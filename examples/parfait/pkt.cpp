@@ -85,23 +85,9 @@ void send_command_byte(byte b) {
 //////////
 // dump packet stats for debugging
 //
-void pkt_dump(void) {
-
-	sp("tx pkts:"); printInteger(tx_packet_count);
-	sp(" rx pkts:"); printInteger(rx_packet_count);
-	sp(" bogons:"); printInteger(rx_bogon_count);
+numvar func_pktstat(void) {
+	sp("tx pkts:"); printInteger(tx_packet_count, 0);
+	sp(" rx pkts:"); printInteger(rx_packet_count, 0);
+	sp(" bogons:"); printInteger(rx_bogon_count, 0);
 	speol();
-
-#if 0
-	sp("TCNT1:"); speol(TCNT1, HEX);
-	sp("SPCR:"); speol(SPCR, HEX);
-	sp("SPSR:"); speol(SPSR, HEX);
-	sp("TCCR1A:"); speol(TCCR1A, HEX);
-	sp("TCCR1B:"); speol(TCCR1B, HEX);
-	sp("TIMSK1:"); speol(TIMSK1, HEX);
-	sp("OCR1A:"); speol(OCR1A, HEX);
-	sp("TCNT1:"); speol(TCNT1, HEX);
-	sp("DDRB:"); speol(DDRB, HEX);
-#endif
 }
-

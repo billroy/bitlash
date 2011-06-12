@@ -34,22 +34,31 @@
 #include "../../libraries/bitlash/src/bitlash.h"
 #include "parfait.h"
 
-//#include "../pkt.ccc"
-//#include "../radio_rfm22.ccc"
 
 //////////
 //
-// tell 1:<address> 2:<cmd> 3..N:<optional args>
+//	setid("id"): set node id
 //
-#define REG_TX_ADDR 0x3a
+numvar func_setid(void) {
+	rf_set_rx_address((char *) getarg(1));
+	return 0;
+}
 
-numvar cmd_tell(void) {
-	rf_put_address(REG_TX_ADDR, (byte *) getarg(1));		// todo: verify this handles broadcast right
+
+//////////
+//
+//	tell command:
+//		tell("addr" | "*", "command string", optional_arg1, optional_arg2,...);
+//
+// 		tell("node", "rooftemp(%d)\n",degf())
+//		tell("*", "overtemp(%d)\n", degf());
+//
+numvar func_tell(void) {
+	rf_set_tx_address((char *) getarg(1));		// todo: verify this handles broadcast right
 	setOutputHandler(&send_command_byte);	// engage the command forwarding logic
 	func_printf_handler(2,3);				// format=arg(2), optional args start at 3
 	pkt_flush();							// push the caboose
 	resetOutputHandler();					// restore the print handler
-	rf_init_tx_address();					// and broadcast tx address
 	return 0;
 }
 
@@ -59,6 +68,7 @@ numvar cmd_tell(void) {
 // rprintf(): broadcast printf over the radio link
 //
 numvar func_rprintf(void) {
+	rf_set_tx_address(0);				// set up for broadcast tx address
 	setOutputHandler(&send_serial);
 	func_printf_handler(1,2);	// format=arg(1), optional args start at 2
 	pkt_flush();
@@ -103,13 +113,14 @@ void runParfait(void) {
 		if (!radio_go) return;
 	}
 
-	for (;;) {
-
-		if (!rf_interrupt()) break;		// bail if no action from radio city
+	while (rx_pkt_ready()) {
 
 		// fetch the packet
-		byte payload_length = rx_check_pkt(&rx_buf);
-		if (payload_length <= RF_PACKET_HEADER_SIZE) break;	// fetch packet if ready else punt
+		byte payload_length = rx_fetch_pkt(&rx_buf);
+		if (payload_length <= RF_PACKET_HEADER_SIZE) {
+			rx_bogon_count++;
+			continue;
+		}
 		payload_length -= RF_PACKET_HEADER_SIZE;	// calculate size of payload
 
 		char c;
@@ -155,13 +166,16 @@ void setup(void) {
 	initBitlash(57600);		// must be first to initialize serial port
 	initParfait();			// must be after initBitlash()
 
-	addBitlashFunction("tell", (bitlash_function) cmd_tell);
+	addBitlashFunction("setid", (bitlash_function) func_setid);
+	addBitlashFunction("tell", (bitlash_function) func_tell);
 	addBitlashFunction("rfget", (bitlash_function) func_rfget);
 	addBitlashFunction("rfset", (bitlash_function) func_rfset);
 	addBitlashFunction("rprintf", (bitlash_function) func_rprintf);
 	addBitlashFunction("degf", (bitlash_function) func_degf);
-
+	addBitlashFunction("rflog", (bitlash_function) func_rflog);
+	addBitlashFunction("rfstat", (bitlash_function) func_pktstat);
 }
+
 
 void loop(void) {
 	runParfait();

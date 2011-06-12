@@ -56,7 +56,7 @@
 #define rf_enable()		cbi(L01_PORT, L01_CE)
 
 #define rf_interrupt()	(!(L01_IRQ_PORT & (1<<RF_IRQ)))
-
+#define rx_pkt_ready rf_interrupt
 
 //////////////////////
 //	led control: RF activity LED, by default pin 7
@@ -125,24 +125,22 @@ void pkt_flush(void);
 //////////////////////
 //	radio.c
 //
+///
+// Radio API
+//
 void init_radio(void);
-byte rx_check_pkt(pkt_t *pkt);
-void rx_get_pkt(uint8_t, uint8_t, pkt_t *);
-void rx_read_pkt(pkt_t *);
-uint8_t send_command(uint8_t cmd, uint8_t data);
-void tx_send_payload(uint8_t, uint8_t, uint8_t *);
+void rf_set_rx_address(char *);
+void rf_set_tx_address(char *);
+// byte rx_pkt_ready(void);		// #defined above
+byte rx_fetch_pkt(pkt_t *pkt);
 void tx_send_pkt(pkt_t *, uint8_t);
-uint8_t spi_write(uint8_t outgoing);
-void rf_get_register(uint8_t, uint8_t, uint8_t *);
-byte rf_read_register(uint8_t);
-void rf_set_register(uint8_t, uint8_t);
-void rf_put_address(byte, byte *);
-void rf_init_tx_address(void);
+
+// Radio Layer Functions
 numvar func_rfget(void);
 numvar func_rfset(void);
 numvar func_degf(void);
-
-#define REG_TX_ADDR 0x3a
+numvar func_rflog(void);
+numvar func_rfstat(void);
 
 
 extern uint8_t rf_address[5];
