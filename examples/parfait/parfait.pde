@@ -94,7 +94,6 @@ byte radio_go;
 //
 void initParfait(void) {
 
-	init_leds();
 	init_radio();
 
 	// RF shell startup banner
@@ -139,6 +138,7 @@ void runParfait(void) {
 					// forward serial output to the network while the command executes;
 					// thus tell moe "ls" sends the ls output to the sending node's console
 					if ((c == '\r') || (c == '\n') || (c == '`')) {
+						speol();
 						setOutputHandler(&send_serial);
 						doCharacter(c);
 						pkt_flush();

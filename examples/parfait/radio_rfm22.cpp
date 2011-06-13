@@ -26,14 +26,40 @@
 #include "parfait.h"
 #include "pkt.h"
 
-// forward decls
-byte rf_read_register(uint8_t);
-void rf_set_register(uint8_t, uint8_t);
-
 
 ////////////////////////////////////
 // Turn this on to enable debug spew
 //#define RADIO_DEBUG
+
+//////////////////////
+//	led control: RF activity LED, by default pin 7
+//
+//	redefine LED_RF to move the activity light
+//	undefine LED_RF to omit the activity light feature
+// 	(saves 128 bytes!)
+//
+#define LED_RF	7
+
+#ifdef LED_RF
+#define led_on() digitalWrite(LED_RF,1)
+#define led_off() digitalWrite(LED_RF,0)
+void init_leds(void) {
+	pinMode(LED_RF, OUTPUT);
+	led_on();
+	delay(200);
+	led_off();
+}
+#else
+#define led_on()
+#define led_off()
+#define init_leds()
+#endif
+
+
+// forward decls
+byte rf_read_register(uint8_t);
+void rf_set_register(uint8_t, uint8_t);
+
 
 // RFM-22 Radio Module Register Definitions
 // from "RFM22 ISM Transceiver Module" v1.1
@@ -585,7 +611,7 @@ void rf_put_address(byte whichaddr, byte *rf_address) {
 	// RFM22 Broadcast Address handling
 	// 	If we see a null address here, point it to the BROADCAST_ADDRESS
 	//
-	if (!rf_address || !(*rf_address) || !strcmp("*", rf_address)) {
+	if (!rf_address || !(*rf_address)) {
 		rf_address = (byte *) BROADCAST_ADDRESS;
 	}
 
@@ -609,29 +635,6 @@ void rf_set_tx_address(char *to_address) {
 }
 
 
-#if 0
-//////////
-// rf_set_address: set address from EEPROM macro or use default
-//
-// whichaddr: 	REG_RX_ADDR or REG_TX_ADDR
-// addr_id:		macro name to match for address value
-// default_...	default address if none is found in EEPROM
-//
-void rf_set_address(byte whichaddr, char *addr_id, const char *default_address) {
-byte rf_address[RF_ADDRESS_LENGTH+1];
-	memset(rf_address, 0, RF_ADDRESS_LENGTH+1);
-
-	int idptr = getValue(addr_id);
-// todo: sort out node ID management
-//	if (idptr >= 0) getString((int) idptr, (char *) rf_address, RF_ADDRESS_LENGTH+1);
-//	else 
-	strncpy((char *) rf_address, default_address, RF_ADDRESS_LENGTH);
-
-	rf_put_address(whichaddr, rf_address);
-}
-#endif
-
-
 
 /////////////////////////////////////
 // initialize the radio interface
@@ -640,6 +643,8 @@ byte rf_address[RF_ADDRESS_LENGTH+1];
 // "may you live with interesting radios"
 //
 void init_radio(void) {
+
+	init_leds();
 
 	// Set output mode for outputs
 	// TODO: Ensure SS is set to output if L01_CSN moves off SS!
@@ -685,7 +690,6 @@ void init_radio(void) {
 			break;
 		} else {
 			sp("No radio."); speol();
-			return;
 		}
 	}
 

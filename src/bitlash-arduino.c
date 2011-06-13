@@ -99,18 +99,6 @@ ISR(SIG_OVERFLOW0) {
 	}
 }
 
-#if 0
-unsigned long millis(void) {
-unsigned long m;
-uint8_t oldSREG = SREG;	
-	// disable interrupts while we read timer0_millis or we might get an
-	// inconsistent value (e.g. in the middle of the timer0_millis++)
-	cli();
-	m = timer0_millis;
-	SREG = oldSREG;
-	return m;
-}
-#endif
 
 unsigned long millis(void) {
 unsigned long m;

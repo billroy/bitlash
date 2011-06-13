@@ -167,15 +167,6 @@ char id[IDLEN+1];			// buffer for id
 	
 	getsym();		// eat the id, move on to '{'
 
-#if 0
-	// provide for function functionname()
-	if (sym == s_lparen) {
-		getsym();	// eat '('
-		if (sym != s_rparen) expectedchar(')');
-		getsym();	// eat ')'
-	}
-#endif
-
 	if (sym != s_lcurly) expected(s_lcurly);
 
 	// measure the macro text using skipstatement
@@ -231,16 +222,6 @@ int start = STARTDB;
 		start = findoccupied(start);
 		if (start == FAIL) return;
 
-#if 0
-		eeputs(start);
-		msgp(M_defmacro);
-		start = findend(start);
-		eeputs(start);
-		spb('"');
-		spb(';');
-		speol();
-		start = findend(start);
-#endif
 		msgp(M_function);
 		spb(' ');
 		eeputs(start);

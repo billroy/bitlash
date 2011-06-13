@@ -58,30 +58,6 @@
 #define rf_interrupt()	(!(L01_IRQ_PORT & (1<<RF_IRQ)))
 #define rx_pkt_ready rf_interrupt
 
-//////////////////////
-//	led control: RF activity LED, by default pin 7
-//
-//	redefine LED_RF to move the activity light
-//	undefine LED_RF to omit the activity light feature
-// 	(saves 128 bytes!)
-//
-//#define LED_RF	7
-
-#ifdef LED_RF
-#define led_on() digitalWrite(LED_RF,1)
-#define led_off() digitalWrite(LED_RF,0)
-void init_leds(void) {
-	pinMode(LED_RF, OUTPUT);
-	led_on();
-	delay(200);
-	led_off();
-}
-#else
-#define led_on()
-#define led_off()
-#define init_leds()
-#endif
-
 
 // Arduino detector
 //

@@ -167,61 +167,6 @@ void getsym(void) {
 #endif
 }
 
-#if 0
-// Re-prime the lookahead character buffer 'inchar'
-void primec(void) {
-	// terrible horrible eeprom addressing kludge
-	if (isram(fetchptr)) inchar = *fetchptr;
-	else {
-		inchar = eeread(dekludge(fetchptr));
-		if (inchar == 255) inchar = 0;
-	}
-
-#ifdef PARSER_TRACE
-		// char trace
-		if (trace) {
-			spb('<'); 
-			if (inchar >= 0x20) spb(inchar);
-			else { spb('\\'); printInteger(inchar); }
-			spb('>');
-		}
-#endif
-}
-
-
-// Fetch and return the next char from input stream.
-void fetchc(void) {
-	// terrible horrible eeprom addressing kludge
-	if (isram(fetchptr)) {
-		if (*fetchptr) fetchptr++;
-		inchar = *fetchptr;
-	} 
-	else {	// fetch char from eeprom
-		int addr = dekludge(fetchptr);
-		inchar = eeread(addr);
-		if ((inchar != 0) && (inchar != 255)) {
-			inchar = eeread(++addr);
-			fetchptr = kludge(addr);		// save incremented pointer
-			if (inchar == 255) inchar = 0;
-		}
-	}
-
-#ifdef PARSER_TRACE
-	// char trace
-	if (trace) {
-		//spb('['); printInteger(inchar);spb(':'); if (inchar) spb(inchar); spb(']');
-		spb('[');
-		if (inchar >= 0x20) spb(inchar);
-		else { spb('\\'); printInteger(inchar); }
-		spb(']');
-	}
-#endif
-
-	//return inchar;
-}
-#endif
-
-
 
 #ifdef PARSER_TRACE
 void tb(void) {		// print a mini-trace
@@ -232,16 +177,6 @@ void tb(void) {		// print a mini-trace
 }
 #endif
 
-
-#if 0
-// call macro in eeprom
-void calleeprommacro(int macrotext) {
-	// terrible horrible eeprom kludge
-	//callmacro(kludge(macrotext));
-	fetchptr = kludge(macrotext);
-	primec();
-}
-#endif
 
 
 ////////////////////

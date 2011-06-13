@@ -1,0 +1,4 @@
+function showid {printf("%c%c%c%c\n",rfget(0x3f),rfget(0x40),rfget(0x41),rfget(0x42));}
+function rssi {return rfget(0x26);}
+
+function bcn {rprintf("BCN: %d\n", millis);};
