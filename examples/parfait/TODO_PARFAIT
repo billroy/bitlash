@@ -10,15 +10,13 @@ Bitlash2 migration notes
 	- up and working on RC3d
 	- around 18+ kbytes
 
+- bug: "*" for broadcast addressing
 - bug: TEST: issues with looking past end of short node ids
 
 - space: clean up sp() messages in radio, parfait, and pkt
 - BUG: command output redirection isn't working
 
 - docnote: call addBitlashFunction before initBitlash
-
-- radio interface could be cleaner
-	- radio.h with API
 
 - BUG: auto-\n on tell will save a lot of pain
 	***TEST
@@ -28,11 +26,10 @@ Bitlash2 migration notes
 	setfreq()
 	setdeviation()
 	setdatarate()
-	rssi()
 
 - feat: ook() keying
 
-tell("addr", "command")
+tell([0 | "" | "addr"], "command")
 rprintf("format", val1,val2,...)
 rfset()
 rfget()
@@ -41,8 +38,13 @@ rflog()
 rfstat()
 
 ---
-connect("foo")
-disconnect() / logout()
+future feats
+
+- rfclone()
+
+- session mode
+	connect("foo")
+	disconnect() / logout()
 
 - feat: VirtualWire driver
 
