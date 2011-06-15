@@ -26,10 +26,42 @@
 #include "parfait.h"
 #include "pkt.h"
 
+#if defined(RADIO_RFM22)
 
 ////////////////////////////////////
 // Turn this on to enable debug spew
 //#define RADIO_DEBUG
+
+
+// Radio Pin Assignments
+//
+// These pin assignments enable use of hardware SPI on the radio interface
+//
+#define L01_PORT		PORTB
+#define L01_PORT_PIN	PINB
+#define L01_PORT_DD		DDRB
+#define L01_IRQ_PORT	PIND
+
+#define L01_CSN	2 	// Output B2 is d10
+#define L01_SCK	5 	// Output B5 is d13
+#define MOSI	3 	// Output B3 is d11
+#define MISO	4 	// Input  B4 is d12
+
+#define L01_CE	0 	// Output B0 is d8
+#define RF_IRQ	2 	// Input on D2 (PORTD2) which is d2
+
+// radio primitives
+//
+#define rf_begin()		cbi(L01_PORT, L01_CSN)
+#define rf_end()		sbi(L01_PORT, L01_CSN)
+
+#define rf_disable()	sbi(L01_PORT, L01_CE)
+#define rf_enable()		cbi(L01_PORT, L01_CE)
+
+#define rf_interrupt()	(!(L01_IRQ_PORT & (1<<RF_IRQ)))
+byte rx_pkt_ready(void) { return rf_interrupt(); }
+
+
 
 //////////////////////
 //	led control: RF activity LED, by default pin 7
@@ -54,6 +86,7 @@ void init_leds(void) {
 #define led_off()
 #define init_leds()
 #endif
+
 
 
 // forward decls
@@ -435,6 +468,45 @@ numvar func_rfset(void) {
 	return 0;
 }
 
+
+//////////
+//	func_setfreq: set base operating frequency
+//
+numvar func_setfreq(void) {
+numvar freq = getarg(1);
+numvar offset;
+int band, fc;		// band is fb in the rfm22 doc
+byte hbsel;
+
+	if (freq < 240000000L) freq = 240000000L;
+	if (freq > 929999999L) freq = 929999999L;
+	if (freq < 480000000L) {
+		hbsel = 0;
+		band = (freq - 240000000L) / 10000000L;
+		offset = freq - (10000000L * (band + 24));
+		//fc = offset * 64L / 10000L;
+		fc = offset * 4L / 625L;
+	}
+	else {
+		hbsel = 1;
+		band = (freq - 480000000L) / 20000000L;
+		offset = freq - (20000000L * (band + 24));
+		//	fc = offset * 64L / 20000L;
+		fc = offset * 4L / 1250L;
+	}
+
+	//printHex(hbsel); speol();
+	//printHex(band); speol();
+	//printInteger(offset,0); speol();
+	//printHex(fc); speol();
+
+	rf_set_register(REG_FREQUENCY_BAND_SELECT, band | (1<<SBSEL) | (hbsel<<HBSEL));
+	rf_set_register(REG_NOMINAL_CARRIER_FREQUENCY_HI, fc >> 8);
+	rf_set_register(REG_NOMINAL_CARRIER_FREQUENCY_LO, fc);
+	return 0;
+}
+
+
 //////////
 // func_degf: return temperature in degrees fahrenheit
 // See p.55 in the data sheet
@@ -516,7 +588,9 @@ byte rx_fetch_pkt(pkt_t *pkt) {
 	if (!rx_pkt_ready()) return 0;		// quick out if our packet interrupt hasn't fired
 
 	if (!(rf_read_status() & (1<<IPKVALID))) {
+#ifdef RADIO_DEBUG
 		sp("rx: int no pkt!");
+#endif
 		return 0;
 	}
 
@@ -609,9 +683,10 @@ char nodeid[RF_ADDRESS_LENGTH];
 void rf_put_address(byte whichaddr, byte *rf_address) {
 
 	// RFM22 Broadcast Address handling
-	// 	If we see a null address here, point it to the BROADCAST_ADDRESS
+	// 	If we see a null or zero-byte address here, point it to the BROADCAST_ADDRESS
+	//	Same for "*" as the address.
 	//
-	if (!rf_address || !(*rf_address)) {
+	if (!rf_address || !(*rf_address) || !strcmp((char *) rf_address, "*")) {
 		rf_address = (byte *) BROADCAST_ADDRESS;
 	}
 
@@ -869,11 +944,6 @@ void init_radio(void) {
 	//
 	rf_set_register(REG_HEADER_CONTROL_2, (4<<HDLEN | 0<<FIXPKLEN | 1<<SYNCLEN | 0<<PREALEN8));
 
-	// Packet Length
-	//	set up for fixed length packets
-	// TODO: proper variable length packet handling would be a huge improvement
-	//set_tx_packet_length(RF_PACKET_SIZE);
-
 	// Preamble Length
 	// the default preamble length is 8 nibbles / 32 bits
 	// the sample transmit / receive code provided by HopeRF uses 64 nibbles instead(!)
@@ -908,3 +978,5 @@ void init_radio(void) {
 	else rf_set_rx_address(DEFAULT_RX_ADDRESS);
 	set_rx_mode();		// engage the listening apparatus	
 }
+
+#endif	 // defined(RADIO_RFM22)

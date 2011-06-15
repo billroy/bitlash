@@ -36,6 +36,17 @@ BLOCKING BUGS
 	- FEAT: revise task manager to support file and progmem contexts
 		- requires storing file name...
 
+- BUG: eeprom and file contexts have distinct and incompatible command sets
+	- eeprom: ls, rm
+	- file: dir, del, create, append, type, cd, md
+	- need a unified addressing and command structure across storage types
+		- a: / c: ?  (ugh.)
+
+=============================
+bitlash_rf example
+	- vw demo
+	- radio selection in bitlash_rf.h
+	
 =============================
 
 - BUG: list of bugs/changes required for arduino v1 beta support
@@ -53,36 +64,40 @@ BLOCKING BUGS
 		#endif
 
 =============================
+- docnote: calling addBitlashFunction before initBitlash
 
 =============================
 open issues
 
-- BUG: chkbrk lookahead bug: chkbrk gobbles keystrokes
-	- Serial.peek() is implemented in 0022, might help
-
 - BUG: it takes >45 bytes of stack to recurse foo:="print free;foo;"
 	it should take less
 
-- BUG: ^C terminates wierdly
-- BUG: ^B doesn't work.  sigh.
+- BUG: chkbrk lookahead bug: chkbrk gobbles keystrokes
+	- Serial.peek() is implemented in 0022, might help
+
+- BUG: ^C at the command line (as opposed to chkbrk) terminates wierdly
+
+- BUG: ^B doesn't work.  background tasks keep running.  sigh.
 
 - BUG: *x++ = *y++ :greedy assignment in getfactor" fix
 
 - FEAT: string pool coalescing
 
-==========
+=============================
 
 - feat: detect card insertion and autorun startup function
+	- feat: CD("dir") could autorun
 - test: handling of card removal
+=============================
 - feat: virtual block device for progmem, SPI eeprom, ...
-
+- feat: PROGMEM built-ins / virtual block device
+	- debugging functions?
+		vars	dump a..z
+		hd		hex dump memory (memdump)	
 =============================
 Feat: Local Functions for File Scripts
-
 - make note of the locations of function statements as they go by
 	- build a local symbol table in the string pool, with name/offset pairs
-
-
 =============================
 feat: event handling
 	onerror macro
@@ -95,7 +110,6 @@ feat: event handling
 	attachInterrupt handler?
 	print-to-bitlash-handler
 		- function to handle printed output
-
 =============================
 Platform Issues
 
@@ -121,10 +135,6 @@ q: rename snooze() to idle()?
 input() function
 
 =============================
-feat: PROGMEM built-ins / virtual block device
-	- debugging functions?
-		vars	dump a..z
-		hd		hex dump memory (memdump)	
 =============================
 Q: Should macro def say "saved" or silently return to prompt?
 =============================

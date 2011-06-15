@@ -1,33 +1,30 @@
 TODO-parfait
 Working notes
-Copyright 2011 Palmeta Productions LLC
-June 12, 2011 -br
+Copyright 2011 by Bill Roy
+June 14, 2011
 ==============================
 
 Bitlash2 migration notes
 
-- status
-	- up and working on RC3d
-	- around 18+ kbytes
+- multiple radio support: VirtualWire driver
+	- adjust packet size per VW_MAX_MESSAGE_LEN
 
-- bug: "*" for broadcast addressing
-- bug: TEST: issues with looking past end of short node ids
+- BUG: prompt leaks back to unit doing TELL
+	*** TEST fix
+
+- broadcast syntax for tell is vexed
+	TEST: "*" for broadcast
+
+	tell("fred", "...")
+	tell(0,
+	tell(-1,
+	tell("*")
+	tellall(....)
+
+	- bug: "*" for broadcast addressing is awkward (and not implemented)
+	- TEST: issues with looking past end of short node ids
 
 - space: clean up sp() messages in radio, parfait, and pkt
-- BUG: command output redirection isn't working
-
-- docnote: call addBitlashFunction before initBitlash
-
-- BUG: auto-\n on tell will save a lot of pain
-	***TEST
-
-
-- feat: rf control functions
-	setfreq()
-	setdeviation()
-	setdatarate()
-
-- feat: ook() keying
 
 tell([0 | "" | "addr"], "command")
 rprintf("format", val1,val2,...)
@@ -35,19 +32,23 @@ rfset()
 rfget()
 degf()
 rflog()
+***test
 rfstat()
+freq()
 
 ---
 future feats
 
+- feat: net partitioning via sync word
+- feat: rf control functions
+	setsync()
+	setdeviation()
+	setdatarate()
 - rfclone()
-
 - session mode
 	connect("foo")
 	disconnect() / logout()
-
 - feat: VirtualWire driver
-
 
 ===== Notes below here from 2009 prototype project
 

@@ -32,31 +32,10 @@
 
 // RF HARDWARE SETUP
 //
-// These pin assignments enable use of hardware SPI on the radio interface
+// Radio selection: enable ONE of these
 //
-#define L01_PORT		PORTB
-#define L01_PORT_PIN	PINB
-#define L01_PORT_DD		DDRB
-#define L01_IRQ_PORT	PIND
-
-#define L01_CSN	2 	// Output B2 is d10
-#define L01_SCK	5 	// Output B5 is d13
-#define MOSI	3 	// Output B3 is d11
-#define MISO	4 	// Input  B4 is d12
-
-#define L01_CE	0 	// Output B0 is d8
-#define RF_IRQ	2 	// Input on D2 (PORTD2) which is d2
-
-// radio primitives
-//
-#define rf_begin()		cbi(L01_PORT, L01_CSN)
-#define rf_end()		sbi(L01_PORT, L01_CSN)
-
-#define rf_disable()	sbi(L01_PORT, L01_CE)
-#define rf_enable()		cbi(L01_PORT, L01_CE)
-
-#define rf_interrupt()	(!(L01_IRQ_PORT & (1<<RF_IRQ)))
-#define rx_pkt_ready rf_interrupt
+#define RADIO_RFM22
+//#define RADIO_VIRTUALWIRE
 
 
 // Arduino detector
@@ -107,13 +86,14 @@ void pkt_flush(void);
 void init_radio(void);
 void rf_set_rx_address(char *);
 void rf_set_tx_address(char *);
-// byte rx_pkt_ready(void);		// #defined above
+byte rx_pkt_ready(void);
 byte rx_fetch_pkt(pkt_t *pkt);
 void tx_send_pkt(pkt_t *, uint8_t);
 
 // Radio Layer Functions
 numvar func_rfget(void);
 numvar func_rfset(void);
+numvar func_setfreq(void);
 numvar func_degf(void);
 numvar func_rflog(void);
 numvar func_rfstat(void);

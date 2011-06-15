@@ -41,7 +41,13 @@
 ///////////////////////////////////
 // packet buffer: the pkt_t
 //
+#if defined(RADIO_VIRTUALWIRE)
+#define RF_PACKET_SIZE VW_MAX_PAYLOAD		// 27 when this was written
+#else
 #define RF_PACKET_SIZE 60
+#endif
+
+
 #define RF_PACKET_HEADER_SIZE 2
 #define RF_PACKET_DATA_SIZE (RF_PACKET_SIZE - RF_PACKET_HEADER_SIZE)
 typedef struct {

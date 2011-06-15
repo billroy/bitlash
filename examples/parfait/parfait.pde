@@ -3,29 +3,21 @@
 //	parfait.pde:	Bitlash Integration for the Parfait RFM22
 //					Wireless Shield
 //
-//	Copyright 2010-2011 by Bill Roy
+//	Copyright (C) 2010-2011 by Bill Roy
 //
-//	Permission is hereby granted, free of charge, to any person
-//	obtaining a copy of this software and associated documentation
-//	files (the "Software"), to deal in the Software without
-//	restriction, including without limitation the rights to use,
-//	copy, modify, merge, publish, distribute, sublicense, and/or sell
-//	copies of the Software, and to permit persons to whom the
-//	Software is furnished to do so, subject to the following
-//	conditions:
-//	
-//	The above copyright notice and this permission notice shall be
-//	included in all copies or substantial portions of the Software.
-//	
-//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-//	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-//	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-//	NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-//	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-//	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-//	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-//	OTHER DEALINGS IN THE SOFTWARE.
+//	This library is free software; you can redistribute it and/or
+//	modify it under the terms of the GNU Lesser General Public
+//	License as published by the Free Software Foundation; either
+//	version 2.1 of the License, or (at your option) any later version.
 //
+//	This library is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//	Lesser General Public License for more details.
+//
+//	You should have received a copy of the GNU Lesser General Public
+//	License along with this library; if not, write to the Free Software
+//	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 //////////////////////////////////////////////////////////////////
 //
@@ -34,6 +26,9 @@
 #include "../../libraries/bitlash/src/bitlash.h"
 #include "parfait.h"
 
+#if defined(RADIO_VIRTUALWIRE)
+#include "VirtualWire.h"
+#endif
 
 //////////
 //
@@ -44,7 +39,7 @@
 //		tell("*", "overtemp(%d)\n", degf());
 //
 numvar func_tell(void) {
-	rf_set_tx_address((char *) getarg(1));		// todo: verify this handles broadcast right
+	rf_set_tx_address((char *) getarg(1));
 	setOutputHandler(&send_command_byte);	// engage the command forwarding logic
 	func_printf_handler(2,3);				// format=arg(2), optional args start at 3
 	send_command_byte('\n');				// terminate the command
@@ -143,6 +138,7 @@ void runParfait(void) {
 						doCharacter(c);
 						pkt_flush();
 						resetOutputHandler();
+						break;		// discard all after first EOL char (allows CR/LF)
 					}
 					else doCharacter(c);	// push in the commands
 				}
@@ -178,10 +174,10 @@ void setup(void) {
 	addBitlashFunction("rfget", (bitlash_function) func_rfget);
 	addBitlashFunction("rfset", (bitlash_function) func_rfset);
 	addBitlashFunction("rprintf", (bitlash_function) func_rprintf);
-	addBitlashFunction("degf", (bitlash_function) func_degf);
+//	addBitlashFunction("degf", (bitlash_function) func_degf);
 	addBitlashFunction("rflog", (bitlash_function) func_rflog);
-	addBitlashFunction("rfstat", (bitlash_function) func_pktstat);
-
+//	addBitlashFunction("rfstat", (bitlash_function) func_pktstat);
+	addBitlashFunction("freq", (bitlash_function) func_setfreq);
 }
 
 
