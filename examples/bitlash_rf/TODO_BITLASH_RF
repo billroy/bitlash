@@ -1,0 +1,160 @@
+TODO_BITLASH_RF
+Working notes
+Copyright 2011 by Bill Roy
+June 15, 2011
+==============================
+
+Bitlash2 migration notes
+
+- DOCBUG: update doc/bitlash_rf.txt
+
+- multiple radio support: VirtualWire driver
+	- adjust packet size per VW_MAX_MESSAGE_LEN
+
+- BUG: prompt leaks back to unit doing TELL
+	*** TEST fix
+
+- TEST: rflog
+
+- TEST: VirtualWire integration
+
+- broadcast syntax for tell is vexed
+	TEST: "*" for broadcast
+
+	tell("fred", "...")
+	tell(0,
+	tell(-1,
+	tell("*")
+	tellall(....)
+
+	- bug: "*" for broadcast addressing is awkward
+	- BUG: addressing syntax is awkward for rf links without ids
+
+	- TEST: issues with looking past end of short node ids
+
+- BUG: how to handle multiple units responding?  
+	(auto response delay?)
+
+- DOC: atomic command transaction issues
+	- accepting a command while there are user-entered characters in the edit buffer just won't work
+	- multiple units sending command fragments will be BAD
+	- atomic commands?
+		- requires either accepting 60 byte limit or long-packet handling
+		- BUSY status
+	- really need a full lbuf size command buffer to use with doCommand
+	- could we live with the smaller command limits?
+		- 27 bytes for VW?  (tight)
+
+To Doc:
+	addressing and setid()
+	tell([0 | "" | "addr"], "command")
+	rprintf("format", val1,val2,...)
+	rfset()
+	rfget()
+	degf()
+	rflog()
+	***test
+	rfstat()
+	freq()
+
+---
+future feats
+
+- feat: net partitioning via sync word
+- feat: rf control functions
+	setsync()
+	setdeviation()
+	setdatarate()
+- cloning the function set: rfclone()
+- session mode
+	connect("foo")
+	disconnect() / logout()
+- serial_passthrough mode
+	a means to enter a mode in which serial data is transparently sent to the 
+		endpoints as serial data
+	how to get out? (+++?!)	
+
+
+==========
+radio futures
+
+- net addressing
+	via:='rout'
+
+- feats:
+	low battery detect
+	radio sleep / periodic wakeup
+		- sleep() bitlash function
+	debugging
+		packet log (hex dump)
+
+==========
+
+Notes on Prototype 2009
+
+Pinout for daughterboard lashup
+
+1: 		GND
+2: 		VCC (3V3)
+3: d10	NSEL		output
+4: d11	MOSI		output
+5: d12	MISO		input
+6: d13	SCK			output
+7: d8	SDN			output	note: add jumper from d8 pin to a0 pin
+8: d2	NIRQ		input	note: add jumper from d2 pin to a1 pin
+
+==========
+
+Additional pins for test unit run:
+
+d7:	blue led, rf activity light, 47 ohms, 4.3 ma (6.8ma wide open)
+	754-1248-ND
+d6: red led, 100 ohms, 9.12ma
+	C503B-RAS-CY0B0AA1-ND
+d5: green led, 100 ohms, 3.4ma
+	C503B-GAS-CB0F0791
+d4: pushbutton
+d3: buzzer
+
+TODO: change RF LED uses to quick-toggle d7
+
+- current consumption
+	board with no accessories draws 24.3 ma at 4.5v idle
+	oops make that 4.08v input idle
+	24.3 with radio 4.7 without radio "at rx" is 19.6ma
+		aaa holds 1250 mah so we get 50 hrs at this rate
+		transmit (60ma spec) will be difficult to measure due to short durations
+		aa @ 2890 would be about ~115 hours
+
+- degf(): temperature
+	degf works but seems biased high on many nodes
+	rfset(0x13, -14) to set offset of -14
+	p.55
+
+------------
+
+Still to get working:
+
+- Sec 4.6: "If Asynchronous FSK is used the TX_DR register should be set to its maximum value. "
+
+- sec 4.3, FIFO mode:
+	"When in FIFO mode the module will automatically exit the TX or RX State when either the ipksent or ipkvalid interrupt occurs."
+
+- questions
+	- output power: p.133 txpow[2] "used in 4x31 output power programming"
+		- by default it is engaged and 0x6d = 7 (17dbm plus this bit set)
+
+- power management
+	- we're always either in tx or rx
+	- need a macro to go into standby?
+
+- data rate setting
+	- currently working at factory default of 40k
+	- experimental 100k radio settings in code
+		- 300k deviation: losing many packets
+		- 100k deviaton: losing packets too
+
+Notes:
+- reg 31 ezmac status can read the pksent and pkvalid bits without resetting the interrupt
+- read up on GFSK transmit data path
+

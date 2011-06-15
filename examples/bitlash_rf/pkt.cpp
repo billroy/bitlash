@@ -23,7 +23,7 @@
 #include "WProgram.h"
 #include "bitlash.h"
 #include "../../libraries/bitlash/src/bitlash.h"
-#include "parfait.h"
+#include "bitlash_rf.h"
 
 
 ///////////////
@@ -91,3 +91,51 @@ numvar func_pktstat(void) {
 	sp(" bogons:"); printInteger(rx_bogon_count, 0);
 	speol();
 }
+
+
+//////////
+// rf_log_packet: Hex dump the packet to the console
+//
+byte rf_logbytes;
+
+// a function handler to expose the control
+numvar func_rflog(void) { rf_logbytes = getarg(1); }
+
+void lpb(byte b) {
+	if (b == '\\') {
+		spb('\\');
+		spb('\\');
+	}
+	else if ((b >= ' ') && (b <= 0x7f)) spb(b);
+	else {
+		spb('\\');
+		if (b == 0xd) spb('r');
+		else if (b == 0xa) spb('n');
+		else {
+			spb('x');
+			if (b < 0x10) spb('0');
+			spb(b);
+		}
+	}
+}
+
+// todo: rewrite as printf()
+
+void log_packet(char tag, pkt_t *pkt, byte length) {
+	if (rf_logbytes) {
+		int i = 0;
+		int last = (length < rf_logbytes) ? length : rf_logbytes;
+		spb('[');
+		spb(tag); 
+		sp("X ");
+		printInteger(length, 0); spb(' ');
+		printInteger(pkt->type, 0); spb(' ');
+		printInteger(pkt->sequence, 0); spb(' ');
+		while (i < last-RF_PACKET_HEADER_SIZE) {
+			lpb(pkt->data[i++]);
+		}
+		spb(']');
+		speol();
+	}
+}
+

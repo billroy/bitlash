@@ -60,7 +60,10 @@ typedef struct {
 } pkt_t;
 
 
+// exported packet functions
 numvar func_pktstat(void);
+numvar func_rflog(void);
+void log_packet(char, pkt_t *, byte);
 
 
 #endif		// _PKT_H

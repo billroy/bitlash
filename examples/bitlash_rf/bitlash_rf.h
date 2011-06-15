@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-//	parfait.h:	Parfait - Bitlash Integration Definitions
+//	bitlash_rf.h:	Wireless Bitlash
 //
 //	Copyright (C) 2010-2011 by Bill Roy
 //
@@ -20,8 +20,8 @@
 //
 //////////////////////////////////////////////////////////////////
 //
-#ifndef _PARFAIT_H
-#define _PARFAIT_H
+#ifndef _BITLASH_RF_H
+#define _BITLASH_RF_H
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -32,11 +32,13 @@
 
 // RF HARDWARE SETUP
 //
-// Radio selection: enable ONE of these
+// Radio selection: enable ONE of these groups
 //
 #define RADIO_RFM22
-//#define RADIO_VIRTUALWIRE
 
+// VirtualWire
+//#define RADIO_VIRTUALWIRE
+//#include "VirtualWire.h"
 
 // Arduino detector
 //
@@ -45,14 +47,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "pkt.h"
-
-// Pain, you want?  Change below here you will, then.
-//
-
-// sigh
-//typedef uint8_t byte;
-#define sbi(a,b) (a|=(1<<b))
-#define cbi(a,b) (a&=~(1<<b))
 
 
 ///////////////////////////////
@@ -103,12 +97,12 @@ extern uint8_t rf_address[5];
 
 
 //////////////////////
-//	parfaitmain.c
+//	bitlash_rf.cpp
 //
 extern byte radio_go;
-void initParfait(void);
-void runParfait(void);
+void initBitlashRF(void);
+void runBitlashRF(void);
 
 
-#endif	// _PARFAIT_H
+#endif	// _BITLASH_RF_H
 

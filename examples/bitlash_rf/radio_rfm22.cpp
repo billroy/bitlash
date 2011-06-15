@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-//	radio-rfm22.c:	Parfait Radio Interface for HopeRF RFM22
+//	radio-rfm22.c:	Bitlash Radio Interface for HopeRF RFM22
 //
 //	Copyright (C) 2009-2011 by Bill Roy
 //
@@ -23,10 +23,10 @@
 #include "WProgram.h"
 #include "bitlash.h"
 #include "../../libraries/bitlash/src/bitlash.h"
-#include "parfait.h"
+#include "bitlash_rf.h"
 #include "pkt.h"
 
-#if defined(RADIO_RFM22)
+#if defined(RADIO_RFM22)		// GUARDS THIS WHOLE FILE
 
 ////////////////////////////////////
 // Turn this on to enable debug spew
@@ -52,6 +52,9 @@
 
 // radio primitives
 //
+#define sbi(a,b) (a|=(1<<b))
+#define cbi(a,b) (a&=~(1<<b))
+
 #define rf_begin()		cbi(L01_PORT, L01_CSN)
 #define rf_end()		sbi(L01_PORT, L01_CSN)
 
@@ -395,10 +398,10 @@ void tx_start() {
 #define set_tx_packet_length(nbytes) rf_set_register(REG_PACKET_LENGTH, nbytes)
 
 #define REG_RX_ADDR 0x3f
+#define REG_RECEIVED_PACKET_LENGTH 0x4b
 
 #define REG_TX_DATA_RATE_HI 0x6e
 #define REG_TX_DATA_RATE_LO 0x6f
-
 
 #define REG_MODULATION_MODE_CONTROL_2 0x71
 #define TRCLK	6
@@ -530,52 +533,6 @@ numvar func_degf(void) {
 }
 
 
-//////////
-// rf_log_packet: Hex dump the packet to the console
-//
-byte rf_logbytes;
-
-// a function handler to expose the control
-numvar func_rflog(void) { rf_logbytes = getarg(1); }
-
-void lpb(byte b) {
-	if (b == '\\') {
-		spb('\\');
-		spb('\\');
-	}
-	else if ((b >= ' ') && (b <= 0x7f)) spb(b);
-	else {
-		spb('\\');
-		if (b == 0xd) spb('r');
-		else if (b == 0xa) spb('n');
-		else {
-			spb('x');
-			if (b < 0x10) spb('0');
-			spb(b);
-		}
-	}
-}
-
-// todo: rewrite as printf()
-
-void log_packet(char tag, pkt_t *pkt, byte length) {
-	if (rf_logbytes) {
-		int i = 0;
-		int last = (length < rf_logbytes) ? length : rf_logbytes;
-		spb('[');
-		spb(tag); 
-		sp("X ");
-		printInteger(length, 0); spb(' ');
-		printInteger(pkt->type, 0); spb(' ');
-		printInteger(pkt->sequence, 0); spb(' ');
-		while (i < last-RF_PACKET_HEADER_SIZE) {
-			lpb(pkt->data[i++]);
-		}
-		spb(']');
-		speol();
-	}
-}
-
 
 //////////////////////
 // rx_fetch_pkt: read packet into buffer if available
@@ -600,7 +557,6 @@ byte rx_fetch_pkt(pkt_t *pkt) {
 
 	led_on();
 
-#define REG_RECEIVED_PACKET_LENGTH 0x4b
 	byte length = rf_read_register(REG_RECEIVED_PACKET_LENGTH);
 
 	// If the packet length is bigger than our buffer We Have A Situation.
@@ -720,6 +676,13 @@ void rf_set_tx_address(char *to_address) {
 void init_radio(void) {
 
 	init_leds();
+
+	// Add Bitlash functions specific to this radio
+	//	addBitlashFunction("degf", (bitlash_function) func_degf);
+	addBitlashFunction("freq", (bitlash_function) func_setfreq);
+	addBitlashFunction("rfget", (bitlash_function) func_rfget);
+	addBitlashFunction("rfset", (bitlash_function) func_rfset);
+
 
 	// Set output mode for outputs
 	// TODO: Ensure SS is set to output if L01_CSN moves off SS!

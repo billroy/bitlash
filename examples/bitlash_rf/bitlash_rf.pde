@@ -1,7 +1,6 @@
 //////////////////////////////////////////////////////////////////
 //
-//	parfait.pde:	Bitlash Integration for the Parfait RFM22
-//					Wireless Shield
+//	bitlash_rf.pde:	Wireless Bitlash
 //
 //	Copyright (C) 2010-2011 by Bill Roy
 //
@@ -24,10 +23,10 @@
 #include "WProgram.h"
 #include "bitlash.h"
 #include "../../libraries/bitlash/src/bitlash.h"
-#include "parfait.h"
+#include "bitlash_rf.h"
 
 #if defined(RADIO_VIRTUALWIRE)
-#include "VirtualWire.h"
+//	#include "VirtualWire.h"	// don't remove the leading tab
 #endif
 
 //////////
@@ -83,25 +82,25 @@ byte radio_go;
 
 ///////////////////////////////
 //
-//	initParfait(): main initialization
+//	initBitlashRF(): main initialization
 //
 //	call this once from setup(), after initBitlash()
 //
-void initParfait(void) {
+void initBitlashRF(void) {
 
 	init_radio();
 
 	// RF shell startup banner
-	sp("parfait 0.2 up!\r\n> ");
+	sp("bitlash_rf 0.3 up!\r\n> ");
 }
 
 
 /////////////////////////////////////
-// parfait main loop
+// bitlash_rf main loop
 //
 // call this frequently from loop() else receive no packets!
 //
-void runParfait(void) {
+void runBitlashRF(void) {
 
 	if (!radio_go) {
 		init_radio();
@@ -157,7 +156,7 @@ void runParfait(void) {
 
 //////////
 //
-// Parfait + Bitlash main
+// Bitlash_RF main
 //
 void setup(void) {
 
@@ -168,20 +167,16 @@ void setup(void) {
 	addBitlashFunction("setid", (bitlash_function) func_setid);
 
 	initBitlash(57600);		// must be first to initialize serial port
-	initParfait();			// must be after initBitlash()
+	initBitlashRF();		// must be after initBitlash()
 
 	addBitlashFunction("tell", (bitlash_function) func_tell);
-	addBitlashFunction("rfget", (bitlash_function) func_rfget);
-	addBitlashFunction("rfset", (bitlash_function) func_rfset);
 	addBitlashFunction("rprintf", (bitlash_function) func_rprintf);
-//	addBitlashFunction("degf", (bitlash_function) func_degf);
 	addBitlashFunction("rflog", (bitlash_function) func_rflog);
 //	addBitlashFunction("rfstat", (bitlash_function) func_pktstat);
-	addBitlashFunction("freq", (bitlash_function) func_setfreq);
 }
 
 
 void loop(void) {
-	runParfait();
+	runBitlashRF();
 	runBitlash();
 }
