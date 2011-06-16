@@ -654,11 +654,10 @@ void rf_put_address(byte whichaddr, byte *rf_address) {
 
 void rf_set_rx_address(char *my_address) {
 
+	// stash the nodeid for init_radio
+	strncpy(nodeid, my_address, RF_ADDRESS_LENGTH);		// trailing pads with zeroes
+
 	if (radio_go) rf_put_address(REG_RX_ADDR, (byte *) my_address);
-	else {
-		// cache the nodeid for init_radio
-		strncpy(nodeid, my_address, RF_ADDRESS_LENGTH);		// trailing pads with zeroes
-	}
 }
 
 void rf_set_tx_address(char *to_address) {
@@ -937,9 +936,9 @@ void init_radio(void) {
 	// If setid() was called before now, use the cached value.
 	// (Tx address is set up per packet)
 	//
-	if (*nodeid) rf_set_rx_address(nodeid);
-	else rf_set_rx_address(DEFAULT_RX_ADDRESS);
-	set_rx_mode();		// engage the listening apparatus	
+	rf_set_rx_address((*nodeid) ? nodeid : DEFAULT_RX_ADDRESS);
+
+	set_rx_mode();		// engage the receiver and off we go
 }
 
 #endif	 // defined(RADIO_RFM22)

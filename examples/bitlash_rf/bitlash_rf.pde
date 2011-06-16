@@ -26,7 +26,7 @@
 #include "bitlash_rf.h"
 
 #if defined(RADIO_VIRTUALWIRE)
-	#include "VirtualWire.h"	// don't remove the leading tab
+//	#include "VirtualWire.h"	// don't remove the leading tab
 #endif
 
 //////////
