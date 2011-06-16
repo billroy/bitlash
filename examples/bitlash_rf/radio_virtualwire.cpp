@@ -53,6 +53,7 @@ void init_radio(void) {
 	vw_set_tx_pin(12);		// defaults to 12
 	vw_setup(2000);			// set up for 2000 bps
 	vw_rx_start();			// start the rx
+	radio_go = 1;			// mark the rf system "up"
 }
 
 
@@ -87,13 +88,15 @@ void log_packet(char tag, pkt_t *pkt, byte length);
 byte rx_fetch_pkt(pkt_t *pkt) {
 
 	// Does the radio have business for us?
-	if (!vw_have_message()) return 0;
+	//if (!vw_have_message()) return 0;
 
 	//	"If a message is available (good checksum or not), copies up to *len octets to buf. 
 	//	Returns true if there was a message and the checksum was good."
 	byte length = RF_PACKET_SIZE;
-	if (!vw_get_message((uint8_t *) pkt, &length)) return 0;
-	
+	if (!vw_get_message((uint8_t *) pkt, &length)) {
+		//sp("rx: bad chksum\r\n");
+		return 0;
+	}
 	// If the packet length is bigger than our buffer We Have A Situation.
 	// Clip to our max packet size, silently discarding the excess.
 	//

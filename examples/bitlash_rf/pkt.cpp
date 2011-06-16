@@ -101,41 +101,47 @@ byte rf_logbytes;
 // a function handler to expose the control
 numvar func_rflog(void) { rf_logbytes = getarg(1); }
 
+// log-print-byte
+//
+// NOTE: these functions must use Serial.print(), not spb(), since they are
+// invoked during transmit to log transmitted packets WHILE the spb() output
+// redirection mechanism is engaged.
+// Using spb() here sends the tx log to the other host.
+// Unfortunately this limits us to logging locally.
+//
 void lpb(byte b) {
 	if (b == '\\') {
-		spb('\\');
-		spb('\\');
+		Serial.print('\\');
+		Serial.print('\\');
 	}
-	else if ((b >= ' ') && (b <= 0x7f)) spb(b);
+	else if ((b >= ' ') && (b <= 0x7f)) Serial.print(b);
 	else {
-		spb('\\');
-		if (b == 0xd) spb('r');
-		else if (b == 0xa) spb('n');
+		Serial.print('\\');
+		if (b == 0xd) Serial.print('r');
+		else if (b == 0xa) Serial.print('n');
 		else {
-			spb('x');
-			if (b < 0x10) spb('0');
-			spb(b);
+			Serial.print('x');
+			if (b < 0x10) Serial.print('0');
+			Serial.print(b, HEX);
 		}
 	}
 }
 
-// todo: rewrite as printf()
-
+// log a packet
+//
 void log_packet(char tag, pkt_t *pkt, byte length) {
 	if (rf_logbytes) {
 		int i = 0;
 		int last = (length < rf_logbytes) ? length : rf_logbytes;
-		spb('[');
-		spb(tag); 
-		sp("X ");
-		printInteger(length, 0); spb(' ');
-		printInteger(pkt->type, 0); spb(' ');
-		printInteger(pkt->sequence, 0); spb(' ');
+		Serial.print('[');
+		Serial.print(tag); 
+		Serial.print("X ");
+		Serial.print(length, DEC); Serial.print(' ');
+		Serial.print(pkt->type, DEC); Serial.print(' ');
+		Serial.print(pkt->sequence, DEC); Serial.print(' ');
 		while (i < last-RF_PACKET_HEADER_SIZE) {
 			lpb(pkt->data[i++]);
 		}
-		spb(']');
-		speol();
+		Serial.println(']');
 	}
 }
-

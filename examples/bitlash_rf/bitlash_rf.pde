@@ -26,7 +26,7 @@
 #include "bitlash_rf.h"
 
 #if defined(RADIO_VIRTUALWIRE)
-//	#include "VirtualWire.h"	// don't remove the leading tab
+	#include "VirtualWire.h"	// don't remove the leading tab
 #endif
 
 //////////
@@ -42,8 +42,8 @@ numvar func_tell(void) {
 	setOutputHandler(&send_command_byte);	// engage the command forwarding logic
 	func_printf_handler(2,3);				// format=arg(2), optional args start at 3
 	send_command_byte('\n');				// terminate the command
-	pkt_flush();							// push the caboose
 	resetOutputHandler();					// restore the print handler
+	pkt_flush();							// push the caboose
 	return 0;
 }
 

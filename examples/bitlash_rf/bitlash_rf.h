@@ -34,11 +34,11 @@
 //
 // Radio selection: enable ONE of these groups
 //
-#define RADIO_RFM22
+//#define RADIO_RFM22
 
 // VirtualWire
-//#define RADIO_VIRTUALWIRE
-//#include "VirtualWire.h"
+#define RADIO_VIRTUALWIRE
+#include "VirtualWire.h"
 
 // Arduino detector
 //
