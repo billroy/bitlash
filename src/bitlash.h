@@ -485,6 +485,7 @@ void missing(byte);
 // bitlash-functions.c
 //
 typedef numvar (*bitlash_function)(void);
+void show_user_functions(void);
 
 void dofunctioncall(byte);
 numvar func_free(void);

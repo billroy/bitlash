@@ -8,6 +8,9 @@ BLOCKING BUGS
 
 - BUG: Web site documentation update for this release is not complete
 
+- BUG: help should list user functions
+	***TEST
+	
 - BUG: ram, and therefore stack, is very tight.
 	- 330 bytes free with SDFILE enabled, vs. 1021 without
 	- some things fail in the SDFILE version that work otherwise
@@ -15,10 +18,6 @@ BLOCKING BUGS
 		- callat/workabove/workbelow work ok
 		- looks like it ran out of stack, hard
 		- works without SDFILE support
-
-- BUG: can't define a function from within a function
-	- BUG: cmd_function issue measuring text
-	- test: function definition from script file, probably fails
 
 - BUG: need an easy way to build an SD-free version
 	- workaround: manually turn off SDFAT define in bitlash-instream.c
@@ -30,6 +29,10 @@ BLOCKING BUGS
 	- 27472 bitlashsd with SDFAT on
 
 - BUG: stack dump on error has stale traceback data
+
+- BUG: can't define a function from within a function
+	- BUG: cmd_function issue measuring text
+	- test: function definition from script file, probably fails
 
 - BUG: "run" command doesn't work on SDFILE scripts
 	- workaround: use an EEPROM function as a trampoline.
@@ -79,9 +82,7 @@ open issues
 
 - BUG: ^B doesn't work.  background tasks keep running.  sigh.
 
-- BUG: *x++ = *y++ :greedy assignment in getfactor" fix
-
-- FEAT: string pool coalescing
+- BUG: *x++ = *y++: greedy assignment in getfactor" fix
 
 =============================
 
@@ -90,7 +91,8 @@ open issues
 - test: handling of card removal
 =============================
 - feat: virtual block device for progmem, SPI eeprom, ...
-- feat: PROGMEM built-ins / virtual block device
+	- extend the eeprom mini-file-system for other media
+	- PROGMEM built-ins / virtual block device
 	- debugging functions?
 		vars	dump a..z
 		hd		hex dump memory (memdump)	
@@ -132,9 +134,7 @@ tiny84 hardware interface file
 =============================
 feat: option for inverted software serial output
 q: rename snooze() to idle()?
-input() function
-
-=============================
+feat: input() function
 =============================
 Q: Should macro def say "saved" or silently return to prompt?
 =============================

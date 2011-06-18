@@ -936,7 +936,7 @@ void init_radio(void) {
 	// If setid() was called before now, use the cached value.
 	// (Tx address is set up per packet)
 	//
-	rf_set_rx_address((*nodeid) ? nodeid : DEFAULT_RX_ADDRESS);
+	rf_set_rx_address((*nodeid) ? nodeid : (char *) DEFAULT_RX_ADDRESS);
 
 	set_rx_mode();		// engage the receiver and off we go
 }

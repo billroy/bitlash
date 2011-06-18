@@ -331,6 +331,19 @@ char find_user_function(char *id) {
 	}
 	return 0;
 }
+
+//////////
+//
+// show_user_functions: display a list of registered user functions
+//
+void show_user_functions(void) {
+byte i;
+	for (i=0; i < bf_install_count; i++) {
+		sp(user_functions[i].name);
+		spb(' ');
+	}
+	speol();
+}
 #endif		// USER_FUNCTIONS
 
 

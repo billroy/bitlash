@@ -68,6 +68,7 @@ void cmd_help(void) {
 #endif
 	showdict(functiondict);
 	speol();
+	show_user_functions();
 	speol();
 	void cmd_ls(void);
 	cmd_ls();

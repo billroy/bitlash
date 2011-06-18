@@ -8,3 +8,7 @@ function stepsize {rfset(0x7a, arg(1)/10000);}
 function channel  {rfset(0x79, arg(1));}
 
 function bcn {rprintf("BCN: %d\n", millis);};
+
+function init {pinmode(6,1); pinmode(5,1);}
+function ping {tell(0,"tell(0, \"pong(%d)\"", millis);}
+function pong {d5=!d5;}

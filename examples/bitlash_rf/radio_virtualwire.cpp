@@ -22,7 +22,7 @@
 //
 
 //
-// The VirtualWire version tested here is available at: 
+// Requires VirtualWire 1.5 library from: 
 //	http://www.open.com.au/mikem/arduino/VirtualWire-1.5.zip
 //
 // VirtualWire doc at: 

@@ -11,20 +11,19 @@ Bitlash2 migration notes
 - build issues with multiple radio drivers
 	- multiple radio support: VirtualWire driver
 		- adjust packet size per VW_MAX_MESSAGE_LEN
+		- BUG: requires editing 2 files to switch radios
 
 - BUG: prompt leaks back to unit doing TELL
 	*** TEST fix
 	BUG: crlf leaks back to unit doing TELL
 
-- TEST: VirtualWire integration
-
 - TEST: issues with looking past end of short node ids
 
-- BUG: how to handle response storm
+- DOC/BUG: how to handle response storm
 	- multiple units responding to a tell("*")
 	(auto response delay?)
 
-- DOC: atomic command transaction issues
+- DOC/BUG: atomic command transaction issues
 	- accepting a command while there are user-entered characters in the edit buffer just won't work
 	- multiple units sending command fragments will be BAD
 	- atomic commands?
@@ -36,7 +35,7 @@ Bitlash2 migration notes
 
 To Doc:
 	addressing and setid()
-	tell([0 | "" | "addr"], "command")
+	tell([0 | "*" | "addr"], "command")
 	rprintf("format", val1,val2,...)
 	rfset()
 	rfget()
