@@ -285,10 +285,9 @@ void printIntegerInBase(unumvar n, uint8_t base, numvar width) {
 	char buf[8 * sizeof(numvar)];		// stack for the digits
 	char *ptr = buf;
 	if (n == 0) {
-		spb('0');
-		return;
+		*ptr++ = 0;
 	} 
-	while (n > 0) {
+	else while (n > 0) {
 		*ptr++ = n % base;
 		n /= base;
 	}

@@ -109,7 +109,8 @@ void rf_set_register(uint8_t, uint8_t);
 #define DEVICE_TYPE_TX		0x07
 
 #define REG_VERSION_CODE 	0x01
-#define DEVICE_RFM22_VER_2 	2		// this one we have tested
+#define DEVICE_RFM22_VER_2 	2		// first prototype units
+#define DEVICE_RFM22B		6		// upgraded RFM22B units
 
 #define REG_DEVICE_STATUS 0x02
 #define FFOVFL	7
@@ -721,8 +722,14 @@ void init_radio(void) {
 		delay(1000);
 
 		// Verify we have a radio, and it is the right type
-		if ((rf_read_register(REG_DEVICE_TYPE) == DEVICE_TYPE_RXTX) &&
-			(rf_read_register(REG_VERSION_CODE) == DEVICE_RFM22_VER_2)) {
+		byte device_type = rf_read_register(REG_DEVICE_TYPE);
+		byte device_version = rf_read_register(REG_VERSION_CODE);
+
+		//printHex(device_type); speol();
+		//printHex(device_version); speol();
+
+		if ((device_type == DEVICE_TYPE_RXTX) &&
+			((device_version == DEVICE_RFM22_VER_2) || (device_version == DEVICE_RFM22B))) {
 			sp("RFM22 go!"); speol();
 			break;
 		} else {

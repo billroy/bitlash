@@ -114,7 +114,7 @@ int starthole = STARTDB, endhole;
 		if ((endhole - starthole) >= size) return starthole;	// success
 		starthole = endhole;		// find another hole
 	}
-	underflow(M_eeprom);
+	overflow(M_eeprom);
 	return 0;		// placate compiler
 }
 
