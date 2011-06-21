@@ -281,7 +281,7 @@ void beginSoftSerial(unsigned long baud) {
 // From Arduino 0011/wiring_serial.c
 // These apparently were removed from wiring_serial.c in 0012
 
-void printIntegerInBase(unumvar n, uint8_t base, numvar width) {
+void printIntegerInBase(unumvar n, uint8_t base, numvar width, byte pad) {
 	char buf[8 * sizeof(numvar)];		// stack for the digits
 	char *ptr = buf;
 	if (n == 0) {
@@ -295,21 +295,21 @@ void printIntegerInBase(unumvar n, uint8_t base, numvar width) {
 	// pad to width with leading zeroes
 	if (width) {
 		width -= (ptr-buf);
-		while (width-- > 0) spb('0');
+		while (width-- > 0) spb(pad);
 	}
 
 	while (--ptr >= buf) spb((*ptr < 10) ? (*ptr + '0') : (*ptr - 10 + 'A'));
 }
-void printInteger(numvar n, numvar width) {
+void printInteger(numvar n, numvar width, byte pad) {
 	if (n < 0) {
 		spb('-');
 		n = -n;
 		--width;
 	}
-	printIntegerInBase(n, 10, width);
+	printIntegerInBase(n, 10, width, pad);
 }
-void printHex(unumvar n) { printIntegerInBase(n, 16, 0); }
-void printBinary(unumvar n) { printIntegerInBase(n, 2, 0); }
+void printHex(unumvar n) { printIntegerInBase(n, 16, 0, '0'); }
+void printBinary(unumvar n) { printIntegerInBase(n, 2, 0, '0'); }
 #endif
 
 
@@ -370,7 +370,7 @@ void cmd_print(void) {
 				else expected(M_pfmts);
 				getsym();
 			}
-			else printInteger(expval, 0);
+			else printInteger(expval, 0, 0);
 		}
 		if ((sym == s_semi) || (sym == s_eof)) {
 			speol();
@@ -406,6 +406,11 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 		if (*fptr == '%') {
 			++fptr;
 			numvar width = 0;
+			char pad = ' ';
+			if (*fptr == '0') {
+				pad = '0';
+				fptr++;
+			}
 			if (*fptr == '*') {
 				width = getarg(optionalargs++);
 				fptr++;
@@ -414,10 +419,10 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 				width = (width * 10) + (*fptr++ - '0');
 			}
 			switch (*fptr) {
-				case 'd':	printInteger(getarg(optionalargs), width); 			 break;	// decimal
-				case 'x':	printIntegerInBase(getarg(optionalargs), 16, width); break;	// hex
-				case 'u':	printIntegerInBase(getarg(optionalargs), 10, width); break;	// unsigned decimal (TODO: primitive)
-				case 'b':	printIntegerInBase(getarg(optionalargs),  2, width); break;	// binary
+				case 'd':	printInteger(getarg(optionalargs), width, pad);		 break;	// decimal
+				case 'x':	printIntegerInBase(getarg(optionalargs), 16, width, pad); break;	// hex
+				case 'u':	printIntegerInBase(getarg(optionalargs), 10, width, pad); break;	// unsigned decimal (TODO: primitive)
+				case 'b':	printIntegerInBase(getarg(optionalargs),  2, width, pad); break;	// binary
 
 				case 's': {			// string
 					char *sptr = (char *) getarg(optionalargs);

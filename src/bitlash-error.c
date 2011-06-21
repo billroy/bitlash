@@ -64,6 +64,6 @@ void underflow(byte msgid) { fatal2(msgid, M_underflow); }
 void overflow(byte msgid) { fatal2(msgid, M_overflow); }
 //void toolong(void) { overflow(M_string); }
 #if !defined(TINY85)
-void oops(int errcode) { printInteger(errcode, 0); fatal(M_oops); }
+void oops(int errcode) { printInteger(errcode, 0, 0); fatal(M_oops); }
 #endif
 

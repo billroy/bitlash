@@ -86,9 +86,9 @@ void send_command_byte(byte b) {
 // dump packet stats for debugging
 //
 numvar func_pktstat(void) {
-	sp("tx pkts:"); printInteger(tx_packet_count, 0);
-	sp(" rx pkts:"); printInteger(rx_packet_count, 0);
-	sp(" bogons:"); printInteger(rx_bogon_count, 0);
+	sp("tx pkts:"); printInteger(tx_packet_count, 0, ' ');
+	sp(" rx pkts:"); printInteger(rx_packet_count, 0, ' ');
+	sp(" bogons:"); printInteger(rx_bogon_count, 0, ' ');
 	speol();
 }
 

@@ -101,7 +101,7 @@ void showTaskList(void) {
 byte slot;
 	for (slot = 0; slot < NUMTASKS; slot++) {
 		if (tasklist[slot] != SLOT_FREE) {
-			printInteger(slot, 0); spb(':'); spb(' ');
+			printInteger(slot, 0, ' '); spb(':'); spb(' ');
 			eeputs(tasklist[slot]); speol();
 		}
 	}
