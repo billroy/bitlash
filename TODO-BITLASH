@@ -1,15 +1,15 @@
 Bitlash To-Do
 Personal working notes (c) 2011 Bill Roy
-6/4/11 -br
+7/6/11 -br
 =============================
-
 
 BLOCKING BUGS
 
+- BUG: Update sdfat to http://sdfatlib.googlecode.com/files/sdfatlib20110702.zip
+
 - BUG: Web site documentation update for this release is not complete
 
-- BUG: help should list user functions
-	***TEST
+- BUG: rm setid doesn't work if setid is first in EEPROM?
 	
 - BUG: ram, and therefore stack, is very tight.
 	- 330 bytes free with SDFILE enabled, vs. 1021 without
@@ -18,6 +18,8 @@ BLOCKING BUGS
 		- callat/workabove/workbelow work ok
 		- looks like it ran out of stack, hard
 		- works without SDFILE support
+
+- BUG: SDFAT version doesn't consistently include fprintf
 
 - BUG: need an easy way to build an SD-free version
 	- workaround: manually turn off SDFAT define in bitlash-instream.c
@@ -199,6 +201,7 @@ pages from SD card (with [script] interpretation)
 configurable IP and port
 log request IP
 	http://arduino.cc/forum/index.php/topic,54378.msg391180.html
+	http://arduino.cc/forum/index.php/topic,66448.msg487621.html
 allow GET /foo(arg1,arg2)
 	- transcribe the arg list if present
 	- limit to integer values and commas

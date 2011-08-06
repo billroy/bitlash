@@ -426,6 +426,7 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 
 				case 's': {			// string
 					char *sptr = (char *) getarg(optionalargs);
+// BUG: width is the max not the prepad
 					width -= strlen(sptr);
 					while (width-- > 0) spb(' ');	// pre-pad with blanks
 					sp(sptr);
@@ -438,7 +439,9 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 					} while (width-- > 0);
 					break;
 
-				case '%':	spb('%');							break;	// escaped '%'
+				case '%':			// escaped '%'
+					spb('%');
+					continue;		// break; would increment optionalargs
 
 #ifdef SOFTWARE_SERIAL_TX
 				// print-to-digital-output-pin
@@ -456,9 +459,12 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 					break;
 #endif
 
-				default: 	spb('%'); spb(*fptr);				break;	// ??
+				default: 			// unknown format specifier
+					spb('%');
+					spb(*fptr);
+					continue;		// break; would increment optionargs
 			}
-			optionalargs++;
+			optionalargs++;			// consume the arg printed for this %spec
 		}
 		else if (*fptr == '\n') speol();
 		else spb(*fptr);

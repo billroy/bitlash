@@ -28,6 +28,11 @@
 ***/
 #include "WProgram.h"
 
+// Un-comment the line below to expose all the internals
+// of the Bitlash core to your sketch.
+//
+//#include "src/bitlash.h"
+
 ///////////////////////
 //	Start Bitlash, and give it cycles to do stuff
 //
@@ -71,6 +76,7 @@ typedef numvar (*bitlash_function)(void);
 void addBitlashFunction(char *, bitlash_function);
 numvar getarg(numvar);
 
+
 ///////////////////////
 //	Serial Output Capture
 //
@@ -84,3 +90,4 @@ void resetOutputHandler(void);
 //
 numvar sdcat(void);
 numvar sdwrite(char *filename, char *contents, byte append);
+numvar func_fprintf(void);

@@ -203,9 +203,6 @@ prog_char functiondict[] PROGMEM = {
 	"dw\0"
 	"er\0"
 	"ew\0"
-#if defined(SDFILE)
-	"fprintf\0"
-#endif
 	"free\0"
 	"inb\0"
 //	"map\0"
@@ -244,9 +241,6 @@ bitlash_function function_table[] PROGMEM = {
 	func_dw,
 	func_er,
 	func_ew,
-#if defined(SDFILE)
-	func_fprintf,
-#endif
 	func_free,
 	func_inb,
 //	func_map,

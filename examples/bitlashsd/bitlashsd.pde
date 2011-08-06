@@ -157,6 +157,8 @@ numvar exec(void) {
 	return doCommand((char *) getarg(1));
 }
 
+
+
 void setup(void) {
 
 	// initialize bitlash and set primary serial port baud
@@ -167,11 +169,12 @@ void setup(void) {
 	addBitlashFunction("dir", (bitlash_function) sdls);
 	addBitlashFunction("exists", (bitlash_function) sdexists);
 	addBitlashFunction("del", (bitlash_function) sdrm);
-	addBitlashFunction("create", (bitlash_function) sdcreate);
+//	addBitlashFunction("create", (bitlash_function) sdcreate);
 	addBitlashFunction("append", (bitlash_function) sdappend);
 	addBitlashFunction("type", (bitlash_function) sdcat);
 	addBitlashFunction("cd", (bitlash_function) sdcd);
 	addBitlashFunction("md", (bitlash_function) sdmd);
+	addBitlashFunction("fprintf", (bitlash_function) func_fprintf);
 }
 
 void loop(void) {

@@ -1,8 +1,18 @@
 TODO_BITLASH_RF
-Working notes
-Copyright 2011 by Bill Roy
-June 15, 2011
+Personal working notes (c) 2011 by Bill Roy
+June 22, 2011
 ==============================
+
+
+rfm22b migration notes
+
+- BUG: new unit can't hear old unit
+
+- BUG: reg 0x6d, TX_POWER, defaults to 0, should be max
+
+
+----------
+
 
 Bitlash2 migration notes
 

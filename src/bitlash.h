@@ -472,6 +472,7 @@ void eeputs(int);
 //
 extern jmp_buf env;
 #define X_EXIT 1
+void fatal2(char, char);
 void overflow(byte);
 void underflow(byte);
 void expected(byte);

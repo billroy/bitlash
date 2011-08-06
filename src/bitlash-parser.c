@@ -387,6 +387,35 @@ byte pinnum(char id[]) {
 #endif
 
 
+
+//////////
+//
+// Pin alias variables
+//
+#define PIN_ALIASES 1
+
+#ifdef PIN_ALIASES
+
+#define PV_ANALOG 0x80	// high bit flag to distinguish s_dpin from s_apin
+#define PV_MASK 0x7f
+
+prog_char pinnames[] PROGMEM = { 
+	"tx\0rx\0led\0vin\0"
+};
+prog_uchar pinvalues[] PROGMEM = { 
+	0, 1, 13, (PV_ANALOG | 1)
+};
+
+byte findpinname(char *alias) {
+	if (!findindex(alias, (prog_char *) pinnames, 0)) return 0;		// sets symval
+	byte pin = pgm_read_byte(pinvalues + symval);
+	sym = (pin & PV_ANALOG) ? s_apin : s_dpin;
+	symval = pin & PV_MASK;
+	return 1;
+}
+#endif
+
+
 // Numeric variables
 #ifndef NUMVARS
 #define NUMVARS 26
@@ -545,6 +574,10 @@ void parseid(void) {
 	else if (findindex(idbuf, (prog_char *) functiondict, 1)) sym = s_nfunct;
 #ifdef LONG_ALIASES
 	else if (findindex(idbuf, (prog_char *) aliasdict, 0)) sym = s_nfunct;
+#endif
+
+#ifdef PIN_ALIASES
+	else if (findpinname(idbuf)) {;}		// sym and symval are set in findpinname
 #endif
 
 #ifdef USER_FUNCTIONS
