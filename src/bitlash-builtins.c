@@ -36,31 +36,40 @@ This feature allows you to add built-in scripts at compile time.
 
 The scripts are stored in flash in the table defined below.  
 
-Add your entries at the end, in pairs: one string ending with \0 for the name,
-one string ending with \0 for the script.
+Add your entries before the sentinel at the end, in pairs, using the BUILT_IN define: 
+one string for the name, one string for the script.  
+
+The BUILT_IN macro supplies the necessary null terminations.
 
 NOTE WELL: The table is searched _last_ among all the spaces, so any function defined anywhere
 will override the value in the table here.  This means you can easily shoot yourself in the foot, 
-like this:
+like this, from the command line:
 
-	function high {return 0}
+	> function high {return low}
 	
 ... for an endless supply of interesting debugging experiences.  Be careful.
 
 **********/
 
+// use this define to add to the builtin_table
+#define BUILT_IN(name, script) name "\0" script "\0"
 
 prog_char builtin_table[] PROGMEM = {
 
 	// The banner must be first.  Add new builtins below.
-	"banner\0"	"print \"bitlash here! v2.0 RC4-pre (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\"\0"
+	BUILT_IN("banner",	
+		"print \"bitlash here! v2.0 RC4-pre (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\"")
 
-	"low\0" 	"return 0\0"
-	"high\0" 	"return 1\0"
-	"input\0"	"return 0\0"
-	"output\0"	"return 1\0"
+	// Add user built-ins here.  Some examples:
+#if 0
+	BUILT_IN("low",		"return 0")
+	BUILT_IN("high",	"return 1")
+	BUILT_IN("input",	"return 0")
+	BUILT_IN("output",	"return 1")
+#endif
 
-	"\0\0"			// guards end of table, must be last
+	// This sentinel must be last	
+	BUILT_IN("","")						// guards end of table, must be last
 };
 
 
