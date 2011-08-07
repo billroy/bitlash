@@ -392,7 +392,13 @@ byte pinnum(char id[]) {
 //
 // Pin alias variables
 //
-#define PIN_ALIASES 1
+// A pin alias is another way to refer to a digital or analog pin.
+// The table below associates symbols with pins so you can say:
+// 	> led=1		... instead of
+//  > d13=1		... and similarly for analog pinvars like a5
+//
+//
+//#define PIN_ALIASES 1
 
 #ifdef PIN_ALIASES
 
@@ -599,6 +605,9 @@ byte findscript(char *idbuf) {
 
 	// script function in a file?
 	else if (scriptfileexists(idbuf)) sym = s_script_file;
+
+	// script in the built-ins table?
+	else if (findbuiltin(idbuf)) {;}
 
 	else {
 		sym = s_undef;		// huh?

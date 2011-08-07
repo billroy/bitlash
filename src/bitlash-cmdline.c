@@ -188,6 +188,7 @@ void runBitlash(void) {
 	runBackgroundTasks();
 }
 
+#if 0
 
 //	Banner and copyright notice
 //
@@ -207,3 +208,4 @@ void displayBanner(void) {
 	// please note the license requires that you maintain this notice
 	execscript(SCRIPT_PROGMEM, (numvar) banner, 0);
 }
+#endif

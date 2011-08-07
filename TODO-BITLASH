@@ -1,7 +1,16 @@
 Bitlash To-Do
 Personal working notes (c) 2011 Bill Roy
-7/6/11 -br
+8/7/11 -br
 =============================
+
+RELEASE NOTES UPDATES FOR RC4
+
+- pin alias variables
+- builtin script dictionary
+- bitlash_rf doc
+
+==========
+
 
 BLOCKING BUGS
 
@@ -90,6 +99,7 @@ open issues
 
 - feat: detect card insertion and autorun startup function
 	- feat: CD("dir") could autorun
+	- obstacle: the card detect line is not supported in the library
 - test: handling of card removal
 =============================
 - feat: virtual block device for progmem, SPI eeprom, ...

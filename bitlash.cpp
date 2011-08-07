@@ -42,6 +42,7 @@
 #include "src/bitlash-eeprom.c"
 #include "src/bitlash-error.c"
 #include "src/bitlash-functions.c"
+#include "src/bitlash-builtins.c"
 #include "src/bitlash-interpreter.c"
 #include "src/bitlash-instream.c"
 #include "src/bitlash-parser.c"
