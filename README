@@ -10,6 +10,19 @@ June 6, 2011 -br
 	099
 	>
 
+- You can define symbolic names for pins at compile time to suit your project
+	- Turn on PIN_ALIASES at line 401 in src/bitlash-parser.c
+	- Add your aliases to the pinnames and pinvalues tables
+	- Now you can say led=1 or x=vin
+
+- You can define built-in named functions in Bitlash script at compile time to suit your project
+	- Think of it as a built-in customizable dictionary of Bitlash functions
+	- These BUILT_IN functions live in flash (PROGMEM) so you can free up EEPROM
+	- Flash space is the limiting factor; the internal bitlash 2 limit is 2^28-1 bytes
+	- Add to the table in src/bitlash-builtins.c and see the notes there
+
+
+
 2.0 RC3d Release Notes -- June 4, 2011
 
 Quick Start for SD Card Support:
