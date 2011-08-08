@@ -14,6 +14,7 @@ June 6, 2011 -br
 	- Turn on PIN_ALIASES at line 401 in src/bitlash-parser.c
 	- Add your aliases to the pinnames and pinvalues tables
 	- Now you can say led=1 or x=vin
+	- Don't forget to set the pinmode()
 
 - You can define built-in named functions in Bitlash script at compile time to suit your project
 	- Think of it as a built-in customizable dictionary of Bitlash functions

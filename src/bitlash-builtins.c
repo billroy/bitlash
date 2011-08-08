@@ -85,6 +85,11 @@ prog_char *wordlist = builtin_table;
 			symval = (numvar) wordlist;			// value is starting address of script text
 			return 1;
 		}
+
+		// Speed optimization: sort the builtins_table by function name,
+		// and then enable this line for a small speedup
+		//else if (result < 0) break;
+
 		else wordlist += strlen_P(wordlist) + 1;	// else skip value string and move along
 	}
 	return 0;
