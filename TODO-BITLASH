@@ -15,7 +15,8 @@ RELEASE NOTES UPDATES FOR RC4
 BLOCKING BUGS
 
 - BUG: Update sdfat to http://sdfatlib.googlecode.com/files/sdfatlib20110702.zip
-
+	- Update sdfat to http://beta-lib.googlecode.com/files/SdFatBeta20110810.zip for testing
+	
 - BUG: Web site documentation update for this release is not complete
 
 - BUG: rm setid doesn't work if setid is first in EEPROM?
