@@ -9,8 +9,10 @@ RELEASE NOTES UPDATES FOR RC4
 - builtin script dictionary
 - bitlash_rf doc
 
-==========
 
+==========
+- git work in progress at:
+	git clone http://bitlash.net/git/bitlash.git
 
 BLOCKING BUGS
 
