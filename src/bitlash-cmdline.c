@@ -86,7 +86,7 @@ char buf[IDLEN+1];
 void initlbuf(void) {
 	lbufptr = lbuf;
 
-#if defined(SERIAL_OVERRIDE)
+#if defined(SERIAL_OVERRIDE) && 0
 	// don't do the prompt in serialIsOverridden mode
 	if (serialIsOverridden()) return;
 #endif

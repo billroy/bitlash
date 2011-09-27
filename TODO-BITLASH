@@ -99,6 +99,11 @@ open issues
 - BUG: *x++ = *y++: greedy assignment in getfactor" fix
 
 =============================
+- feat: enumerate all symbols in help
+	- user C functions
+	- pin aliases
+	- built-in scripts
+=============================
 
 - feat: detect card insertion and autorun startup function
 	- feat: CD("dir") could autorun

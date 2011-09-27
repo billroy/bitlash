@@ -113,22 +113,41 @@ using old-school telnet.  If you're using nc, ^C will quit.
 
 
 *****/
-
-#include <SPI.h>
-#include <Ethernet.h>
+#include "WProgram.h"
 #include "bitlash.h"
 
+// Turn on the NANODE define to build for the Nanode enc28j60 ethernet interface
+//
+// Requires EtherShield library from https://github.com/thiseldo/EtherShield.git
+//
+#define NANODE
+
+#ifdef NANODE
+#include "EtherShield.h"
+EtherShield es=EtherShield();
+#define TCP_OVERHEAD (TCP_CHECKSUM_L_P+3)
+#define OUTPUT_BUFFER_LENGTH 350
+uint16_t olen;
+byte obuf[OUTPUT_BUFFER_LENGTH];
+#else
+#include <SPI.h>
+#include <Ethernet.h>
+#endif
+
+
 // Command line buffer for alternate command input stream
-#define LBUFLEN 80
-byte llen;
-char linebuf[LBUFLEN];
+byte ilen;
+#define INPUT_BUFFER_LENGTH 80
+byte ibuf[INPUT_BUFFER_LENGTH];
+
+
 
 ////////////////////////////////////////
 //
 //	Ethernet configuration
 //	Adjust for local conditions
 //
-byte mac[] 		= {'b','i','t','c','h','i'};
+byte mac[] 		= {'b','i','t','l','s','h'};
 byte ip[]  		= {192, 168, 1, 27};
 byte gateway[] 	= {192, 168, 1, 1};
 byte subnet[] 	= {255, 255, 255, 0};
@@ -140,7 +159,7 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 ////////////////////////////////////////
 
-#define BANNER "Bitlash web server here! v0.3\r\n"
+#define BANNER "Bitlash web server here! v0.4\r\n"
 #define INDEX_MACRO "_index"
 #define ERROR_MACRO "_error"
 #define ERROR_PAGE  "error"
@@ -185,10 +204,22 @@ const prog_char default_index_page[] PROGMEM = {
 const prog_char error_url[] PROGMEM = { "error\0" };
 const prog_char error_page[] PROGMEM = { "Not found.\r\n\0" };
 
+// This example generates a JSON response with the value read from a0, like this:
+//	$ curl 192.168.1.27/analog0
+//	{"a0":234}
+//
+// You could do the same with a function in EEPROM:
+// $ function _analog0 {printf("{\"a0\":%d}\r\n",a0);}
+//
+const prog_char analog0_url[] PROGMEM = { "analog0\0" };
+const prog_char analog0_page[] PROGMEM = { "{\"a0\":[print a0,]}\r\n\0" };
+
+
 // Add new pages here, just like these
 builtin_page builtin_page_list[] = {
 	{ index_url, default_index_page },
 	{ error_url, error_page },
+	{ analog0_url, analog0_page },
 	{ 0, 0 }	// marks end, must be last
 };
 
@@ -210,6 +241,8 @@ const prog_char *name;
 	return(-1);
 }
 
+// forward declaration
+void serialHandler(byte);
 
 void sendStaticPage(char *pagename) {
 
@@ -221,12 +254,12 @@ void sendStaticPage(char *pagename) {
 		byte b = pgm_read_byte(addr++);
 		if (b == '\0') break;
 		else if (b == '[') {
-			char *optr = linebuf;
-			while ((b != ']') && ((optr-linebuf) < LBUFLEN)) {
+			byte *optr = ibuf;
+			while ((b != ']') && ((optr-ibuf) < INPUT_BUFFER_LENGTH-1)) {
 				b = pgm_read_byte(addr++);
 				if (b == ']') {
 					*optr = '\0';
-					doCommand(linebuf);
+					doCommand((char *) ibuf);
 				}
 				else *optr++ = b;
 			}
@@ -240,38 +273,59 @@ void sendStaticPage(char *pagename) {
 
 
 extern void prompt(void);
+byte unlocked;
+byte badpasswordcount;
 
+#ifdef NANODE
+void flushoutput(void) {
+	if (olen) {
+		es.ES_www_server_reply(obuf, olen); // send web page data
+		olen = 0;
+	}
+}
+#else
 Server server = Server(PORT);
 Client client(MAX_SOCK_NUM);		// declare an inactive client
+#endif
 
 numvar func_logout(void) {
+#ifdef NANODE
+	flushoutput();
+#else
 	client.stop();
+#endif
+	unlocked = 0;
 }
 
 void serialHandler(byte b) {
 	Serial.print(b, BYTE);
+
+#ifdef NANODE
+	// LIMIT CHECK: test this for correct behavior at overflow
+	if (olen >= OUTPUT_BUFFER_LENGTH - TCP_OVERHEAD) flushoutput();
+	olen = es.ES_fill_tcp_data_len(obuf, olen, (const char *) &b, 1);
+#else
 	if (client && client.connected()) client.print((char) b);
+#endif
 }
 
 void sendstring(char *ptr) {
 	while (*ptr) serialHandler(*ptr++);
 }
 
-byte unlocked;
-byte badpasswordcount;
 
 #define IDBUFLEN 13
 char pagename[IDBUFLEN];
 
 
-byte isGET(char *line) {
-	return !strncmp(line, "GET /", 5);
+byte isGET(byte *line) {
+	return !strncmp((char *)line, "GET /", 5);
 }
 
-byte isUnsupportedHTTP(char *line) {
-	return !strncmp(line, "PUT /", 5) ||
-		!strncmp(line, "POST /", 6) ||
-		!strncmp(line, "HEAD /", 6);
+byte isUnsupportedHTTP(byte *line) {
+	return !strncmp((char *)line, "PUT /", 5) ||
+		!strncmp((char *)line, "POST /", 6) ||
+		!strncmp((char *)line, "HEAD /", 6);
 }
 
 
@@ -299,34 +353,34 @@ void servePage(char *pagename) {
 		else sendstring("Error: not found.\r\n");	// shouldn't happen!
 	}
 	delay(1);
-	client.stop();
+	func_logout();
 }
 
 
-void handleInputLine(char *line) {
+void handleInputLine(byte *line) {
 
 	// check for web GET command: GET /macro HTTP/1.1
 	if (isGET(line)) {
-		char *iptr = line+5;	// point to first letter of macro name
-		char *optr = pagename;
+		byte *iptr = line+5;	// point to first letter of macro name
+		byte *optr = (byte *) pagename;
 		*optr++ = '_';			// given "index" we search for macro "_index"
-		while (*iptr && (*iptr != ' ') && ((optr - pagename) < (IDBUFLEN-1))) {
+		while (*iptr && (*iptr != ' ') && ((optr - (byte *) pagename) < (IDBUFLEN-1))) {
 			*optr++ = *iptr++;
 		}
 		*optr = '\0';
 		if (strlen(pagename) == 1) strcpy(pagename, INDEX_MACRO);	// map / to /index thus _index
 		servePage(pagename);
 	}
-	else if (isUnsupportedHTTP(line)) client.stop();
+	else if (isUnsupportedHTTP(line)) func_logout();
 
 	// not a web command: if we're locked, check for the passphrase
 	else if (!unlocked) {
-		if (!strcmp(line, PASSPHRASE)) {
+		if (!strcmp((char *) line, PASSPHRASE)) {
 			sendstring(BANNER);
 			unlocked = 1;
 			prompt();
 		}
-		else if ((strlen(line) > 0) && (++badpasswordcount > BAD_PASSWORD_MAX)) client.stop();
+		else if ((strlen((char *) line) > 0) && (++badpasswordcount > BAD_PASSWORD_MAX)) func_logout();
 		else {
 			if (badpasswordcount) delay(1000);
 			sendstring("Password: ");
@@ -335,7 +389,7 @@ void handleInputLine(char *line) {
 	
 	// unlocked, it's apparently a telnet command, execute it
 	else {
-		doCommand(line);
+		doCommand((char *)line);
 		prompt();
 	}
 }
@@ -344,8 +398,15 @@ void handleInputLine(char *line) {
 void setup(void) {
 
 	initBitlash(57600);
+
+#ifdef NANODE
+	es.ES_enc28j60SpiInit();	// Initialise SPI interface
+	es.ES_enc28j60Init(mac);	// initialize enc28j60
+	es.ES_init_ip_arp_udp_tcp(mac, ip, PORT);	// init the ethernet/ip layer
+#else
 	Ethernet.begin(mac, ip, gateway, subnet);
 	server.begin();
+#endif
 
 	addBitlashFunction("logout", &func_logout);
 	setOutputHandler(&serialHandler);
@@ -353,6 +414,19 @@ void setup(void) {
 
 void loop(void) {
 	
+#ifdef NANODE
+    // read packet, handle ping and wait for a tcp packet
+    ilen = es.ES_packetloop_icmp_tcp(ibuf, es.ES_enc28j60PacketReceive(INPUT_BUFFER_LENGTH, ibuf));
+	if (ilen) {
+		ibuf[ilen] = '\0';
+		handleInputLine(ibuf);
+		ilen = 0;
+		flushoutput();
+	}
+	runBitlash();
+	flushoutput();
+	
+#else
 	client = server.available();
 	if (client) {
 		unlocked = 0;
@@ -361,17 +435,18 @@ void loop(void) {
 			if (client.available()) {
 				char c = client.read();
 				if ((c == '\r') || (c == '\n')) {
-					if (llen) {
-						linebuf[llen] = '\0';
-						handleInputLine(linebuf);
-						llen = 0;
+					if (ilen) {
+						ibuf[ilen] = '\0';
+						handleInputLine(ibuf);
+						ilen = 0;
 					}
 				}
-				else if (llen < LBUFLEN-1) linebuf[llen++] = c;
+				else if (ilen < INPUT_BUFFER_LENGTH-1) ibuf[ilen++] = c;
 				else {;}	// drop overtyping on the floor here
 			}
 			else runBitlash();
 		}
 	}
 	runBitlash();
+#endif
 }
