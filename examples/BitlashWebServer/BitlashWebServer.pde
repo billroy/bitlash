@@ -123,12 +123,14 @@ using old-school telnet.  If you're using nc, ^C will quit.
 #define NANODE
 
 #ifdef NANODE
-#include "EtherShield.h"
+#include <EtherShield.h>		// from https://github.com/thiseldo/EtherShield
+#include <NanodeMAC.h>			// from https://github.com/thiseldo/NanodeBootLoader
 EtherShield es=EtherShield();
 #define TCP_OVERHEAD (TCP_CHECKSUM_L_P+3)
-#define OUTPUT_BUFFER_LENGTH 350
+#define OUTPUT_BUFFER_LENGTH 400		// dhcp.c::dhcp_send() blindly thumps 400 bytes of buf :(
 uint16_t olen;
-byte obuf[OUTPUT_BUFFER_LENGTH];
+byte obuf[OUTPUT_BUFFER_LENGTH + TCP_OVERHEAD];
+#define PORT 80					// EtherShield library web server apparently requires PORT to be 80
 #else
 #include <SPI.h>
 #include <Ethernet.h>
@@ -147,11 +149,16 @@ byte ibuf[INPUT_BUFFER_LENGTH];
 //	Ethernet configuration
 //	Adjust for local conditions
 //
-byte mac[] 		= {'b','i','t','l','s','h'};
+byte mac_addr[] = {'b','i','t','l','s','h'};
 byte ip[]  		= {192, 168, 1, 27};
 byte gateway[] 	= {192, 168, 1, 1};
 byte subnet[] 	= {255, 255, 255, 0};
-#define PORT 8080
+byte dhcpip[]	= {192, 168, 1, 1};
+byte dns_ip[] 	= {192, 168, 1, 1};
+
+#ifndef PORT
+#define PORT 8080		// Arduino Ethernet library supports values other than 80 for PORT
+#endif
 
 #define PASSPHRASE "open sesame"
 #define BAD_PASSWORD_MAX 3
@@ -400,11 +407,25 @@ void setup(void) {
 	initBitlash(57600);
 
 #ifdef NANODE
-	es.ES_enc28j60SpiInit();	// Initialise SPI interface
-	es.ES_enc28j60Init(mac);	// initialize enc28j60
-	es.ES_init_ip_arp_udp_tcp(mac, ip, PORT);	// init the ethernet/ip layer
+	//NanodeMAC mac(mac_addr);
+	es.ES_enc28j60SpiInit();						// Initialise SPI interface
+	es.ES_enc28j60Init(mac_addr, 8);				// initialize enc28j60 for NANODE pin 8 CS
+
+//#define USE_DHCP
+#ifdef USE_DHCP
+	while (!es.allocateIPAddress(obuf, OUTPUT_BUFFER_LENGTH, 
+								mac_addr, PORT, ip, subnet, gateway, dhcpip, dns_ip ) > 0 ) {
+
+		sendstring("NO IP\r\n");	 // Can't get IP address
+	}
 #else
-	Ethernet.begin(mac, ip, gateway, subnet);
+	es.ES_client_set_gwip(gateway);					// set the gateway
+#endif
+	es.ES_init_ip_arp_udp_tcp(mac_addr, ip, PORT);	// init the ethernet/ip layer
+
+#else
+	// Arduino Ethernet library setup
+	Ethernet.begin(mac_addr, ip, gateway, subnet);
 	server.begin();
 #endif
 
