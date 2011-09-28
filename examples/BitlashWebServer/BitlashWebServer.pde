@@ -89,6 +89,8 @@ Special pages _index and _error
 
 Telnet access
 
+(Not available on Nanode.)
+
 The password-protected telnet console operating on the same IP/port as the web server
 provides full access to Bitlash, so you can log in with telnet or nc and do bitlash stuff,
 including of course defining a new _function to expose a new web page.
@@ -98,7 +100,7 @@ including of course defining a new _function to expose a new web page.
 	Connected to 192.168.1.27.
 	Escape character is '^]'.
 	open sesame
-	Bitlash web server here! v0.3
+	Bitlash web server here! v0.4
 	> 
 
 The default telnet password is "open sesame"; please change it below or risk
@@ -120,7 +122,7 @@ using old-school telnet.  If you're using nc, ^C will quit.
 //
 // Requires EtherShield library from https://github.com/thiseldo/EtherShield.git
 //
-#define NANODE
+//#define NANODE
 
 #ifdef NANODE
 #include <EtherShield.h>		// from https://github.com/thiseldo/EtherShield
@@ -383,6 +385,16 @@ void handleInputLine(byte *line) {
 		if (strlen(pagename) == 1) strcpy(pagename, INDEX_MACRO);	// map / to /index thus _index
 		servePage(pagename);
 	}
+
+
+#ifdef NANODE
+	// Unfortunately, the Telnet feature is not available on Nanode.
+	// 
+	// The Ethershield IP stack is currently (Sept 2011) only able to produce single-packet responses
+	// This breaks the Telnet functionality, which depends on a persistent connection across
+	// several request-response pairs.
+	//
+#else
 	else if (isUnsupportedHTTP(line)) func_logout();
 
 	// not a web command: if we're locked, check for the passphrase
@@ -397,6 +409,8 @@ void handleInputLine(byte *line) {
 			if (badpasswordcount) delay(1000);
 			sendstring("Password: ");
 		}
+#endif
+
 	}
 	
 	// unlocked, it's apparently a telnet command, execute it
