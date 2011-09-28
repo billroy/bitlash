@@ -127,9 +127,9 @@ using old-school telnet.  If you're using nc, ^C will quit.
 #include <NanodeMAC.h>			// from https://github.com/thiseldo/NanodeBootLoader
 EtherShield es=EtherShield();
 #define TCP_OVERHEAD (TCP_CHECKSUM_L_P+3)
-#define OUTPUT_BUFFER_LENGTH 400		// dhcp.c::dhcp_send() blindly thumps 400 bytes of buf :(
-uint16_t olen;
-byte obuf[OUTPUT_BUFFER_LENGTH + TCP_OVERHEAD];
+#define PACKET_BUFFER_LENGTH 400		// dhcp.c::dhcp_send() blindly thumps 400 bytes of buf :(
+uint16_t pktlen;
+byte pktbuf[PACKET_BUFFER_LENGTH + TCP_OVERHEAD];
 #define PORT 80					// EtherShield library web server apparently requires PORT to be 80
 #else
 #include <SPI.h>
@@ -285,9 +285,9 @@ byte badpasswordcount;
 
 #ifdef NANODE
 void flushoutput(void) {
-	if (olen) {
-		es.ES_www_server_reply(obuf, olen); // send web page data
-		olen = 0;
+	if (pktlen) {
+		es.ES_www_server_reply(pktbuf, pktlen); // send web page data
+		pktlen = 0;
 	}
 }
 #else
@@ -309,8 +309,9 @@ void serialHandler(byte b) {
 
 #ifdef NANODE
 	// LIMIT CHECK: test this for correct behavior at overflow
-	if (olen >= OUTPUT_BUFFER_LENGTH - TCP_OVERHEAD) flushoutput();
-	olen = es.ES_fill_tcp_data_len(obuf, olen, (const char *) &b, 1);
+	if (pktlen >= PACKET_BUFFER_LENGTH) flushoutput();
+	pktlen = es.ES_fill_tcp_data_len(pktbuf, pktlen, (const char *) &b, 1);
+	
 #else
 	if (client && client.connected()) client.print((char) b);
 #endif
@@ -366,6 +367,10 @@ void servePage(char *pagename) {
 
 void handleInputLine(byte *line) {
 
+	Serial.print("Input line: [");
+	Serial.print((char *) line);
+	Serial.println("]");
+
 	// check for web GET command: GET /macro HTTP/1.1
 	if (isGET(line)) {
 		byte *iptr = line+5;	// point to first letter of macro name
@@ -407,13 +412,13 @@ void setup(void) {
 	initBitlash(57600);
 
 #ifdef NANODE
-	//NanodeMAC mac(mac_addr);
-	es.ES_enc28j60SpiInit();						// Initialise SPI interface
-	es.ES_enc28j60Init(mac_addr, 8);				// initialize enc28j60 for NANODE pin 8 CS
+	NanodeMAC mac(mac_addr);				// Fetch mac address from ID chip
+	es.ES_enc28j60SpiInit();				// Initialise SPI interface
+	es.ES_enc28j60Init(mac_addr, 8);		// initialize enc28j60 for NANODE pin 8 CS
 
 //#define USE_DHCP
 #ifdef USE_DHCP
-	while (!es.allocateIPAddress(obuf, OUTPUT_BUFFER_LENGTH, 
+	while (!es.allocateIPAddress(pktbuf, PACKET_BUFFER_LENGTH, 
 								mac_addr, PORT, ip, subnet, gateway, dhcpip, dns_ip ) > 0 ) {
 
 		sendstring("NO IP\r\n");	 // Can't get IP address
@@ -436,17 +441,23 @@ void setup(void) {
 void loop(void) {
 	
 #ifdef NANODE
-    // read packet, handle ping and wait for a tcp packet
-    ilen = es.ES_packetloop_icmp_tcp(ibuf, es.ES_enc28j60PacketReceive(INPUT_BUFFER_LENGTH, ibuf));
+    // read packet into pktbuf, handle ping and wait for a tcp packet
+    // (we also use pktbuf for output during the interpreter phase)
+    ilen = es.ES_packetloop_icmp_tcp(pktbuf, es.ES_enc28j60PacketReceive(PACKET_BUFFER_LENGTH, pktbuf));
 	if (ilen) {
-		ibuf[ilen] = '\0';
+		// data is at pktbuf[ilen], newline terminated
+		// copy it to ibuf for the interpreter
+		byte *iptr = pktbuf + ilen;
+		byte *optr = ibuf;			// we use ibuf for our input line buffer
+		while ((*iptr != '\r') && (*iptr != '\n')) *optr++ = *iptr++;
+		*optr = '\0';
+
 		handleInputLine(ibuf);
-		ilen = 0;
 		flushoutput();
 	}
 	runBitlash();
 	flushoutput();
-	
+
 #else
 	client = server.available();
 	if (client) {
