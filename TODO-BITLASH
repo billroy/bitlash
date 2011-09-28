@@ -1,6 +1,6 @@
 Bitlash To-Do
 Personal working notes (c) 2011 Bill Roy
-8/7/11 -br
+9/27/11 -br
 =============================
 
 RELEASE NOTES UPDATES FOR RC4
@@ -8,7 +8,7 @@ RELEASE NOTES UPDATES FOR RC4
 - pin alias variables
 - builtin script dictionary
 - bitlash_rf doc
-
+- nanode web server
 
 ==========
 - git work in progress at:
@@ -214,6 +214,9 @@ setoutput(pin)
 
 ---
 TODO: Bitlash web server
+
+- BUG: Nanode web server crashes with stack overflow when DHCP is enabled instead of hard-coded IPs
+	- fix: remove ibuf, and use doCommandChar(), to save ram - retest
 
 pages from SD card (with [script] interpretation)
 configurable IP and port

@@ -126,7 +126,7 @@ using old-school telnet.  If you're using nc, ^C will quit.
 
 #ifdef NANODE
 #include <EtherShield.h>		// from https://github.com/thiseldo/EtherShield
-#include <NanodeMAC.h>			// from https://github.com/thiseldo/NanodeBootLoader
+#include <NanodeMAC.h>			// from https://github.com/thiseldo/NanodeMAC
 EtherShield es=EtherShield();
 #define TCP_OVERHEAD (TCP_CHECKSUM_L_P+3)
 #define PACKET_BUFFER_LENGTH 400		// dhcp.c::dhcp_send() blindly thumps 400 bytes of buf :(

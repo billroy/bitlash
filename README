@@ -1,5 +1,5 @@
 Bitlash Release Notes
-June 6, 2011 -br
+September 28, 2011 -br
 
 ----------
 
@@ -22,6 +22,8 @@ June 6, 2011 -br
 	- Flash space is the limiting factor; the internal bitlash 2 limit is 2^28-1 bytes
 	- Add to the table in src/bitlash-builtins.c and see the notes there
 
+- The BitlashWebServer example now works on Nanode, as well as the official shield
+	- Nanode users need to enable #define NANODE in BitlashWebServer.pde
 
 
 2.0 RC3d Release Notes -- June 4, 2011
