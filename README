@@ -1,12 +1,32 @@
 Bitlash Release Notes
-September 28, 2011 -br
+September 29, 2011 -br
 
 ----------
 
 2.0 RC4 Release Notes
 
-- printf() and fprintf() now respect the width argument:
+- Arduino 1.0 status
+	- The bitlashdemo.pde example compiles and runs properly on Arduino 1.0b4
+	- There are known issues with some examples:
+		- The BitlashWebServer.pde example does not work for either the Arduino or Nanode ethernet interfaces
+		- SD card support is untested and at risk due to size constraints
+		- Most other examples need touching for the Arduino.h fix at least
+
+- The BitlashWebServer example now works on Nanode, as well as the official shield
+	- (Note: This works in Arduino 0022 only, for the moment)
+	- Nanode users need to enable #define NANODE in BitlashWebServer.pde at about line 125
+
+- SD card support is, by default, disabled.  To enable it:
+	- Edit libraries/bitlash/src/bitlash-instream.c to turn on the SDFILE define
+		at or near line 32, make this:
+			//#define SDFILE
+		look like this:
+			#define SDFILE
+
+- printf() and fprintf() now respect the width argument, including leading 0:
 	> printf("%3d\n", 99);
+	 99
+	> printf("%03d\n", 99);
 	099
 	>
 
@@ -22,8 +42,6 @@ September 28, 2011 -br
 	- Flash space is the limiting factor; the internal bitlash 2 limit is 2^28-1 bytes
 	- Add to the table in src/bitlash-builtins.c and see the notes there
 
-- The BitlashWebServer example now works on Nanode, as well as the official shield
-	- Nanode users need to enable #define NANODE in BitlashWebServer.pde
 
 
 2.0 RC3d Release Notes -- June 4, 2011

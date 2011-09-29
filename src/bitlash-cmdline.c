@@ -188,24 +188,3 @@ void runBitlash(void) {
 	runBackgroundTasks();
 }
 
-#if 0
-
-//	Banner and copyright notice
-//
-prog_char banner[] PROGMEM = { 
-// Ruler:     1                   2         3         4         5         6         7         8         9        10
-//   12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-#ifdef ARDUINO_BUILD
-	"print \"bitlash here! v2.0 RC4-pre (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\""
-#else
-	"print \"bitlash here! v2.0 RC4-pre (c) 2011 Bill Roy\""
-#endif
-};
-
-
-void displayBanner(void) {
-	// print the banner and copyright notice
-	// please note the license requires that you maintain this notice
-	execscript(SCRIPT_PROGMEM, (numvar) banner, 0);
-}
-#endif

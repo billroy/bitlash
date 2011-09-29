@@ -120,7 +120,6 @@ using old-school telnet.  If you're using nc, ^C will quit.
 	#define serialPrintByte(b) Serial.write(b)
 #else
 	#include "WProgram.h"
-	#define serialPrintByte(b) Serial.print(b,BYTE)
 #endif
 #include "bitlash.h"
 

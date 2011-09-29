@@ -1,14 +1,15 @@
 Bitlash To-Do
 Personal working notes (c) 2011 Bill Roy
-9/27/11 -br
+9/29/11 -br
 =============================
 
 RELEASE NOTES UPDATES FOR RC4
 
+- preliminary Arduino 1.0b4 support
+- nanode web server
 - pin alias variables
 - builtin script dictionary
 - bitlash_rf doc
-- nanode web server
 
 ==========
 - git work in progress at:

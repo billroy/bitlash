@@ -58,7 +58,7 @@ prog_char builtin_table[] PROGMEM = {
 
 	// The banner must be first.  Add new builtins below.
 	BUILT_IN("banner",	
-		"print \"bitlash here! v2.0 RC4-pre (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\"")
+		"print \"bitlash here! v2.0 RC4 (c) 2011 Bill Roy -type HELP-\",free,\"bytes free\"")
 
 	// Add user built-ins here.  Some examples:
 #if 0
@@ -66,6 +66,7 @@ prog_char builtin_table[] PROGMEM = {
 	BUILT_IN("high",	"return 1")
 	BUILT_IN("input",	"return 0")
 	BUILT_IN("output",	"return 1")
+	BUILT_IN("digitalread",	"return dr(arg(1))")
 #endif
 
 	// This sentinel must be last	

@@ -98,16 +98,12 @@
 
 
 #if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
+	#include "Arduino.h"
 #else
-  #include "WProgram.h"
+	#include "WProgram.h"
+	#include "WConstants.h"
 #endif
 
-
-#include "WConstants.h"
-//#include "EEPROM.h"
-//#define eeread EEPROM.read
-//#define eewrite EEPROM.write
 
 // Enable Software Serial tx support for Arduino
 // this enables "setbaud(4, 4800); print #4:..."
