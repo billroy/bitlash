@@ -91,10 +91,9 @@ byte gateway[] 	= {192, 168, 1, 1};
 byte subnet[] 	= {255, 255, 255, 0};
 
 byte server_ip[]  = {192, 168, 1,  6};		// redis server IP
+#define PORT 6379		// default redis port
+Client client(server_ip, PORT);
 
-#ifndef PORT
-#define PORT 6938		// default redis port
-#endif
 
 
 //
@@ -110,8 +109,6 @@ byte ibuf[INPUT_BUFFER_LENGTH];
 
 // forward declaration
 void serialHandler(byte);
-
-Client client(server_ip, PORT);
 
 /////////////////////////////////////////////
 
@@ -230,7 +227,7 @@ numvar process_response(void) {
 
 numvar func_get(void) {
 	if (!client.connected()) {
-		if (!client.connect()) return -1L;
+		if (!client.connect()) return -5L;
 	}
 	sendstring("get ");
 	sendstring((char *) getarg(1));
@@ -240,7 +237,7 @@ numvar func_get(void) {
 
 numvar func_set(void) {
 	if (!client.connected()) {
-		if (!client.connect()) return -1L;
+		if (!client.connect()) return -5L;
 	}
 	sendstring("set ");
 	sendstring((char *) getarg(1));
@@ -272,8 +269,6 @@ void setup(void) {
 	addBitlashFunction("eval", &func_eval);
 	addBitlashFunction("malloc", &func_malloc);
 	addBitlashFunction("mfree", &func_mfree);
-
-	setOutputHandler(&serialHandler);
 	
 	Serial.print(BANNER);
 }
