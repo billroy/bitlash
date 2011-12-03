@@ -99,7 +99,7 @@ Client client(server_ip, PORT);
 //
 ////////////////////////////////////////
 
-#define BANNER "Bitlash redis client here! v0.2\r\n"
+#define BANNER "Bitlash redis client here! v0.3\r\n"
 
 // Command line buffer for alternate command input stream
 byte ilen;
@@ -271,46 +271,49 @@ void runServerResponseHandler(void) {
 }
 
 
-
-numvar func_get(void) {
+numvar do_redis_command(char *cmd) {
 	if (!client.connected()) {
 		if (!client.connect()) return -5L;
 	}
-	sendstring("get ");
-	sendstring((char *) getarg(1));
+	sendstring(cmd);
+	
+	int nargs = getarg(0);
+	int i = 1;
+	while (i <= nargs) {
+		sendstring(" ");
+		sendstring((char *) getarg(i++));
+	}
 	sendstring("\r\n");
 	return process_response();
+}
+
+
+numvar func_get(void) {
+	return do_redis_command("get");
 }
 
 numvar func_set(void) {
-	if (!client.connected()) {
-		if (!client.connect()) return -5L;
-	}
-	sendstring("set ");
-	sendstring((char *) getarg(1));
-	sendstring(" ");
-	sendstring((char *) getarg(2));
-	sendstring("\r\n");
-	return process_response();
+	return do_redis_command("set");
 }
 
 numvar func_incr(void) {
-	if (!client.connected()) {
-		if (!client.connect()) return -5L;
-	}
-	sendstring("incr ");
-	sendstring((char *) getarg(1));
-	sendstring("\r\n");
-	return process_response();
+	return do_redis_command("incr");
 }
 
 numvar func_subscribe(void) {
-	if (!client.connected()) {
-		if (!client.connect()) return -5L;
-	}
-	sendstring("subscribe ");
-	sendstring((char *) getarg(1));
+	return do_redis_command("subscribe");
+}
+
+numvar func_unsubscribe(void) {
+	return do_redis_command("unsubscribe");
+}
+
+numvar func_redis(void) {
+	setOutputHandler(serialHandler);
+	numvar func_printf_handler(byte,byte);
+	func_printf_handler(1,2);
 	sendstring("\r\n");
+	resetOutputHandler();
 	return process_response();
 }
 
@@ -319,11 +322,14 @@ numvar func_eval(void) {
 	if (getarg(1)) return doCommand((char *) getarg(1));
 	return 0L;
 }
-
 numvar func_malloc(void) { return (numvar) malloc(getarg(1)); }
 numvar func_mfree(void)  { free((void *) getarg(1)); return 0L;}
 
+
 void setup(void) {
+
+	// Init Serial so we hear errors before it's re-inited in initBitlash
+	Serial.begin(57600);
 
 	// Arduino Ethernet library setup
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
@@ -332,6 +338,8 @@ void setup(void) {
 	addBitlashFunction("set", &func_set);
 	addBitlashFunction("incr", &func_incr);
 	addBitlashFunction("subscribe", &func_subscribe);
+	addBitlashFunction("unsubscribe", &func_unsubscribe);
+	addBitlashFunction("redis", &func_redis);
 	
 	addBitlashFunction("eval", &func_eval);
 	addBitlashFunction("malloc", &func_malloc);
