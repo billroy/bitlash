@@ -118,6 +118,8 @@ using old-school telnet.  If you're using nc, ^C will quit.
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
 	#define serialPrintByte(b) Serial.write(b)
+	#define Client EthernetClient
+	#define Server EthernetServer
 #else
 	#include "WProgram.h"
 	#define serialPrintByte(b) Serial.print(b,BYTE)

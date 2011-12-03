@@ -15,6 +15,8 @@ September 29, 2011 -br
 - The BitlashWebServer example now works on Nanode, as well as the official shield
 	- (Note: This works in Arduino 0022 only, for the moment)
 	- Nanode users need to enable #define NANODE in BitlashWebServer.pde at about line 125
+		- requires EtherShield library from from https://github.com/thiseldo/EtherShield
+		- requires NanodeMAC library from from https://github.com/thiseldo/NanodeMAC
 
 - SD card support is, by default, disabled.  To enable it:
 	- Edit libraries/bitlash/src/bitlash-instream.c to turn on the SDFILE define

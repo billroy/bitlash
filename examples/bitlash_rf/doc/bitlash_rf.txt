@@ -2,7 +2,7 @@ Bitlash-RF Alpha Release
 Preliminary Documentation
 -------------------------
 June 29, 2009 
-Copyright 2009 Palmeta Productions LLC
+Copyright 2009 Bill Roy
 
 
 About Bitlash-RF

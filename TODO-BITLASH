@@ -17,6 +17,9 @@ RELEASE NOTES UPDATES FOR RC4
 
 BLOCKING BUGS
 
+- BUG: The run command only works with EEPROM functions in the current release.
+	- not user functions, built-ins, or SD card functions
+	
 - BUG: Update sdfat to http://sdfatlib.googlecode.com/files/sdfatlib20110702.zip
 	- Update sdfat to http://beta-lib.googlecode.com/files/SdFatBeta20110810.zip for testing
 	
