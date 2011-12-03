@@ -99,7 +99,7 @@ Client client(server_ip, PORT);
 //
 ////////////////////////////////////////
 
-#define BANNER "Bitlash redis client here! v0.1\r\n"
+#define BANNER "Bitlash redis client here! v0.2\r\n"
 
 // Command line buffer for alternate command input stream
 byte ilen;
@@ -110,10 +110,15 @@ byte ibuf[INPUT_BUFFER_LENGTH];
 // forward declaration
 void serialHandler(byte);
 
+// verbose debugging output
+#define DEBUG 0
+
 /////////////////////////////////////////////
 
 void serialHandler(byte b) {
+#if DEBUG
 	serialPrintByte(b);
+#endif
 	if (client && client.connected()) client.print((char) b);
 }
 
@@ -180,7 +185,10 @@ numvar value;
 			// return the value of the last field in the multi bulk
 			int i;
 			value = parse_response_number();		// this is the number of fields
-			for (i=value; i>0; i--) value = parse_response();
+			for (i=value; i>0; i--) {
+				value = parse_response();
+				skip_past_eol();
+			}
 			return value;
 	}
 	return 0L;	// shouldn't happen
@@ -204,9 +212,11 @@ numvar process_response(void) {
 
 		if (client.available()) {
 
+#if DEBUG
 			Serial.print("Response rtt: ");
 			Serial.print(millis()-start_time);
 			Serial.println("ms");
+#endif
 
 			while (client.available()) {	// pump in the packet
 				if (ilen < INPUT_BUFFER_LENGTH-1) ibuf[ilen++] = client.read();
@@ -217,12 +227,49 @@ numvar process_response(void) {
 		}
 	}
 
+#if DEBUG || 1
 	Serial.print("Response: ");
 	Serial.print((char *) ibuf);
+#endif
 
 	// parse response body
 	return parse_response();
 }
+
+
+// for asynchronous responses like pub/sub
+void runServerResponseHandler(void) {
+
+	if (!client.available()) return;
+
+	// have a packet: collect it and parse it for return value
+	ilen = 0;
+	iptr = ibuf;
+	*iptr = 0;
+
+	while (client.available()) {	// pump in the packet
+		if (ilen < INPUT_BUFFER_LENGTH-1) ibuf[ilen++] = client.read();
+		else break;		// drop overtyping on the floor here
+	}
+	ibuf[ilen] = 0;
+
+#if DEBUG || 1
+	Serial.print("Background Response: ");
+	Serial.print((char *) ibuf);
+#endif
+
+	// parse and eval response body in the background(!)
+	char *cmdptr = (char *) parse_response();
+	if (cmdptr) {
+
+#if DEBUG || 1
+		Serial.print("PubSub command: ");
+		Serial.println(cmdptr);
+#endif
+		doCommand(cmdptr);
+	}
+}
+
 
 
 numvar func_get(void) {
@@ -247,6 +294,26 @@ numvar func_set(void) {
 	return process_response();
 }
 
+numvar func_incr(void) {
+	if (!client.connected()) {
+		if (!client.connect()) return -5L;
+	}
+	sendstring("incr ");
+	sendstring((char *) getarg(1));
+	sendstring("\r\n");
+	return process_response();
+}
+
+numvar func_subscribe(void) {
+	if (!client.connected()) {
+		if (!client.connect()) return -5L;
+	}
+	sendstring("subscribe ");
+	sendstring((char *) getarg(1));
+	sendstring("\r\n");
+	return process_response();
+}
+
 
 numvar func_eval(void) {
 	if (getarg(1)) return doCommand((char *) getarg(1));
@@ -258,23 +325,26 @@ numvar func_mfree(void)  { free((void *) getarg(1)); return 0L;}
 
 void setup(void) {
 
-	initBitlash(57600);
-
 	// Arduino Ethernet library setup
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
 
 	addBitlashFunction("get", &func_get);
 	addBitlashFunction("set", &func_set);
-
+	addBitlashFunction("incr", &func_incr);
+	addBitlashFunction("subscribe", &func_subscribe);
+	
 	addBitlashFunction("eval", &func_eval);
 	addBitlashFunction("malloc", &func_malloc);
 	addBitlashFunction("mfree", &func_mfree);
-	
+
 	Serial.print(BANNER);
+
+	initBitlash(57600);	
 }
 
 
 
 void loop(void) {
 	runBitlash();
+	runServerResponseHandler();
 }
