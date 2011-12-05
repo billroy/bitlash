@@ -155,16 +155,13 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 // CONFIGURE YOUR REDIS SERVER ADDRESS HERE
 //
-//byte server_ip[]  = {192, 168, 1,  8};		// redis server IP
-//#define PORT 6379							// default redis port
-
-byte server_ip[]  = {50,19,83,234};
-#define PORT 9147
+byte server_ip[]  = {192, 168, 1,  8};		// redis server IP
+#define PORT 6379							// default redis port
 
 Client client(server_ip, PORT);
 ////////////////////////////////////////
 
-#define BANNER "Bitlash redis client here! v0.5\r\n"
+#define BANNER "Bitlash redis client here! v0.6\r\n"
 
 // Command line buffer for alternate command input stream
 byte ilen;
@@ -175,15 +172,14 @@ byte ibuf[INPUT_BUFFER_LENGTH];
 // forward declaration
 void serialHandler(byte);
 
-// verbose debugging output
-#define DEBUG 1
+// control of verbose debugging output
+byte verbosity;
+numvar func_verbose(void) { verbosity = getarg(1); }
 
 /////////////////////////////////////////////
 
 void serialHandler(byte b) {
-#if DEBUG
-	serialPrintByte(b);
-#endif
+	if (verbosity > 1) serialPrintByte(b);
 	if (client && client.connected()) client.print((char) b);
 }
 
@@ -282,11 +278,11 @@ numvar process_response(void) {
 
 		if (client.available()) {
 
-#if DEBUG
-			Serial.print("Response rtt: ");
-			Serial.print(millis()-start_time);
-			Serial.println("ms");
-#endif
+			if (verbosity > 0) {
+				Serial.print("Response rtt: ");
+				Serial.print(millis()-start_time);
+				Serial.println("ms");
+			}
 
 			while (client.available()) {	// pump in the packet
 				if (ilen < INPUT_BUFFER_LENGTH-1) ibuf[ilen++] = client.read();
@@ -297,10 +293,10 @@ numvar process_response(void) {
 		}
 	}
 
-#if DEBUG
-	Serial.print("Response: ");
-	Serial.print((char *) ibuf);
-#endif
+	if (verbosity > 0) {
+		Serial.print("Response: ");
+		Serial.print((char *) ibuf);
+	}
 
 	// parse response body
 	return parse_response();
@@ -323,19 +319,20 @@ void runServerResponseHandler(void) {
 	}
 	ibuf[ilen] = 0;
 
-#if DEBUG
-	Serial.print("Background Response: ");
-	Serial.print((char *) ibuf);
-#endif
+	if (verbosity > 0) {
+		Serial.print("Background Response: ");
+		Serial.print((char *) ibuf);
+	}
 
 	// parse and eval response body in the background(!)
 	char *cmdptr = (char *) parse_response();
 	if (cmdptr) {
 
-#if DEBUG
-		Serial.print("PubSub command: ");
-		Serial.println(cmdptr);
-#endif
+		if (verbosity > 0) {
+			Serial.print("PubSub command: ");
+			Serial.println(cmdptr);
+		}
+
 		doCommand(cmdptr);
 	}
 }
@@ -553,6 +550,8 @@ void setup(void) {
 
 	addBitlashFunction("append", &func_append);	
 
+	addBitlashFunction("verbose", &func_verbose);
+
 	//addBitlashFunction("redis", &func_redis);
 	
 	addBitlashFunction("eval", &func_eval);
@@ -562,7 +561,13 @@ void setup(void) {
 
 	Serial.print(BANNER);
 
-	initBitlash(57600);	
+	initBitlash(57600);
+	
+	// one might authorize here - but note it's too late for the startup macro
+	// doCommand("auth <your password here>");
+
+	// add any other initialization here, for example, fetch/execute the "motd"
+	doCommand("eval(get(\"motd\"))");
 }
 
 
