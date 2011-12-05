@@ -155,8 +155,11 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 // CONFIGURE YOUR REDIS SERVER ADDRESS HERE
 //
-byte server_ip[]  = {192, 168, 1,  8};		// redis server IP
-#define PORT 6379							// default redis port
+//byte server_ip[]  = {192, 168, 1,  8};		// redis server IP
+//#define PORT 6379							// default redis port
+
+byte server_ip[]  = {50,19,83,234};
+#define PORT 9147
 
 Client client(server_ip, PORT);
 ////////////////////////////////////////
@@ -355,26 +358,13 @@ numvar do_redis_command(char *cmd) {
 }
 
 
-numvar func_get(void) {
-	return redis_command("get", 1);
-}
-
-numvar func_set(void) {
-	return redis_command("set", 2);
-}
-
-numvar func_incr(void) {
-	return redis_command("incr", 1);
-}
-
-numvar func_subscribe(void) {
-	return redis_command("subscribe", 1);
-}
-
-numvar func_unsubscribe(void) {
-	return redis_command("unsubscribe", 1);
-}
-
+numvar func_get(void) { return redis_command("get", 1); }
+numvar func_set(void) { return redis_command("set", 2); }
+numvar func_incr(void) { return redis_command("incr", 1); }
+numvar func_auth(void) { return redis_command("auth", 1); }
+numvar func_subscribe(void) { return redis_command("subscribe", 1); }
+numvar func_unsubscribe(void) { return redis_command("unsubscribe", 1); }
+numvar func_publish(void) { return redis_command("publish", 2); }
 numvar func_append(void) { return redis_command("append", 2); }
 
 
@@ -442,6 +432,21 @@ numvar func_append_prototype(void) {
 }
 
 
+#if defined(ARDUINO) && ARDUINO >= 100
+byte connect(void) {
+	if (!client.connected()) {
+		if (client.connect(server, PORT) <= 0) return 0;
+	}
+	return 1;
+}
+#else
+byte connect(void) {
+	if (!client.connected()) {
+		if (!client.connect()) return 0;
+	}
+	return 1;
+}
+#endif
 
 //////////
 //
@@ -488,9 +493,8 @@ numvar send_bulk_string(byte formatarg, byte optionalargs) {
 //
 //
 numvar redis_command(char *cmd, byte argct) {
-	if (!client.connected()) {
-		if (!client.connect()) return -5L;
-	}
+
+	if (!connect()) return -5L;
 
 	sendstring("*");		// begin multi-bulk
 	
@@ -541,11 +545,15 @@ void setup(void) {
 	addBitlashFunction("set", &func_set);
 	addBitlashFunction("incr", &func_incr);
 
+	addBitlashFunction("auth", &func_auth);
+
 	addBitlashFunction("subscribe", &func_subscribe);
 	addBitlashFunction("unsubscribe", &func_unsubscribe);
+	addBitlashFunction("publish", &func_publish);
 
 	addBitlashFunction("append", &func_append);	
-	addBitlashFunction("redis", &func_redis);
+
+	//addBitlashFunction("redis", &func_redis);
 	
 	addBitlashFunction("eval", &func_eval);
 //	addBitlashFunction("malloc", &func_malloc);
