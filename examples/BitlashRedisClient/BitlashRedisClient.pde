@@ -155,13 +155,13 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 // CONFIGURE YOUR REDIS SERVER ADDRESS HERE
 //
-byte server_ip[]  = {192, 168, 1,  6};		// redis server IP
+byte server_ip[]  = {192, 168, 1,  8};		// redis server IP
 #define PORT 6379							// default redis port
 
 Client client(server_ip, PORT);
 ////////////////////////////////////////
 
-#define BANNER "Bitlash redis client here! v0.4\r\n"
+#define BANNER "Bitlash redis client here! v0.5\r\n"
 
 // Command line buffer for alternate command input stream
 byte ilen;
@@ -356,24 +356,27 @@ numvar do_redis_command(char *cmd) {
 
 
 numvar func_get(void) {
-	return do_redis_command("get");
+	return redis_command("get", 1);
 }
 
 numvar func_set(void) {
-	return do_redis_command("set");
+	return redis_command("set", 2);
 }
 
 numvar func_incr(void) {
-	return do_redis_command("incr");
+	return redis_command("incr", 1);
 }
 
 numvar func_subscribe(void) {
-	return do_redis_command("subscribe");
+	return redis_command("subscribe", 1);
 }
 
 numvar func_unsubscribe(void) {
-	return do_redis_command("unsubscribe");
+	return redis_command("unsubscribe", 1);
 }
+
+numvar func_append(void) { return redis_command("append", 2); }
+
 
 numvar func_redis(void) {
 	setOutputHandler(serialHandler);
@@ -484,9 +487,18 @@ numvar send_bulk_string(byte formatarg, byte optionalargs) {
 //
 //
 //
-numvar redis_command(char *cmd) {
+numvar redis_command(char *cmd, byte argct) {
+	if (!client.connected()) {
+		if (!client.connect()) return -5L;
+	}
 
-	sendstring("*3\r\n$");
+	sendstring("*");		// begin multi-bulk
+	
+	setOutputHandler(serialHandler);
+	extern void printInteger(numvar n, numvar width, byte pad);
+	printInteger((numvar) argct+1, 0, '0');		// +1 for the command
+	resetOutputHandler();
+	sendstring("\r\n$");
 	
 	setOutputHandler(serialHandler);
 	extern void printInteger(numvar n, numvar width, byte pad);
@@ -499,15 +511,14 @@ numvar redis_command(char *cmd) {
 
 	byte formatarg = 1;
 	
-	while (formatarg <= getarg(0)) {
+	while (argct--) {
 		formatarg = send_bulk_string(formatarg, formatarg+1);
 	}
 
 	sendstring("\r\n");
+	sendstring("\r\n");
 	return process_response();
 }
-
-numvar func_append(void) { return redis_command("append"); }
 
 
 
