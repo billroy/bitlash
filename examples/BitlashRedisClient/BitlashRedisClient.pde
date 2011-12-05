@@ -402,7 +402,7 @@ void stash_byte(byte b) {
 //
 // append(key, valueformatstring, v1,v2,...vN);
 //
-numvar func_append(void) {
+numvar func_append_prototype(void) {
 
 	sendstring("*3\r\n$6\r\nappend\r\n$");		// 3 parts, command length, command
 
@@ -437,6 +437,78 @@ numvar func_append(void) {
 
 	return process_response();
 }
+
+
+
+//////////
+//
+// send_bulk_string
+//
+//	Sends the string at arg(formatarg), using args starting at optionalargs for printf expansion.
+//
+//
+numvar send_bulk_string(byte formatarg, byte optionalargs) {
+
+	optr = outbuf;
+	setOutputHandler(stash_byte);
+	numvar func_printf_handler(byte,byte);
+	optionalargs = func_printf_handler(formatarg, optionalargs);	// print the data to our buffer
+	resetOutputHandler();
+	stash_byte(0);				// null-terminate
+	outbuf[OUTBUFLEN-1] = 0;	// truncate for safety
+
+	// send length of string: $<len>\r\n
+	sendstring("$");
+	setOutputHandler(serialHandler);
+	extern void printInteger(numvar n, numvar width, byte pad);
+	printInteger((numvar) strlen((const char *) outbuf), 0, '0');
+	resetOutputHandler();
+	sendstring("\r\n");
+
+	// send string payload: <string>\r\n
+	sendstring((char *) outbuf);
+	sendstring("\r\n");				// eol after data per spec
+
+	return optionalargs;
+}
+
+
+//////////
+//
+// redis_command(cmd)
+//
+//	expects:
+//		arg(1)		key, 
+//		arg(2)		valueformatstring, 
+//		arg(3..n)	optional arguments 
+//
+//
+//
+numvar redis_command(char *cmd) {
+
+	sendstring("*3\r\n$");
+	
+	setOutputHandler(serialHandler);
+	extern void printInteger(numvar n, numvar width, byte pad);
+	printInteger((numvar) strlen((const char *) cmd), 0, '0');
+	resetOutputHandler();
+	sendstring("\r\n");
+
+	sendstring(cmd);
+	sendstring("\r\n");
+
+	byte formatarg = 1;
+	
+	while (formatarg <= getarg(0)) {
+		formatarg = send_bulk_string(formatarg, formatarg+1);
+	}
+
+	sendstring("\r\n");
+	return process_response();
+}
+
+numvar func_append(void) { return redis_command("append"); }
+
 
 
 numvar func_eval(void) {
