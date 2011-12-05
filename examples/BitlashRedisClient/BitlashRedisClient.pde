@@ -516,7 +516,6 @@ numvar redis_command(char *cmd, byte argct) {
 	}
 
 	sendstring("\r\n");
-	sendstring("\r\n");
 	return process_response();
 }
 
