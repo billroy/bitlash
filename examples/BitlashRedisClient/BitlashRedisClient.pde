@@ -155,8 +155,17 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 // CONFIGURE YOUR REDIS SERVER ADDRESS HERE
 //
-byte server_ip[]  = {192, 168, 1,  8};		// redis server IP
+byte server_ip[]  = {192, 168, 1,  10};		// redis server IP
 #define PORT 6379							// default redis port
+
+// Define the auth password here if your server requires authentication
+//
+//#define AUTH_COMMAND "auth e16bd9a5c5c356dc9c79610f9380fb34"
+
+// Define a command to be performed at each login
+// This example fetches and executes the command stored at key "motd"
+//
+#define LOGIN_COMMAND "eval(get(\"motd\"))"
 
 Client client(server_ip, PORT);
 ////////////////////////////////////////
@@ -451,8 +460,9 @@ byte connect(void) {
 //
 //	Sends the string at arg(formatarg), using args starting at optionalargs for printf expansion.
 //
+//  If exec is nonzero, and greater than "optionalargs", the composited string is exec()d first.
 //
-numvar send_bulk_string(byte formatarg, byte optionalargs) {
+numvar send_bulk_string(byte formatarg, byte optionalargs, byte exec) {
 
 	optr = outbuf;
 	setOutputHandler(stash_byte);
@@ -461,6 +471,25 @@ numvar send_bulk_string(byte formatarg, byte optionalargs) {
 	resetOutputHandler();
 	stash_byte(0);				// null-terminate
 	outbuf[OUTBUFLEN-1] = 0;	// truncate for safety
+
+	// if the passed-in "exec" arg is true, replace outbuf with the console output
+	// produced when we exec it as a bitlash script
+	// 
+
+	Serial.println(exec,DEC);
+	Serial.println(optionalargs,DEC);
+	Serial.println(formatarg,DEC);
+	
+	// PROBLEM: output WILL exceed the buffer size
+	if (exec && (optionalargs >= exec)) {
+		strcpy((char *) ibuf, (char *) outbuf); 	// transfer the composed command to the input buffer
+		optr = outbuf;
+		setOutputHandler(stash_byte);
+		doCommand((char *) ibuf);
+		resetOutputHandler();
+		stash_byte(0);				// null-terminate
+		outbuf[OUTBUFLEN-1] = 0;	// truncate for safety
+	}
 
 	// send length of string: $<len>\r\n
 	sendstring("$");
@@ -489,7 +518,7 @@ numvar send_bulk_string(byte formatarg, byte optionalargs) {
 //
 //
 //
-numvar redis_command(char *cmd, byte argct) {
+numvar redis_command_dispatch(char *cmd, byte argct, byte eval) {
 
 	if (!connect()) return -5L;
 
@@ -513,13 +542,21 @@ numvar redis_command(char *cmd, byte argct) {
 	byte formatarg = 1;
 	
 	while (argct--) {
-		formatarg = send_bulk_string(formatarg, formatarg+1);
+		formatarg = send_bulk_string(formatarg, formatarg+1, eval);
 	}
 
 	sendstring("\r\n");
 	return process_response();
 }
 
+
+numvar redis_command(char *cmd, byte argct) {
+	return redis_command_dispatch(cmd, argct, 0);
+}
+
+numvar func_logoutput(void) {
+	return redis_command_dispatch("append", 2, getarg(0));	// eval the last arg!
+}
 
 
 numvar func_eval(void) {
@@ -548,7 +585,9 @@ void setup(void) {
 	addBitlashFunction("unsubscribe", &func_unsubscribe);
 	addBitlashFunction("publish", &func_publish);
 
-	addBitlashFunction("append", &func_append);	
+	addBitlashFunction("append", &func_append);
+	addBitlashFunction("logoutput", &func_logoutput);
+	
 
 	addBitlashFunction("verbose", &func_verbose);
 
@@ -564,10 +603,15 @@ void setup(void) {
 	initBitlash(57600);
 	
 	// one might authorize here - but note it's too late for the startup macro
-	// doCommand("auth <your password here>");
+#ifdef AUTH_COMMAND
+	doCommand(AUTH_COMMAND);
+#endif
 
 	// add any other initialization here, for example, fetch/execute the "motd"
-	doCommand("eval(get(\"motd\"))");
+#ifdef LOGIN_COMMAND
+	doCommand(LOGIN_COMMAND);
+#endif
+
 }
 
 
