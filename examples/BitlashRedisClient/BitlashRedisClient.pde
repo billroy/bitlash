@@ -69,18 +69,25 @@ To get started:
 			http://simonwillison.net/static/2010/redis-tutorial/
 			http://redis.io/commands
 
-	1. Setup and start a redis server, perhaps on your laptop; see http://redis.io/download
+	1. Setup and start a redis server:
 
-		wget http://redis.googlecode.com/files/redis-2.4.4.tar.gz
-		tar xzf redis-2.4.4.tar.gz
-		cd redis-2.4.4
-		make;make test; make install
-		redis-server
+		- perhaps a free nano server at RedisToGo: http://redistogo
+
+		- perhaps on your laptop; see http://redis.io/download
+
+			wget http://redis.googlecode.com/files/redis-2.4.4.tar.gz
+			tar xzf redis-2.4.4.tar.gz
+			cd redis-2.4.4
+			make;make test; make install
+			redis-server
 		
 	2. From a PC command shell, test the redis server by setting a "message of the day" command
 
 		$ redis-cli set motd '{print "Hello from the redis server."}'
 		$ redis-cli get motd
+
+		- for a remote redis server like RedisToGo, provide the host and port:
+		$ redis-cli -h 50.33.21.33 -p 9744 set motd '{print "Hello from the redis server."}'
 
 	3. Adjust the server IP address and port in the code below to point to your server
 
@@ -98,10 +105,12 @@ To get started:
 		or if you are brave, evaluate it as a command:
 			eval(get("motd"))
 
+		(The client does this automatically at startup; see LOGIN_COMMAND below.)
+
 	7. Define these Bitlash functions to run the "motd" from the redis server automatically:
 	
 		function do {eval(get(arg(1)))};
-		function startup {do("motd")};
+		function startup {do("motd")};		// LOGIN_COMMAND does this by default
 
 	8. Run an hourly command check on the key "commands:hourly":
 		function hourly {do("commands:hourly")}
