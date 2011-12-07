@@ -155,7 +155,7 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 // CONFIGURE YOUR REDIS SERVER ADDRESS HERE
 //
-byte server_ip[]  = {192, 168, 1,  10};		// redis server IP
+byte server_ip[]  = {192, 168, 1,  5};		// redis server IP
 #define PORT 6379							// default redis port
 
 // Define the auth password here if your server requires authentication
@@ -372,7 +372,8 @@ numvar func_subscribe(void) { return redis_command("subscribe", 1); }
 numvar func_unsubscribe(void) { return redis_command("unsubscribe", 1); }
 numvar func_publish(void) { return redis_command("publish", 2); }
 numvar func_append(void) { return redis_command("append", 2); }
-
+numvar func_lpush(void) { return redis_command("lpush", 2); }
+numvar func_rpop(void) { return redis_command("rpop", 1); }
 
 numvar func_redis(void) {
 	setOutputHandler(serialHandler);
@@ -396,46 +397,6 @@ void stash_byte(byte b) {
 	if (optr < &outbuf[OUTBUFLEN-1]) *optr++ = b;
 }
 
-
-//////////
-//
-// append(key, valueformatstring, v1,v2,...vN);
-//
-numvar func_append_prototype(void) {
-
-	sendstring("*3\r\n$6\r\nappend\r\n$");		// 3 parts, command length, command
-
-	// send length of key argument
-	extern void printInteger(numvar n, numvar width, byte pad);
-	setOutputHandler(serialHandler);
-	printInteger((numvar) strlen((const char *) getarg(1)), 0, '0');
-	resetOutputHandler();
-	sendstring("\r\n");
-
-	// send key argument
-	sendstring((char *) getarg(1));
-	sendstring("\r\n$");
-
-	optr = outbuf;
-	setOutputHandler(stash_byte);
-	numvar func_printf_handler(byte,byte);
-	func_printf_handler(2,3);				// print the data to our buffer
-	resetOutputHandler();
-	stash_byte(0);				// null-terminate
-	outbuf[OUTBUFLEN-1] = 0;	// truncate for safety
-
-	// send length of value argument
-	setOutputHandler(serialHandler);
-	printInteger((numvar) strlen((const char *) outbuf), 0, '0');
-	resetOutputHandler();
-	sendstring("\r\n");
-
-	// send value argument
-	sendstring((char *) outbuf);
-	sendstring("\r\n");				// final eol to kick off the command
-
-	return process_response();
-}
 
 
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -462,7 +423,7 @@ byte connect(void) {
 //
 //  If exec is nonzero, and greater than "optionalargs", the composited string is exec()d first.
 //
-numvar send_bulk_string(byte formatarg, byte optionalargs, byte exec) {
+numvar send_bulk_string(byte formatarg, byte optionalargs) {
 
 	optr = outbuf;
 	setOutputHandler(stash_byte);
@@ -471,26 +432,7 @@ numvar send_bulk_string(byte formatarg, byte optionalargs, byte exec) {
 	resetOutputHandler();
 	stash_byte(0);				// null-terminate
 	outbuf[OUTBUFLEN-1] = 0;	// truncate for safety
-
-	// if the passed-in "exec" arg is true, replace outbuf with the console output
-	// produced when we exec it as a bitlash script
-	// 
-
-	Serial.println(exec,DEC);
-	Serial.println(optionalargs,DEC);
-	Serial.println(formatarg,DEC);
 	
-	// PROBLEM: output WILL exceed the buffer size
-	if (exec && (optionalargs >= exec)) {
-		strcpy((char *) ibuf, (char *) outbuf); 	// transfer the composed command to the input buffer
-		optr = outbuf;
-		setOutputHandler(stash_byte);
-		doCommand((char *) ibuf);
-		resetOutputHandler();
-		stash_byte(0);				// null-terminate
-		outbuf[OUTBUFLEN-1] = 0;	// truncate for safety
-	}
-
 	// send length of string: $<len>\r\n
 	sendstring("$");
 	setOutputHandler(serialHandler);
@@ -518,7 +460,7 @@ numvar send_bulk_string(byte formatarg, byte optionalargs, byte exec) {
 //
 //
 //
-numvar redis_command_dispatch(char *cmd, byte argct, byte eval) {
+numvar redis_command(char *cmd, byte argct) {
 
 	if (!connect()) return -5L;
 
@@ -542,20 +484,11 @@ numvar redis_command_dispatch(char *cmd, byte argct, byte eval) {
 	byte formatarg = 1;
 	
 	while (argct--) {
-		formatarg = send_bulk_string(formatarg, formatarg+1, eval);
+		formatarg = send_bulk_string(formatarg, formatarg+1);
 	}
 
 	sendstring("\r\n");
 	return process_response();
-}
-
-
-numvar redis_command(char *cmd, byte argct) {
-	return redis_command_dispatch(cmd, argct, 0);
-}
-
-numvar func_logoutput(void) {
-	return redis_command_dispatch("append", 2, getarg(0));	// eval the last arg!
 }
 
 
@@ -575,28 +508,29 @@ void setup(void) {
 	// Arduino Ethernet library setup
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
 
+	addBitlashFunction("eval", &func_eval);
+
+//	addBitlashFunction("malloc", &func_malloc);
+//	addBitlashFunction("mfree", &func_mfree);
+//	addBitlashFunction("strcpy", &func_strcpy);
+
 	addBitlashFunction("get", &func_get);
 	addBitlashFunction("set", &func_set);
 	addBitlashFunction("incr", &func_incr);
+	addBitlashFunction("lpush", &func_lpush);
+	addBitlashFunction("rpop", &func_rpop);
+	addBitlashFunction("append", &func_append);
 
 	addBitlashFunction("auth", &func_auth);
 
 	addBitlashFunction("subscribe", &func_subscribe);
 	addBitlashFunction("unsubscribe", &func_unsubscribe);
 	addBitlashFunction("publish", &func_publish);
-
-	addBitlashFunction("append", &func_append);
-	addBitlashFunction("logoutput", &func_logoutput);
 	
-
 	addBitlashFunction("verbose", &func_verbose);
 
-	//addBitlashFunction("redis", &func_redis);
+	addBitlashFunction("redis", &func_redis);
 	
-	addBitlashFunction("eval", &func_eval);
-//	addBitlashFunction("malloc", &func_malloc);
-//	addBitlashFunction("mfree", &func_mfree);
-//	addBitlashFunction("strcpy", &func_strcpy);
 
 	Serial.print(BANNER);
 
