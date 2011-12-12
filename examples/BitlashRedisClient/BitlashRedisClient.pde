@@ -71,7 +71,7 @@ To get started:
 
 	1. Setup and start a redis server:
 
-		- perhaps a free nano server at RedisToGo: http://redistogo
+		- perhaps a free nano server at RedisToGo: http://redistogo.com
 
 		- perhaps on your laptop; see http://redis.io/download
 
@@ -87,7 +87,9 @@ To get started:
 		$ redis-cli get motd
 
 		- for a remote redis server like RedisToGo, provide the host and port:
-		$ redis-cli -h 50.33.21.33 -p 9744 set motd '{print "Hello from the redis server."}'
+		$ redis-cli -h 50.33.21.33 -p 9744
+		> auth 4578934758349758947593474
+		> set motd '{print "Hello from the redis server."}'
 
 	3. Adjust the server IP address and port in the code below to point to your server
 
@@ -164,12 +166,12 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 // CONFIGURE YOUR REDIS SERVER ADDRESS HERE
 //
-byte server_ip[]  = {192, 168, 1,  5};		// redis server IP
+byte server_ip[]  = {192, 168, 1,  7};		// redis server IP
 #define PORT 6379							// default redis port
 
 // Define the auth password here if your server requires authentication
 //
-//#define AUTH_COMMAND "auth e16bd9a5c5c356dc9c79610f9380fb34"
+//#define AUTH_COMMAND "auth(\"e16bd9a5c5c356dc9c79610f9380fb34\")"
 
 // Define a command to be performed at each login
 // This example fetches and executes the command stored at key "motd"

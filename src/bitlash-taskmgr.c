@@ -57,8 +57,11 @@ byte slot;
 	for (slot = 0; (slot < NUMTASKS); slot++) {
 		if (tasklist[slot] == SLOT_FREE) {
 			tasklist[slot] = macroid;
-			waketime[slot] = millis();		// eligible to run now
 			snoozetime[slot] = snoozems;
+
+			// eligible to run at the end of 1 tick
+			waketime[slot] = millis() + snoozems;
+//			waketime[slot] = millis();		// eligible to run now
 			return;
 		}
 	}

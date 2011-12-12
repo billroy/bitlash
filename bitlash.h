@@ -88,6 +88,7 @@ numvar getarg(numvar);
 typedef void (*serialOutputFunc)(byte);
 byte serialIsOverridden(void);
 void setOutputHandler(serialOutputFunc);
+void setOutput(byte pin);
 void resetOutputHandler(void);
 
 ///////////////////////
