@@ -143,24 +143,31 @@ unsigned long dt = now - getVar(v_epoch);
 	while (dt >= 1000) {		// tally the full seconds
 		dt -= 1000;
 		incVar(v_second);
-		if (getValue("onsecond") >= 0) doCommand("onsecond");
 		while (getVar(v_second) >= 60) {
 			assignVar(v_second, getVar(v_second) - 60);
 			incVar(v_minute);
-			if (getValue("onminute") >= 0) doCommand("onminute");
 			while (getVar(v_minute) >= 60) {
 				assignVar(v_minute, getVar(v_minute) - 60);
 				incVar(v_hour);
-				if (getValue("onhour") >= 0) doCommand("onhour");
 				while (getVar(v_hour) >= 24) {
 					incVar(v_day);
-					if (getValue("onday") >= 0) doCommand("onday");
 					assignVar(v_hour, getVar(v_hour) - 24);
 				}
 			}
 		}
 	}
 	assignVar(v_epoch, now - dt);	// put back remainder
+
+	if (getValue("onsecond") >= 0) doCommand("onsecond");		// fire the seconds event
+	if (!getVar(v_second)) {									// if seconds is zero,
+		if (getValue("onminute") >= 0) doCommand("onminute");	// fire the minute event
+		if (!getVar(v_minute)) {								// if minutes is zero
+			if (getValue("onhour") >= 0) doCommand("onhour");	// fire the hour event
+			if (!getVar(v_hour)) {								// if hour is zero
+				if (getValue("onday") >= 0) doCommand("onday");	// fire the day event
+			}
+		}
+	}
 }
 
 void setup(void) {
