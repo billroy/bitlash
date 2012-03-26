@@ -43,6 +43,8 @@
 //
 #if defined(RADIO_VIRTUALWIRE)
 #define RF_PACKET_SIZE VW_MAX_PAYLOAD		// 27 when this was written
+#elif defined(RADIO_RF12)
+#define RF_PACKET_SIZE RF12_MAXDATA			// 66 = RF12_MAXDATA
 #else
 #define RF_PACKET_SIZE 60
 #endif

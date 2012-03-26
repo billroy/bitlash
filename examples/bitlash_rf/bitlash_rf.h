@@ -24,9 +24,9 @@
 #define _BITLASH_RF_H
 
 #if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h"
+	#include "Arduino.h"
 #else
-#include "WProgram.h"
+	#include "WProgram.h"
 #endif
 
 
@@ -34,11 +34,17 @@
 //
 // Radio selection: enable ONE of these groups
 //
-#define RADIO_RFM22
+//#define RADIO_RFM22
+
+// NanodeRF with JeeLabs jeelib driver
+#define RADIO_RF12
+//#include "JeeLib.h"
+#include "Ports.h"
+#include "RF12.h"
 
 // VirtualWire
 //#define RADIO_VIRTUALWIRE
-//#include "VirtualWire.h"
+	//#include "VirtualWire.h"
 
 // Arduino detector
 //

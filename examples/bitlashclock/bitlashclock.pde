@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008, 2009 Bill Roy
+	Copyright (C) 2008-2012 Bill Roy
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -97,28 +97,6 @@
 		> onhour := "i=h; checknoon; while i--: beep 11,440,200; delay(1000)"
 	
 	Additional event types like onalarm and onleapsecond are left to the reader. ;)
-
-	LICENSE
-
-	Bitlash lives at: http://bitlash.net
-	The author can be reached at: bill@bitlash.net
-
-	Copyright (C) 2008 Bill Roy
-
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-
 *****/
 #include "bitlash.h"
 
@@ -129,6 +107,11 @@
 #define v_second ('s'-'a')
 #define v_day ('d'-'a')
 
+// fireEvent -- call an event macro, if it's defined
+//
+void fireEvent(eventname) {
+	if (getValue(eventname) >= 0) doCommand(eventname);
+}
 
 //	runClock -- update the clock variables
 //
@@ -158,13 +141,13 @@ unsigned long dt = now - getVar(v_epoch);
 	}
 	assignVar(v_epoch, now - dt);	// put back remainder
 
-	if (getValue("onsecond") >= 0) doCommand("onsecond");		// fire the seconds event
-	if (!getVar(v_second)) {									// if seconds is zero,
-		if (getValue("onminute") >= 0) doCommand("onminute");	// fire the minute event
-		if (!getVar(v_minute)) {								// if minutes is zero
-			if (getValue("onhour") >= 0) doCommand("onhour");	// fire the hour event
-			if (!getVar(v_hour)) {								// if hour is zero
-				if (getValue("onday") >= 0) doCommand("onday");	// fire the day event
+	fireEvent("onsecond");				// fire the seconds event
+	if (!getVar(v_second)) {			// if seconds is zero,
+		fireEvent("onminute");			// fire the minute event
+		if (!getVar(v_minute)) {		// if minutes is zero, too
+			fireEvent("onhour");		// fire the hour event
+			if (!getVar(v_hour)) {		// if hour is zero, too
+				fireEvent("onday");		// fire the day event
 			}
 		}
 	}

@@ -29,6 +29,12 @@
 //	#include "VirtualWire.h"	// don't remove the leading tab
 #endif
 
+#if defined(RADIO_RF12)
+	//#include "JeeLib.h"
+	#include "Ports.h"
+	#include "RF12.h"
+#endif
+
 //////////
 //
 //	tell command:
@@ -101,14 +107,15 @@ void initBitlashRF(void) {
 // call this frequently from loop() else receive no packets!
 //
 void runBitlashRF(void) {
-
+//spb('0');
 	if (!radio_go) {
+//spb('1');
 		init_radio();
 		if (!radio_go) return;
 	}
-
+//spb('2');
 	while (rx_pkt_ready()) {
-
+//spb('3');
 		// fetch the packet
 		byte payload_length = rx_fetch_pkt(&rx_buf);
 		if (payload_length <= RF_PACKET_HEADER_SIZE) {
