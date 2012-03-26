@@ -21,11 +21,25 @@
 //////////////////////////////////////////////////////////////////
 //
 
+// Dependencies
 //
-// Requires jeelib from: https://github.com/jcw/jeelib
+// Per this web article: http://ichilton.github.com/nanode/
+//
+// If you are using Arduino 0022 or 0023 you need these libraries:
+//		RF12 library: 		http://jeelabs.org/pub/snapshots/RF12.zip
+//		Ports library:		http://jeelabs.org/pub/snapshots/RF12.zip
+//
+// If you are using Arduino 1.0
+//		JeeLib library		https://github.com/jcw/jeelib
+//		You will need to adjust the includes in bitlash_rf.h and bitlash_rf.pde
 //
 
-#include "WProgram.h"
+#if defined(ARDUINO) && ARDUINO >= 100
+	#include "Arduino.h"
+#else
+	#include "WProgram.h"
+#endif
+
 #include "bitlash.h"
 #include "../../libraries/bitlash/src/bitlash.h"
 #include "bitlash_rf.h"
@@ -49,7 +63,6 @@ void init_radio(void) {
 
 	// init the radio driver with the parameters defined above
 	rf12_initialize(DEFAULT_NETID, DEFAULT_BAND, DEFAULT_NETGROUP);
-	//rf12_easyInit(0);		// 0 = best possible sending rate
 	radio_go = 1;			// mark the rf system "up"
 }
 
@@ -69,7 +82,6 @@ void rf_set_tx_address(char *to_address) {;}
 //	Return TRUE when the radio has a packet for us
 //
 byte rx_pkt_ready(void) {
-	//return (rf12_easyPoll() > 0);
 	return (rf12_recvDone() && (rf12_crc == 0));
 }
 
@@ -123,8 +135,6 @@ void tx_send_pkt(pkt_t *pkt, uint8_t length) {
 #if defined(RADIO_DEBUG)
 	log_packet('T', pkt, length);
 #endif
-
-	//rf12_easySend((void *)pkt, length);
 
 	while (!rf12_canSend()) rf12_recvDone();
 	rf12_sendStart(RF12_HDR_ACK, pkt, length);	// request ack

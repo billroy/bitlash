@@ -38,9 +38,15 @@
 
 // NanodeRF with JeeLabs jeelib driver
 #define RADIO_RF12
-//#include "JeeLib.h"
-#include "Ports.h"
-#include "RF12.h"
+
+#if defined(RADIO_RF12)
+#if defined(ARDUINO) && ARDUINO >= 100
+	//#include "JeeLib.h"
+#else
+	#include "Ports.h"
+	#include "RF12.h"
+#endif
+#endif
 
 // VirtualWire
 //#define RADIO_VIRTUALWIRE

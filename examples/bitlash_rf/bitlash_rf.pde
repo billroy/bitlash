@@ -2,7 +2,7 @@
 //
 //	bitlash_rf.pde:	Wireless Bitlash
 //
-//	Copyright (C) 2010-2011 by Bill Roy
+//	Copyright (C) 2010-2012 by Bill Roy
 //
 //	This library is free software; you can redistribute it and/or
 //	modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,12 @@
 //
 //////////////////////////////////////////////////////////////////
 //
-#include "WProgram.h"
+#if defined(ARDUINO) && ARDUINO >= 100
+	#include "Arduino.h"
+#else
+	#include "WProgram.h"
+#endif
+
 #include "bitlash.h"
 #include "../../libraries/bitlash/src/bitlash.h"
 #include "bitlash_rf.h"
@@ -30,9 +35,12 @@
 #endif
 
 #if defined(RADIO_RF12)
+#if defined(ARDUINO) && ARDUINO >= 100
 	//#include "JeeLib.h"
+#else
 	#include "Ports.h"
 	#include "RF12.h"
+#endif
 #endif
 
 //////////
