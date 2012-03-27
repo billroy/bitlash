@@ -2,7 +2,7 @@
 //
 //	servo.pde:	Bitlash Servo User Function Code
 //
-//	Copyright 2010-2011 by Bill Roy
+//	Copyright 2010-2012 by Bill Roy
 //
 //	Permission is hereby granted, free of charge, to any person
 //	obtaining a copy of this software and associated documentation
@@ -27,7 +27,11 @@
 //
 //////////////////////////////////////////////////////////////////
 //
-#include "WProgram.h"
+#if defined(ARDUINO) && ARDUINO >= 100
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
 #include "bitlash.h"
 
 #include "Servo.h"
