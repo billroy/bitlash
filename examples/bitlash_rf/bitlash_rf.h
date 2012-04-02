@@ -41,10 +41,10 @@
 
 #if defined(RADIO_RF12)
 #if defined(ARDUINO) && ARDUINO >= 100
-	//#include "JeeLib.h"
+	#include "JeeLib.h"
 #else
-	#include "Ports.h"
-	#include "RF12.h"
+	//#include "Ports.h"
+	//#include "RF12.h"
 #endif
 #endif
 

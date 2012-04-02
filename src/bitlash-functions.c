@@ -74,6 +74,7 @@ numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
 		digitalWrite(arg1, LOW);
 		delayMicroseconds(halfperiod-1);
 	}
+	return 0;
 }
 #endif
 
@@ -138,7 +139,7 @@ void dbseed(uint32_t x) {
 //		2
 //
 numvar func_inb(void) { reqargs(1); return *(volatile byte *) arg1; }
-numvar func_outb(void) { reqargs(2); *(volatile byte *) arg1 = (byte) arg2; }
+numvar func_outb(void) { reqargs(2); *(volatile byte *) arg1 = (byte) arg2; return 0;}
 numvar func_abs(void) { reqargs(1); return arg1 < 0 ? -arg1 : arg1; }
 numvar func_sign(void) {
 	reqargs(1);
