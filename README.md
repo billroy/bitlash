@@ -1,7 +1,19 @@
 # Bitlash Release Notes
 
-## 2.0 RC4 Release Notes
-September 29, 2011 -br
+
+## 2.0 RC5 Release Notes -- April 3, 2012
+
+- Stalking Arduino 1.0: more #include fixes and warnings cleanup
+	- The bitlashdemo example compiles and runs correctly in 1.0
+	- Seeking bug reports
+
+- The default for MAX_USER_FUNCTIONS is now 20 [bitlash-functions.c @ 268]
+
+- RF12 support for NanodeRF; see examples/bitlash_rf
+	- very early alpha code
+
+
+## 2.0 RC4 Release Notes -- September 29, 2011
 
 - Arduino 1.0 status
 	- The bitlashdemo.pde example compiles and runs properly on Arduino 1.0b4
