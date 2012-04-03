@@ -1,9 +1,7 @@
-Bitlash Release Notes
+# Bitlash Release Notes
+
+## 2.0 RC4 Release Notes
 September 29, 2011 -br
-
-----------
-
-2.0 RC4 Release Notes
 
 - Arduino 1.0 status
 	- The bitlashdemo.pde example compiles and runs properly on Arduino 1.0b4
@@ -46,32 +44,34 @@ September 29, 2011 -br
 
 
 
-2.0 RC3d Release Notes -- June 4, 2011
+## 2.0 RC3d Release Notes -- June 4, 2011
 
-Quick Start for SD Card Support:
-	- Download and install Bitlash 2.0 RC3d from http://bitlash.net
-	- Download and install SD Card library from http://beta-lib.googlecode.com/files/SdFatBeta20110604.zip
-	- Restart Arduino 0022, open examples->bitlash->bitlashsd and upload to your Arduino
+### Quick Start for SD Card Support:
 
-Quick Start without SD Card Support:
-	- Download and install Bitlash 2.0 RC3d from http://bitlash.net
-	- Edit libraries/bitlash/src/bitlash-instream.c to turn off the SDFILE define
-		at or near line 32, make this:
-			#define SDFILE
-		look like this:
-			//#define SDFILE
-	- If you are using a Mega2560, edit SdFat/../SdFatConfig.h @ line 85, make this change:
-		#define MEGA_SOFT_SPI 1
-	- Restart Arduino 0022, open examples->bitlash->bitlashdemo and upload to your Arduino
+- Download and install Bitlash 2.0 RC3d from http://bitlash.net
+- Download and install SD Card library from http://beta-lib.googlecode.com/files/SdFatBeta20110604.zip
+- Restart Arduino 0022, open examples->bitlash->bitlashsd and upload to your Arduino
 
-Summary for this version:
+### Quick Start without SD Card Support:
 
-	- Runs scripts from SDCard file systems
-	- Has a language worth running from a file
-	- String arguments!
-		printf("%d:%d:%d\n",h,m,s)
-	- Can write SDFILE from script, too:
-		fprintf("logfile.dat","%d:%d:%d\n",h,m,s)
+- Download and install Bitlash 2.0 RC3d from http://bitlash.net
+- Edit libraries/bitlash/src/bitlash-instream.c to turn off the SDFILE define
+	at or near line 32, make this:
+		#define SDFILE
+	look like this:
+		//#define SDFILE
+- If you are using a Mega2560, edit SdFat/SdFatConfig.h @ line 85, make this change:
+	\#define MEGA_SOFT_SPI 1
+- Restart Arduino 0022, open examples->bitlash->bitlashdemo and upload to your Arduino
+
+### Summary for this version:
+
+- Runs scripts from SDCard file systems
+- Has a language worth running from a file
+- String arguments!
+	printf("%d:%d:%d\n",h,m,s)
+- Can write SDFILE from script, too:
+	fprintf("logfile.dat","%d:%d:%d\n",h,m,s)
 
 - Tested on and requires Arduino 0022
 
@@ -89,7 +89,6 @@ Summary for this version:
 	- to disable SDFILE support:
 		- turn off the SDFAT define in bitlash-instream.c
 		- open and upload the bitlashdemo example
-
 
 - BUGFIX: 0xb broken by 0b1000!
 	print 0xbbbbbbbb
@@ -130,7 +129,7 @@ Summary for this version:
 	md("dirname")
 	fprintf("filename", "format string %s%d\n", "foo", millis);
 
-- scripts on sd card
+### Running Bitlash scripts from sd card
 
 	- put your multi-line script on an SD card and run it from the command line
 		- example: bitlashcode/memdump
@@ -161,14 +160,14 @@ Summary for this version:
 
 ----------
 
-2.0 RC2 -- 06 March 2011
+## 2.0 RC2 -- 06 March 2011
 
 This release fixes a bug in RC1 which broke function definition in some cases.
 
 Please report bugs to bill@bitlash.net
 
 
-1. BUG: Function definition was broken if the line contained ; or additionalcommands
+### BUG: Function definition was broken if the line contained ; or additionalcommands
 
 
 If the command defining the function was the last thing on a line, RC1 worked correctly:
@@ -191,7 +190,7 @@ Users are encouraged to upgrade to fix this bug.
 Existing functions may need to be fixed, as well.  Make sure the {} balance.
 
 
-2. Defining a function within a function fails.  That's ok, for now.
+### Defining a function within a function fails.  That's ok, for now.
 
 Noting a behavior that may change in a future release: an attempt to define a function
 from within a function will fail silently or worse.  Don't do that.
@@ -210,7 +209,7 @@ it was nearly impossible for a human to get the backslash-quote combinations rig
 to attempt the test.
 
 
-2.0 RC1 -- 05 Feb 2011
+## 2.0 RC1 -- 05 Feb 2011
 
 - Syntax overhaul: the Bitlash 2.0 language is considerably different,
 	and old macros will need to be updated to run in v2
@@ -243,24 +242,24 @@ to attempt the test.
 	- Bitlash web and telnet server
 
 - Small Beans
-	Input buffer is 140 characters, up from 80.  twitter is the new Hollerith
-	Binary constants of the form 0b01010101 are supported
+	- Input buffer is 140 characters, up from 80.  twitter is the new Hollerith
+	- Binary constants of the form 0b01010101 are supported
 
-1.1 -- 04 Feb 2010
+## 1.1 -- 04 Feb 2010
 - User Functions (addBitlashFunction)
 
-1.0 -- 17 Jan 2010
+## 1.0 -- 17 Jan 2010
 - Fixed filenames in the examples/ folder to remove '-'
 - Updated copyright date in signon banner
 - Doc set update: see http://bitlash.net
 
-1.0rc2 -- 22 Jun 2009
+## 1.0rc2 -- 22 Jun 2009
 - Fixed bug which botched handling of escaped characters in string constants.
 
-1.0rc1 -- 01 Jun 2009
+## 1.0rc1 -- 01 Jun 2009
 - See http://bitlash.net for updates
 
-0.9 -- 23 Nov 2008
+## 0.9 -- 23 Nov 2008
 
 - License updated to LGPL 2.1 
 - Added functions: 
@@ -273,9 +272,8 @@ to attempt the test.
 	- Compile for Sanguino Does The Right Thing re: serial ports
 	- (there are some serial port interrupt issues pending)
 
-0.8 -- 31 Oct 2008
+## 0.8 -- 31 Oct 2008
 
 - SOFTWARE_TX:
 	- baud(pin, baud)
 	- print #pin:expr
-...
