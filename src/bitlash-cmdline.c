@@ -100,11 +100,15 @@ void initlbuf(void) {
 
 // Add a character to the input line buffer; overflow if needed
 byte putlbuf(char c) {
-	if (lbufptr < lbuf + LBUFLEN - 1) {
+	if (lbufptr < lbuf + LBUFLEN - 2) {
 		*lbufptr++ = c;
+		spb(c);
 		return 1;
 	}
-	return 0;		// TODO: overflow(M_line); ?
+	else {
+		spb(7);			// beep
+		return 0;
+	}
 }
 
 void pointToError(void) {
@@ -129,8 +133,6 @@ void pointToError(void) {
 // 	may execute the command, etc.
 //
 void doCharacter(char c) {
-
-	if (lbufptr >= &lbuf[LBUFLEN-1]) overflow(M_line);
 
 	if ((c == '\r') || (c == '\n') || (c == '`')) {
 		speol();
@@ -165,10 +167,7 @@ void doCharacter(char c) {
 		sp(lbuf);
 		lbufptr = lbuf + strlen(lbuf);
 	}
-	else {
-		spb(c);
-		*lbufptr++ = c;
-	}
+	else putlbuf(c);
 }
 
 
