@@ -201,6 +201,7 @@ void eeputs(int addr) {
 	for (;;) {
 		byte c = eeread(addr++);
 		if (!c || (c == EMPTY)) return;
+#if 0
 		//else if (c == '"') { spb('\\'); spb('"'); }
 		else if (c == '\\') { spb('\\'); spb('\\'); }
 		else if (c == '\n') { spb('\\'); spb('n'); }
@@ -210,6 +211,7 @@ void eeputs(int addr) {
 			spb('\\'); spb('x'); 
 			if (c < 0x10) spb('0'); printHex(c);
 		}
+#endif
 		else spb(c);
 	}
 }
