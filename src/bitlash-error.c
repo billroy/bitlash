@@ -44,7 +44,7 @@ void fatal2(char msg1, char msg2) {
 #endif
 #endif
 
-	traceback();
+	//traceback();
 
 	// Here we punt back to the setjmp in doCommand (bitlash.c)
 	longjmp(env, X_EXIT);
