@@ -488,8 +488,8 @@ void dofunctioncall(byte);
 numvar func_free(void);
 void beep(unumvar, unumvar, unumvar);
 
-extern prog_char functiondict[] PROGMEM;
-extern prog_char aliasdict[] PROGMEM;
+extern const prog_char functiondict[] PROGMEM;
+extern const prog_char aliasdict[] PROGMEM;
 
 void stir(byte);
 
@@ -592,7 +592,7 @@ void traceback(void);
 
 numvar func_fprintf(void);
 
-prog_char *getmsg(byte);
+const prog_char *getmsg(byte);
 void parsestring(void (*)(char));
 void msgp(byte);
 void msgpl(byte);
@@ -604,7 +604,7 @@ byte is_end(void);
 numvar getarg(numvar);
 void releaseargblock(void);
 void parsearglist(void);
-extern prog_char reservedwords[];
+extern const prog_char reservedwords[];
 
 
 

@@ -37,12 +37,12 @@ char lbuf[LBUFLEN];
 // Help text
 //
 #ifdef ARDUINO_BUILD
-prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
+const prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
 #else
-prog_char helptext[] PROGMEM = { "http://bitlash.net\r\n\0" };
+const prog_char helptext[] PROGMEM = { "http://bitlash.net\r\n\0" };
 #endif
 
-void showdict(prog_char *addr) {
+void showdict(const prog_char *addr) {
 byte c;
 	for (;;) {
 		c = pgm_read_byte(addr++);

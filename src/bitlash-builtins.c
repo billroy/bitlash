@@ -54,7 +54,7 @@ like this, from the command line:
 // use this define to add to the builtin_table
 #define BUILT_IN(name, script) name "\0" script "\0"
 
-prog_char builtin_table[] PROGMEM = {
+const prog_char builtin_table[] PROGMEM = {
 
 	// The banner must be first.  Add new builtins below.
 	BUILT_IN("banner",	
@@ -76,7 +76,7 @@ prog_char builtin_table[] PROGMEM = {
 
 
 byte findbuiltin(char *name) {
-prog_char *wordlist = builtin_table;
+const prog_char *wordlist = builtin_table;
 
 	while (pgm_read_byte(wordlist)) {
 		int result = strcmp_P(name, wordlist);

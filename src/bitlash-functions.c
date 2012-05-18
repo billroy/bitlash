@@ -188,7 +188,7 @@ numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitc
 //	MAINTENANCE NOTE: 	This dictionary must be sorted in alpha order 
 //						and must be 1:1 with function_table below.
 //
-prog_char functiondict[] PROGMEM = {
+const prog_char functiondict[] PROGMEM = {
 	"abs\0"
 	"ar\0"
 	"aw\0"

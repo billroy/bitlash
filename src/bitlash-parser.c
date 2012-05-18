@@ -51,7 +51,7 @@ char idbuf[IDLEN+1];
 
 
 
-prog_char strings[] PROGMEM = { 
+const prog_char strings[] PROGMEM = { 
 #ifdef TINY85
 	"exp \0unexp \0mssng \0str\0 uflow \0oflow \0\0\0\0exp\0op\0\0eof\0var\0num\0)\0\0eep\0:=\"\0> \0line\0char\0stack\0startup\0id\0prompt\0\r\n\0\0\0"
 #else
@@ -60,8 +60,8 @@ prog_char strings[] PROGMEM = {
 };
 
 // get the address of the nth message in the table
-prog_char *getmsg(byte id) {
-	prog_char *msg = strings;
+const prog_char *getmsg(byte id) {
+	const prog_char *msg = strings;
 	while (id) { msg += strlen_P(msg) + 1; id--; }
 	return msg;
 }
@@ -70,7 +70,7 @@ prog_char *getmsg(byte id) {
 #if defined(HARDWARE_SERIAL_TX) || defined(SOFTWARE_SERIAL_TX)
 // print the nth string from the message table, e.g., msgp(M_missing);
 void msgp(byte id) {
-	prog_char *msg = getmsg(id);
+	const prog_char *msg = getmsg(id);
 	for (;;) {
 		char c = pgm_read_byte(msg++);
 		if (!c) break;
@@ -105,7 +105,7 @@ tokenhandler tokenhandlers[TOKENTYPES] = {
 //	The code corresponding to a character specifies which of the token handlers above will
 //	be called when the character is seen as the initial character in a symbol.
 #define np(a,b) ((a<<4)+b)
-prog_char chartypes[] PROGMEM = {    											//    0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
+const prog_char chartypes[] PROGMEM = {    											//    0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 	np(3,4), np(4,4),  np(4,4), np(4,4),  np(4,0), np(0,4),  np(4,0), np(4,4),	//0  NUL SOH STX ETX EOT ENQ ACK BEL BS  HT  LF  VT  FF  CR  SO  SI
 	np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),  np(4,4), np(4,4),	//1  DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM  SUB ESC FS  GS  RS  US
 	np(0,8), np(7,7),  np(4,7), np(8,5),  np(7,7), np(7,8),  np(7,8), np(7,8),	//2   SP  !   "   #   $   %   &   '   (   )   *   +   ,   -   .   slash
@@ -352,15 +352,15 @@ void releaseargblock(void) {
 //	MUST BE IN ALPHABETICAL ORDER!
 //
 #ifdef TINY85
-prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
-prog_uchar reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
+const prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
+const prog_uchar reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
 #else
-prog_char reservedwords[] PROGMEM = { "arg\0boot\0else\0function\0help\0if\0ls\0peep\0print\0ps\0return\0rm\0run\0stop\0switch\0while\0" };
-prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_else, s_function, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_stop, s_switch, s_while };
+const prog_char reservedwords[] PROGMEM = { "arg\0boot\0else\0function\0help\0if\0ls\0peep\0print\0ps\0return\0rm\0run\0stop\0switch\0while\0" };
+const prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_else, s_function, s_help, s_if, s_ls, s_peep, s_print, s_ps, s_return, s_rm, s_run, s_stop, s_switch, s_while };
 #endif
 
 // find id in PROGMEM wordlist.  result in symval, return true if found.
-byte findindex(char *id, prog_char *wordlist, byte sorted) {
+byte findindex(char *id, const prog_char *wordlist, byte sorted) {
 	symval = 0;
 	while (pgm_read_byte(wordlist)) {
 		int result = strcmp_P(id, wordlist);
@@ -405,15 +405,15 @@ byte pinnum(char id[]) {
 #define PV_ANALOG 0x80	// high bit flag to distinguish s_dpin from s_apin
 #define PV_MASK 0x7f
 
-prog_char pinnames[] PROGMEM = { 
+const prog_char pinnames[] PROGMEM = { 
 	"tx\0rx\0led\0vin\0"
 };
-prog_uchar pinvalues[] PROGMEM = { 
+const prog_uchar pinvalues[] PROGMEM = { 
 	0, 1, 13, (PV_ANALOG | 1)
 };
 
 byte findpinname(char *alias) {
-	if (!findindex(alias, (prog_char *) pinnames, 0)) return 0;		// sets symval
+	if (!findindex(alias, (const prog_char *) pinnames, 0)) return 0;		// sets symval
 	byte pin = pgm_read_byte(pinvalues + symval);
 	sym = (pin & PV_ANALOG) ? s_apin : s_dpin;
 	symval = pin & PV_MASK;
@@ -474,8 +474,8 @@ void chrconst(void) {
 }
 
 
-prog_char twochartokens[] PROGMEM = { "&&||==!=++--:=>=>><=<<//" };
-prog_uchar twocharsyms[] PROGMEM = {
+const prog_char twochartokens[] PROGMEM = { "&&||==!=++--:=>=>><=<<//" };
+const prog_uchar twocharsyms[] PROGMEM = {
 	s_logicaland, s_logicalor, s_logicaleq, s_logicalne, s_incr, 
 	s_decr, s_define, s_ge, s_shiftright, s_le, s_shiftleft, s_comment
 };
@@ -485,7 +485,7 @@ void parseop(void) {
 	sym = inchar;		// think horse not zebra
 	fetchc();			// inchar has second char of token or ??
 
-	prog_char *tk = twochartokens;
+	const prog_char *tk = twochartokens;
 	byte index = 0;
 	for (;;) {
 		byte c1 = pgm_read_byte(tk++);
@@ -572,14 +572,14 @@ void parseid(void) {
 	}
 
 	// reserved word?
-	else if (findindex(idbuf, (prog_char *) reservedwords, 1)) {
+	else if (findindex(idbuf, (const prog_char *) reservedwords, 1)) {
 		sym = pgm_read_byte(reservedwordtypes + symval);	// e.g., s_if or s_while
 	}
 
 	// function?
-	else if (findindex(idbuf, (prog_char *) functiondict, 1)) sym = s_nfunct;
+	else if (findindex(idbuf, (const prog_char *) functiondict, 1)) sym = s_nfunct;
 #ifdef LONG_ALIASES
-	else if (findindex(idbuf, (prog_char *) aliasdict, 0)) sym = s_nfunct;
+	else if (findindex(idbuf, (const prog_char *) aliasdict, 0)) sym = s_nfunct;
 #endif
 
 #ifdef PIN_ALIASES
