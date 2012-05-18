@@ -659,16 +659,15 @@ extern char idbuf[IDLEN+1];
 #define M_eeprom		17
 #define M_defmacro		18
 #define M_prompt		19
-#define M_line			20
-#define M_char			21
-#define M_stack			22
-#define M_startup		23
-#define M_id			24
-#define M_promptid		25
-#define M_functions		26
-#define M_oops			27
-#define M_arg			28
-#define M_function		29
+#define M_char			20
+#define M_stack			21
+#define M_startup		22
+#define M_id			23
+#define M_promptid		24
+#define M_functions		25
+#define M_oops			26
+#define M_arg			27
+#define M_function		28
 
 
 //	Names for symbols
