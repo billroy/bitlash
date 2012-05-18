@@ -226,7 +226,7 @@ const prog_char functiondict[] PROGMEM = {
 // this must be 1:1 with the symbols above, which in turn must be in alpha order
 //
 
-bitlash_function function_table[] PROGMEM = {
+const bitlash_function function_table[] PROGMEM = {
 	func_abs,
 	func_ar,
 	func_aw,
