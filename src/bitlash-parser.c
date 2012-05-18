@@ -402,20 +402,22 @@ byte pinnum(char id[]) {
 
 #ifdef PIN_ALIASES
 
-#define PV_ANALOG 0x80	// high bit flag to distinguish s_dpin from s_apin
-#define PV_MASK 0x7f
+#define PV_ANALOG 0x80	// bit flag for analog alias
+#define PV_VAR 0x40		// bit flag for variable alias
+#define PV_MASK 0x3f
 
 const prog_char pinnames[] PROGMEM = { 
-	"tx\0rx\0led\0vin\0"
+	"tx\0rx\0led\0vin\0zed\0"
 };
 const prog_uchar pinvalues[] PROGMEM = { 
-	0, 1, 13, (PV_ANALOG | 1)
+	0, 1, 13, (PV_ANALOG | 1), (PV_VAR | 25)
 };
 
 byte findpinname(char *alias) {
 	if (!findindex(alias, (const prog_char *) pinnames, 0)) return 0;		// sets symval
 	byte pin = pgm_read_byte(pinvalues + symval);
-	sym = (pin & PV_ANALOG) ? s_apin : s_dpin;
+	//sym = (pin & PV_ANALOG) ? s_apin : s_dpin;
+	sym = (pin & PV_ANALOG) ? s_apin : ((pin & PV_VAR) ? s_nvar : s_dpin);
 	symval = pin & PV_MASK;
 	return 1;
 }
