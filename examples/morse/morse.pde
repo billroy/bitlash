@@ -40,16 +40,15 @@ Both a positive-going steady-on and a tone output are supported.
 	- connect an LED/resistor to the steady-on output
 	- connect a piezo buzzer/resistor to the tone output
 
-The frequency of the sidetone is adjustable using the freq() function (default 800 Hz)
+The frequency of the tone is adjustable using the freq() function (default 800 Hz)
 
 The morse code transmission speed is adjustable using the wpm() function (default 15 wpm) 
 
 A push-to-talk signal is supported, with a configurable keyup delay (default 10ms)
 
-Morse output is blocking.  In this implementation, everything freezes 
+Morse output is blocking.  In this implementation, everything freezes in delay()
 while morse is being sent.  It is not ideal.  A little state machine and buffer 
 could take care of that.
-
 
 Example: Send callsign in CW every ten minutes
 
@@ -58,7 +57,7 @@ Example: Send callsign in CW every ten minutes
 	
 Example: Send temperature report in morse code every minute
 
-	function get_temp(...however you get the temperature...)
+	function get_temp {...however you get the temperature...}
 	function temp_report {printm("temp: %d %u", get_temp(), millis);}
 	run temp_report,60*1000
 
@@ -66,34 +65,33 @@ Project: Make a QRP beacon with an oscillator-in-a-can on the ham bands
 	- PTT provides/switches power
 	- signal using the steady-on output
 
+TODO: print prosigns BK SK AR correctly
+
 ****************/
 #include "bitlash.h"
-
-/***
-	TODO: print prosigns BK SK AR correctly
-***/
 
 
 // CONFIGURATION
 
 // Pin Assignments
-#define PIN_PTT		3	// any digital pin
-#define PIN_TX		4	// any digital pin
-#define PIN_TONE	5	// any PWM pin (for tone())
+#define PIN_PTT		3	// push to talk output: any digital pin
+#define PIN_TX		4	// continuous output: any digital pin
+#define PIN_TONE	5	// tone output: any PWM pin (for tone())
 
-#define DEFAULT_WPM 15	// morse speed in PARIS words per minute
-
-#define PTT_DELAY	10	// ms to delay after pulling PTT high
-
-// Tone handling
-#define DEFAULT_SIDETONE 800	// Hz
+#define DEFAULT_WPM 15			// morse speed in PARIS words per minute
+#define DEFAULT_SIDETONE 800	// tone frequency in Hz
+#define PTT_DELAY	10			// ms to delay before sending after pulling PTT high
 
 // END CONFIGURATION
 
 
 
-
 /////////////////////////////////
+//
+// MORSE OUTPUT
+//
+
+//////////
 // The Morsetab
 //
 // Each value in the table is bit-encoded as lllddddd, where:
@@ -165,15 +163,41 @@ void sendMorseChar(byte c) {
 
 void sendMorseString(char *str) {while (*str) sendMorseChar(*str++); }
 
+void initMorse(void) {
+	setwpm(DEFAULT_WPM);
+	sidetone_freq = DEFAULT_SIDETONE;
+}
 
 
 ///////////////////
 //
-// External API
+// Bitlash API
 //
-void initMorse(void) {
-	setwpm(DEFAULT_WPM);
-	sidetone_freq = DEFAULT_SIDETONE;
+
+
+//////////
+//
+// printm(): printf in morse code
+//
+numvar func_printm(void) {
+
+	// light up the push-to-talk pin
+	digitalWrite(PIN_PTT, HIGH);
+	if (PTT_DELAY) delay(PTT_DELAY);
+
+	// route Bitlash output to the morse generator
+	setOutputHandler(&sendMorseChar);
+
+	// do the print-to-morse
+	extern numvar func_printf_handler(byte, byte);
+	func_printf_handler(1,2);	// format=arg(1), optional args start at 2
+
+	// restore normal output
+	resetOutputHandler();
+
+	// drop PTT
+	digitalWrite(PIN_PTT, LOW);
+	return 0;
 }
 
 
@@ -203,44 +227,29 @@ numvar func_freq(void) {
 }
 
 
-//////////
-//
-// printm(): printf in morse code
-//
-numvar func_printm(void) {
-	setOutputHandler(&sendMorseChar);
-	digitalWrite(PIN_PTT, HIGH);
-	if (PTT_DELAY) delay(PTT_DELAY);
-	extern numvar func_printf_handler(byte, byte);
-	func_printf_handler(1,2);	// format=arg(1), optional args start at 2
-	resetOutputHandler();
-	digitalWrite(PIN_PTT, LOW);
-	return 0;
-}
-
-
 //////////////////////////
-// Test driver
+//
+// Example main program
 //
 void setup(void) {
 
 	// init output pins
-	pinMode(PIN_PTT, OUTPUT); digitalWrite(PIN_PTT, HIGH);
+	pinMode(PIN_PTT, OUTPUT); digitalWrite(PIN_PTT, LOW);
 	pinMode(PIN_TX, OUTPUT); digitalWrite(PIN_TX, LOW);
 	pinMode(PIN_TONE, OUTPUT); digitalWrite(PIN_TONE, LOW);
 
 	// init morse subsystem
 	initMorse();
 
-	// init bitlash last so it can send morse from the startup function
-	initBitlash(57600);
+	// register our function extensions
 	addBitlashFunction("printm", (bitlash_function) func_printm);
 	addBitlashFunction("wpm", (bitlash_function) func_wpm);
 	addBitlashFunction("freq", (bitlash_function) func_freq);
+
+	// init bitlash last so it can send morse from the startup function
+	initBitlash(57600);
 }
 
 void loop(void) {
 	runBitlash();
 }
-
-
