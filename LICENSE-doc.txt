@@ -1,0 +1,3 @@
+Bitlash documentation is Copyright 2012 by Bill Roy and licensed under the Creative Commons Attribution 3.0 Unported License.
+
+See http://creativecommons.org/licenses/by/3.0/deed.en_US
