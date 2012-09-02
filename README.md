@@ -1,5 +1,11 @@
 # Bitlash Release Notes
 
+## September 2, 2012
+
+- Bitlash is now licensed under the MIT license
+- Released new wiki and landing page on Github
+- New morse and morse2 examples: printf() to morse, blocking and non-blocking
+
 
 ## 2.0 RC5 Release Notes -- April 3, 2012
 

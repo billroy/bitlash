@@ -1,6 +1,6 @@
 /***
 	morse.pde:  Morse code input/output codec for Bitlash
-				Non-blocking outpyut
+				Non-blocking output
 
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.
