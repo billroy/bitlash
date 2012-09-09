@@ -4,8 +4,6 @@
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
 	for bit banging and hardware hacking.
 
-	This is the Bitlash2 library for Arduino 0014.
-
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
@@ -116,7 +114,7 @@
 
 // fireEvent -- call an event macro, if it's defined
 //
-void fireEvent(eventname) {
+void fireEvent(char *eventname) {
 	if (getValue(eventname) >= 0) doCommand(eventname);
 }
 

@@ -1,5 +1,5 @@
 /***
-	morse.pde:  Morse code input/output codec for Bitlash
+	morse2.pde:  Morse code input/output codec for Bitlash
 				Non-blocking output
 
 	Bitlash is a tiny language interpreter that provides a serial port shell environment
@@ -309,6 +309,8 @@ numvar func_printm(void) {
 
 	// restore normal output
 	resetOutputHandler();
+	
+	return 0;	// keep the compiler happy
 }
 
 

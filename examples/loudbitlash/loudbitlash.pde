@@ -36,12 +36,25 @@
 byte makeLoud = 0;
 
 void printUpper(byte b) {
-	if (makeLoud && (b >= 'a') && (b <= 'z')) Serial.print(b - 'a' + 'A', BYTE);
-	else Serial.print(b, BYTE);
+	if (makeLoud && (b >= 'a') && (b <= 'z')) {
+#if defined(ARDUINO) && ARDUINO >= 100
+		Serial.write(b - 'a' + 'A');
+#else
+		Serial.print(b - 'a' + 'A', BYTE);
+#endif
+	}
+	else {
+#if defined(ARDUINO) && ARDUINO >= 100
+		Serial.write(b);
+#else
+		Serial.print(b, BYTE);
+#endif
+	}
 }
 
 numvar setLoudness(void) {
 	makeLoud = getarg(1);
+	return 0;
 }
 
 
