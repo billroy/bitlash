@@ -87,8 +87,6 @@ Special pages _index and _error
 
 Telnet access
 
-(Not available on Nanode.)
-
 The password-protected telnet console operating on the same IP/port as the web server
 provides full access to Bitlash, so you can log in with telnet or nc and do bitlash stuff,
 including of course defining a new _function to expose a new web page.
@@ -116,40 +114,22 @@ using old-school telnet.  If you're using nc, ^C will quit.
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
 	#define serialPrintByte(b) Serial.write(b)
-	#define Client EthernetClient
-	#define Server EthernetServer
+	#include <Ethernet.h>
+	#include <EthernetClient.h>
+	#include <EthernetServer.h>
+	#include <util.h>
 #else
 	#include "WProgram.h"
 	#define serialPrintByte(b) Serial.print(b,BYTE)
+	#include <Ethernet.h>
 #endif
 #include "bitlash.h"
-
-// Turn on the NANODE define to build for the Nanode enc28j60 ethernet interface
-//
-// Requires EtherShield library from https://github.com/thiseldo/EtherShield.git
-//
-//#define NANODE
-
-#ifdef NANODE
-#include <EtherShield.h>		// from https://github.com/thiseldo/EtherShield
-#include <NanodeMAC.h>			// from https://github.com/thiseldo/NanodeMAC
-EtherShield es=EtherShield();
-#define TCP_OVERHEAD (TCP_CHECKSUM_L_P+3)
-#define PACKET_BUFFER_LENGTH 400		// dhcp.c::dhcp_send() blindly thumps 400 bytes of buf :(
-uint16_t pktlen;
-byte pktbuf[PACKET_BUFFER_LENGTH + TCP_OVERHEAD];
-#define PORT 80					// EtherShield library web server apparently requires PORT to be 80
-#else
 #include <SPI.h>
-#include <Ethernet.h>
-#endif
-
 
 // Command line buffer for alternate command input stream
 byte ilen;
 #define INPUT_BUFFER_LENGTH 80
 byte ibuf[INPUT_BUFFER_LENGTH];
-
 
 
 ////////////////////////////////////////
@@ -158,11 +138,15 @@ byte ibuf[INPUT_BUFFER_LENGTH];
 //	Adjust for local conditions
 //
 byte mac_addr[] = {'b','i','t','l','s','h'};
-byte ip[]  		= {192, 168, 1, 27};
-byte gateway[] 	= {192, 168, 1, 1};
+
+//#if defined(ARDUINO) && ARDUINO >= 100
+//IPAddress ip(192, 168, 0, 27);
+//#else
+byte ip[]  		= {192, 168, 0, 27};
+//#endif
+
+byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
-byte dhcpip[]	= {192, 168, 1, 1};
-byte dns_ip[] 	= {192, 168, 1, 1};
 
 #ifndef PORT
 #define PORT 8080		// Arduino Ethernet library supports values other than 80 for PORT
@@ -291,38 +275,23 @@ extern void prompt(void);
 byte unlocked;
 byte badpasswordcount;
 
-#ifdef NANODE
-void flushoutput(void) {
-	if (pktlen) {
-		es.ES_www_server_reply(pktbuf, pktlen); // send web page data
-		pktlen = 0;
-	}
-}
+#if defined(ARDUINO) && ARDUINO >= 100
+EthernetServer server = EthernetServer(PORT);
+EthernetClient client;
 #else
 Server server = Server(PORT);
 Client client(MAX_SOCK_NUM);		// declare an inactive client
 #endif
 
+
 numvar func_logout(void) {
-#ifdef NANODE
-	flushoutput();
-#else
 	client.stop();
-#endif
 	unlocked = 0;
 }
 
 void serialHandler(byte b) {
 	serialPrintByte(b);
-
-#ifdef NANODE
-	// LIMIT CHECK: test this for correct behavior at overflow
-	if (pktlen >= PACKET_BUFFER_LENGTH) flushoutput();
-	pktlen = es.ES_fill_tcp_data_len(pktbuf, pktlen, (const char *) &b, 1);
-	
-#else
 	if (client && client.connected()) client.print((char) b);
-#endif
 }
 
 void sendstring(char *ptr) {
@@ -392,15 +361,6 @@ void handleInputLine(byte *line) {
 		servePage(pagename);
 	}
 
-
-#ifdef NANODE
-	// Unfortunately, the Telnet feature is not available on Nanode.
-	// 
-	// The Ethershield IP stack is currently (Sept 2011) only able to produce single-packet responses
-	// This breaks the Telnet functionality, which depends on a persistent connection across
-	// several request-response pairs.
-	//
-#else
 	else if (isUnsupportedHTTP(line)) func_logout();
 
 	// not a web command: if we're locked, check for the passphrase
@@ -416,7 +376,6 @@ void handleInputLine(byte *line) {
 			sendstring("Password: ");
 		}
 	}
-#endif
 	
 	// unlocked, it's apparently a telnet command, execute it
 	else {
@@ -430,54 +389,15 @@ void setup(void) {
 
 	initBitlash(57600);
 
-#ifdef NANODE
-	NanodeMAC mac(mac_addr);				// Fetch mac address from ID chip
-	es.ES_enc28j60SpiInit();				// Initialise SPI interface
-	es.ES_enc28j60Init(mac_addr, 8);		// initialize enc28j60 for NANODE pin 8 CS
-
-//#define USE_DHCP
-#ifdef USE_DHCP
-	while (!es.allocateIPAddress(pktbuf, PACKET_BUFFER_LENGTH, 
-								mac_addr, PORT, ip, subnet, gateway, dhcpip, dns_ip ) > 0 ) {
-
-		sendstring("NO IP\r\n");	 // Can't get IP address
-	}
-#else
-	es.ES_client_set_gwip(gateway);					// set the gateway
-#endif
-	es.ES_init_ip_arp_udp_tcp(mac_addr, ip, PORT);	// init the ethernet/ip layer
-
-#else
 	// Arduino Ethernet library setup
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
 	server.begin();
-#endif
 
 	addBitlashFunction("logout", &func_logout);
 	setOutputHandler(&serialHandler);
 }
 
 void loop(void) {
-	
-#ifdef NANODE
-    // read packet into pktbuf, handle ping and wait for a tcp packet
-    // (we also use pktbuf for output during the interpreter phase)
-    ilen = es.ES_packetloop_icmp_tcp(pktbuf, es.ES_enc28j60PacketReceive(PACKET_BUFFER_LENGTH, pktbuf));
-	if (ilen) {
-		// data is at pktbuf[ilen], newline terminated
-		// copy it to ibuf for the interpreter
-		byte *iptr = pktbuf + ilen;
-		byte *optr = ibuf;			// we use ibuf for our input line buffer
-		while ((*iptr != '\r') && (*iptr != '\n')) *optr++ = *iptr++;
-		*optr = '\0';
-
-		handleInputLine(ibuf);
-		flushoutput();
-	}
-	runBitlash();
-	flushoutput();
-
-#else
 	client = server.available();
 	if (client) {
 		unlocked = 0;
@@ -499,5 +419,4 @@ void loop(void) {
 		}
 	}
 	runBitlash();
-#endif
 }

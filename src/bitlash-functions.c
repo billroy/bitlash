@@ -276,7 +276,7 @@ const bitlash_function function_table[] PROGMEM = {
 #define USER_FUNCTION_FLAG 0x80
 
 typedef struct {
-	char *name;					// pointer to the name
+	const char *name;					// pointer to the name
 	bitlash_function func_ptr;	// pointer to the implementing function
 } user_functab_entry;
 
@@ -311,7 +311,7 @@ user_functab_entry user_functions[MAX_USER_FUNCTIONS];		// the table
 //		> print foo(22,33)
 //		148
 //
-void addBitlashFunction(char *name, bitlash_function func_ptr) {
+void addBitlashFunction(const char *name, bitlash_function func_ptr) {
 	if (bf_install_count >= MAX_USER_FUNCTIONS) overflow(M_functions);
 	user_functions[bf_install_count].name = name;
 	user_functions[bf_install_count].func_ptr = func_ptr;	

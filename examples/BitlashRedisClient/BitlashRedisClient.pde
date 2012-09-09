@@ -139,15 +139,16 @@ To get started:
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
 	#define serialPrintByte(b) Serial.write(b)
-	#define Client EthernetClient
-	#define Server EthernetServer
+	#include <Ethernet.h>
+	#include <EthernetClient.h>
+	#include <util.h>
 #else
 	#include "WProgram.h"
 	#define serialPrintByte(b) Serial.print(b,BYTE)
+	#include <Ethernet.h>
 #endif
 #include "bitlash.h"
 #include <SPI.h>
-#include <Ethernet.h>
 
 ////////////////////////////////////////
 //
@@ -155,8 +156,8 @@ To get started:
 //	Adjust for local conditions
 //
 byte mac_addr[] = {'b','i','t','l','s','h'};
-byte ip[]  		= {192, 168, 1, 27};
-byte gateway[] 	= {192, 168, 1, 1};
+byte ip[]  		= {192, 168, 0, 27};
+byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
 
 
@@ -164,8 +165,12 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 // CONFIGURE YOUR REDIS SERVER ADDRESS HERE
 //
-byte server_ip[]  = {192, 168, 1,  7};		// redis server IP
 #define PORT 6379							// default redis port
+#if defined(ARDUINO) && ARDUINO >= 100
+IPAddress server_ip(192, 168, 0, 3);		// redis server IP
+#else
+byte server_ip[]  = {192, 168, 0,  3};		// redis server IP
+#endif
 
 // Define the auth password here if your server requires authentication
 //
@@ -176,10 +181,15 @@ byte server_ip[]  = {192, 168, 1,  7};		// redis server IP
 //
 #define LOGIN_COMMAND "eval(get(\"motd\"))"
 
+#if defined(ARDUINO) && ARDUINO >= 100
+EthernetClient client;
+#else
 Client client(server_ip, PORT);
+#endif
+
 ////////////////////////////////////////
 
-#define BANNER "Bitlash redis client here! v0.6\r\n"
+#define BANNER "Bitlash redis client here! v0.7\r\n"
 
 // Command line buffer for alternate command input stream
 byte ilen;
@@ -192,7 +202,7 @@ void serialHandler(byte);
 
 // control of verbose debugging output
 byte verbosity;
-numvar func_verbose(void) { verbosity = getarg(1); }
+numvar func_verbose(void) { verbosity = getarg(1); return 0; }
 
 /////////////////////////////////////////////
 
@@ -201,7 +211,7 @@ void serialHandler(byte b) {
 	if (client && client.connected()) client.print((char) b);
 }
 
-void sendstring(char *ptr) {
+void sendstring(const char *ptr) {
 	while (*ptr) serialHandler(*ptr++);
 }
 
@@ -357,9 +367,9 @@ void runServerResponseHandler(void) {
 
 
 numvar do_redis_command(char *cmd) {
-	if (!client.connected()) {
-		if (!client.connect()) return -5L;
-	}
+
+	if (connect()) return -6L;
+
 	sendstring(cmd);
 	
 	int nargs = getarg(0);
@@ -411,7 +421,7 @@ void stash_byte(byte b) {
 #if defined(ARDUINO) && ARDUINO >= 100
 byte connect(void) {
 	if (!client.connected()) {
-		if (client.connect(server, PORT) <= 0) return 0;
+		if (client.connect(server_ip, PORT) <= 0) return 0;
 	}
 	return 1;
 }
@@ -469,7 +479,7 @@ numvar send_bulk_string(byte formatarg, byte optionalargs) {
 //
 //
 //
-numvar redis_command(char *cmd, byte argct) {
+numvar redis_command(const char *cmd, byte argct) {
 
 	if (!connect()) return -5L;
 
