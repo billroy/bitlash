@@ -39,10 +39,10 @@
 //
 // Radio selection: enable ONE of these groups
 //
-//#define RADIO_RFM22
+#define RADIO_RFM22
 
 // NanodeRF with JeeLabs jeelib driver
-#define RADIO_RF12
+//#define RADIO_RF12
 
 #if defined(RADIO_RF12)
 #if defined(ARDUINO) && ARDUINO >= 100

@@ -123,7 +123,7 @@ void lpb(byte b) {
 		Serial.print('\\');
 		Serial.print('\\');
 	}
-	else if ((b >= ' ') && (b <= 0x7f)) Serial.print(b);
+	else if ((b >= ' ') && (b <= 0x7f)) Serial.print(b, DEC);
 	else {
 		Serial.print('\\');
 		if (b == 0xd) Serial.print('r');
