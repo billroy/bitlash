@@ -46,8 +46,8 @@
 //	Adjust for local conditions
 //
 byte mac[] 		= {'b','i','t','l','s','h'};
-byte ip[]  		= {192, 168, 1, 27};
-byte gateway[] 	= {192, 168, 1, 1};
+byte ip[]  		= {192, 168, 0, 27};
+byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
 #define PORT 8080
 //
@@ -84,7 +84,7 @@ void loop(void) {
 		while (client.connected()) {
 			if (client.available()) {
 				char c = (char) client.read();
-				if (c != '\n') doCharacter(c);	// prevent double prompts
+				doCharacter(c);	// prevent double prompts
 			}
 			else runBitlash();
 		}
