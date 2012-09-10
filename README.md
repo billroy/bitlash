@@ -15,6 +15,9 @@
 
 - New morse and morse2 examples: printf() to morse, blocking and non-blocking
 
+- Check out the Textwhacker project at https://github.com/billroy/textwhacker
+	for scrolling text output from Bitlash on a SparkFun LED matrix
+
 
 ## 2.0 RC5 Release Notes -- April 3, 2012
 
