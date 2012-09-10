@@ -24,7 +24,7 @@
 	WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
-
+***/
 //
 // Requires VirtualWire 1.5 library from: 
 //	http://www.open.com.au/mikem/arduino/VirtualWire-1.5.zip

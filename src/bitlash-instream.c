@@ -35,9 +35,6 @@
 ***/
 #include "bitlash.h"
 
-// Enable this for script-in-file support
-//#define SDFILE
-
 #if defined(SDFILE)
 
 #define O_READ 0x01		// from SdFile.h

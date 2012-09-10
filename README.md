@@ -1,9 +1,18 @@
 # Bitlash Release Notes
 
-## September 2, 2012
+## September 10, 2012
+
+- Let's call it "2.0"
+
+- The Bitlash User's Guide is available as a pdf book at:
+	http://bitlash.net/bitlash-users-guide.pdf
+
+- Examples are updated for Arduino 1.0.1
 
 - Bitlash is now licensed under the MIT license
+
 - Released new wiki and landing page on Github
+
 - New morse and morse2 examples: printf() to morse, blocking and non-blocking
 
 
@@ -79,7 +88,7 @@
 	look like this:
 		//#define SDFILE
 - If you are using a Mega2560, edit SdFat/SdFatConfig.h @ line 85, make this change:
-	\#define MEGA_SOFT_SPI 1
+	#define MEGA_SOFT_SPI 1
 - Restart Arduino 0022, open examples->bitlash->bitlashdemo and upload to your Arduino
 
 ### Summary for this version:

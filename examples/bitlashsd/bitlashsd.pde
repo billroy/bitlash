@@ -31,6 +31,68 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
+/***
+
+### Documentation for SD Card Support:
+
+- Download and install the SDFat SD Card library to your libraries directory
+	- tested with http://beta-lib.googlecode.com/files/SdFatBeta20120825.zip
+	- on Arduino 1.0.1
+
+- Edit bitlash/src/bitlash.h to turn on the SDFILE define: at or near line 340, make this:
+		#define SDFILE
+look like this:
+		//#define SDFILE
+
+- If you are using a Mega2560, edit SdFat/SdFatConfig.h @ line 85, make this change:
+	#define MEGA_SOFT_SPI 1
+
+- Restart Arduino, open examples->bitlash->bitlashsd and upload to your Arduino
+
+- Connect with a serial monitor and play
+
+
+### Commands supported in the bitlashsd sd card demo
+
+	dir
+	exists("filename") 
+	del("filename") 
+	create("filename", "first line\nsecondline\n")
+	append("filename", "another line\n")
+	type("filename") 
+	cd("dirname")
+	md("dirname")
+	fprintf("filename", "format string %s%d\n", "foo", millis);
+
+### Running Bitlash scripts from sd card
+
+- put your multi-line function script on an SD card and run it from the command line
+	- example: bitlashcode/memdump
+	- example: bitlashcode/vars
+
+- //comments work (comment to end of line)
+
+- functions are looked up in this priority / order:
+	- internal function table
+	- user C function table (addBitlashFunction(...))
+	- Bitlash functions in EEPROM
+	- Bitlash functions in files on SD card
+
+- beware name conflicts: a script on SD card can't override a function in EEPROM
+
+- BUG: the run command only works with EEPROM functions
+	- it does not work with file functions
+	- for now, to use run with a file function, use this workaround:
+		- make a small EEPROM function to call your file function
+		- run the the EEPROM function
+
+- startup and prompt functions on sd card are honored, if they exist
+
+- you can upload files using bitlashcode/bloader.py
+	- python bloader.py memdump md
+		... uploads memdump as "md"
+
+***/
 
 #if defined(ARDUINO) && ARDUINO >= 100
   #include "Arduino.h"

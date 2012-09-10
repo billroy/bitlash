@@ -1,0 +1,11 @@
+// fun with LED bargraph at pins 31ff on MEGA
+//
+function setled {pinmode(31+arg(1)*2,1);dw(31+arg(1)*2,arg(2))};
+function getled { return dr(31+2*arg(1)) };
+function fliprun {setled(i,!getled(i));if ++i>9 i=0};
+function setall {i=0; while i<10 setled(i++,arg(1));};
+function setrnd {setled(random(10), random(2));};
+function frack {print f++, free; frack;};
+function clk {seteach(millis/1000);};
+function seteach {i=0;while i<10 {setled(i, (arg(1)&(1<<i))!=0); i++;};
+function frack2 {print f++,free;frack2("foobar");};

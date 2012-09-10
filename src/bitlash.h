@@ -335,6 +335,13 @@ void beginSerial(unsigned long baud) { ; }
 
 ///////////////////////////////////////////////////////
 //
+// SD CARD SUPPORT: Enable the SDFILE define for SD card script-in-file support
+//
+//#define SDFILE
+
+
+///////////////////////////////////////////////////////
+//
 //	Unix build options
 //	(not working)
 //

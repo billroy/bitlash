@@ -73,9 +73,9 @@ To get started:
 
 		- perhaps on your laptop; see http://redis.io/download
 
-			wget http://redis.googlecode.com/files/redis-2.4.4.tar.gz
-			tar xzf redis-2.4.4.tar.gz
-			cd redis-2.4.4
+			wget http://redis.googlecode.com/files/redis-2.4.17.tar.gz
+			tar xzf redis-2.4.17.tar.gz
+			cd redis-2.4.17
 			make;make test; make install
 			redis-server
 		
