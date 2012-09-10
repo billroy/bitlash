@@ -25,9 +25,20 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include <SPI.h>
-#include <Ethernet.h>
+#if defined(ARDUINO) && ARDUINO >= 100
+	#include "Arduino.h"
+	#define serialPrintByte(b) Serial.write(b)
+	#include <Ethernet.h>
+	#include <EthernetClient.h>
+	#include <EthernetServer.h>
+	#include <util.h>
+#else
+	#include "WProgram.h"
+	#define serialPrintByte(b) Serial.print(b,BYTE)
+	#include <Ethernet.h>
+#endif
 #include "bitlash.h"
+#include <SPI.h>
 
 ////////////////////////////////////////
 //
@@ -42,11 +53,16 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 ////////////////////////////////////////
 
+#if defined(ARDUINO) && ARDUINO >= 100
+EthernetServer server = EthernetServer(PORT);
+EthernetClient client;
+#else
 Server server = Server(PORT);
 Client client(MAX_SOCK_NUM);		// declare an inactive client
+#endif
 
 void serialHandler(byte b) {
-	Serial.print(b, BYTE);
+	serialPrintByte(b);
 	if (client && client.connected()) client.print((char) b);
 }
 

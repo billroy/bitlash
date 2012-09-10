@@ -138,13 +138,7 @@ byte ibuf[INPUT_BUFFER_LENGTH];
 //	Adjust for local conditions
 //
 byte mac_addr[] = {'b','i','t','l','s','h'};
-
-//#if defined(ARDUINO) && ARDUINO >= 100
-//IPAddress ip(192, 168, 0, 27);
-//#else
 byte ip[]  		= {192, 168, 0, 27};
-//#endif
-
 byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
 
