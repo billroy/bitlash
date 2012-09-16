@@ -31,25 +31,77 @@
 /*
 issues
 
+doesn't receive console input
+
 auto detect gcc for build, set unix_build flag
+
+sizeof(numvar) is 8!
+
 serialAvailable
 serialRead
 serialWrite
-millis and delay
-eeprom functions
-	virtual, from a disk file
-pgm_read_byte and pgm_read_word
-- needs parser context mods
-
-setbaud
-EEMEM
 */
+
+#if _POSIX_TIMERS	// not on the Mac, unfortunately
+struct timespec startup_time, current_time, elapsed_time;
+
+// from http://www.guyrutenberg.com/2007/09/22/profiling-code-using-clock_gettime/
+struct timespec time_diff(timespec start, timespec end) {
+	timespec temp;
+	if ((end.tv_nsec-start.tv_nsec)<0) {
+		temp.tv_sec = end.tv_sec-start.tv_sec-1;
+		temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+	} else {
+		temp.tv_sec = end.tv_sec-start.tv_sec;
+		temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+	}
+	return temp;
+}
+
+unsigned long millis(void) {
+	if ((startup_time.tv_sec == 0) && (startup_time.tv_nsec == 0)) {
+		clock_gettime(CLOCK_REALTIME, &startup_time);
+		return 0;
+	}
+	clock_gettime(CLOCK_REALTIME, &current_time);	
+	elapsed_time = time_diff(startup_time, current_time);
+	return (elapsed_time.tv_sec * 1000UL) + (elapsed_time.tv_nsec / 1000000UL);
+}
+#else
+#include <sys/time.h>
+
+unsigned long startup_millis, current_millis, elapsed_millis;
+struct timeval startup_time, current_time;
+
+// after http://laclefyoshi.blogspot.com/2011/05/getting-nanoseconds-in-c-on-freebsd.html
+unsigned long millis(void) {
+	if (startup_millis == 0) {
+		gettimeofday(&startup_time, NULL);
+		startup_millis = (startup_time.tv_sec * 1000) + (startup_time.tv_usec /1000);
+		return 0UL;
+	}
+	gettimeofday(&current_time, NULL);
+	current_millis = (current_time.tv_sec * 1000) + (current_time.tv_usec / 1000);
+	elapsed_millis = current_millis - startup_millis;
+	return elapsed_millis;
+}
+
+#endif
+
+
+#include "conio.h"
 
 int serialAvailable(void) { return 1; }
 int serialRead(void) { return getch(); }
-void serialWrite(int c) { putch(c); }
+void spb (char c) { 
+	putchar(c);
+	//printf("%c", c);
+	fflush(stdout);
+}
+void sp(const char *str) { while (*str) spb(*str++); }
+void speol(void) { spb(13); spb(10); }
 
-numvar setBaud(numvar, unumvar) { return 0; }
+numvar setBaud(numvar pin, unumvar baud) { return 0; }
 
 // stubs for the hardware IO functions
 //
@@ -66,10 +118,24 @@ int pulseIn(int pin, int mode, int duration) { return 0; }
 
 // stubs for the time functions
 //
-unsigned long millis(void) { return 0; }
 void delay(unsigned long ms) {
 	unsigned long start = millis();
 	while (millis() - start < ms) { ; }
 }
 void delayMicroseconds(unsigned int us) {;}
 
+// fake eeprom
+byte fake_eeprom[E2END];
+void init_fake_eeprom(void) {
+int i=0;
+	while (i < E2END) eewrite(i++, 0xff);
+}
+byte eeread(int addr) { return fake_eeprom[addr]; }
+void eewrite(int addr, byte value) { fake_eeprom[addr] = value; }
+
+
+int main () {
+	init_fake_eeprom();
+	initBitlash(0);
+	for (;;) runBitlash();
+}

@@ -74,7 +74,7 @@ const prog_char *getmsg(byte id) {
 }
 
 
-#if defined(HARDWARE_SERIAL_TX) || defined(SOFTWARE_SERIAL_TX)
+//#if defined(HARDWARE_SERIAL_TX) || defined(SOFTWARE_SERIAL_TX)
 // print the nth string from the message table, e.g., msgp(M_missing);
 void msgp(byte id) {
 	const prog_char *msg = getmsg(id);
@@ -85,7 +85,7 @@ void msgp(byte id) {
 	}
 }
 void msgpl(byte msgid) { msgp(msgid); speol(); }
-#endif
+//#endif
 
 
 
@@ -587,6 +587,7 @@ void parseid(void) {
 
 	// function?
 	else if (findindex(idbuf, (const prog_char *) functiondict, 1)) sym = s_nfunct;
+
 #ifdef LONG_ALIASES
 	else if (findindex(idbuf, (const prog_char *) aliasdict, 0)) sym = s_nfunct;
 #endif

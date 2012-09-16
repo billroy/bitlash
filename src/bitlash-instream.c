@@ -219,14 +219,24 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 	primec();	// re-fetch inchar
 }
 
-
 void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 
+char *topname = ".top.";
+
+#ifdef UNIX_BUILD
+	// restore parse type and location; for script files, pass name from string pool
+	char *scriptname = calleename;
+	if (returntoparent) {
+		if (arg[2]) scriptname = callername;
+		else scriptname = topname;
+	}
+	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, scriptname);
+#else
 	// restore parse type and location; for script files, pass name from string pool
 	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, 
 		returntoparent ? callername : calleename);
 			//((char *) ((numvar *) arg[2]) [1]) : ((char *) arg[1]) );
-
+#endif
 
 #ifdef PARSER_TRACE
 	if (trace) {

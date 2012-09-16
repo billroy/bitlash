@@ -36,6 +36,8 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
+#define UNIX_BUILD 1
+
 #ifndef UNIX_BUILD
 #include "avr/io.h"
 #include "string.h"
@@ -50,6 +52,8 @@
 #include <string.h>
 #include "ctype.h"
 #include "setjmp.h"
+#include <time.h>
+#include <sys/types.h>
 #endif
 
 #ifndef byte
@@ -367,8 +371,10 @@ void beginSerial(unsigned long baud) { ; }
 #define PROGMEM
 #define OUTPUT 1
 
-#define pgm_read_byte(addr) (*(char*) addr)
-#define pgm_read_word(addr) (*(int *) addr)
+#define pgm_read_byte(addr) (*(char*) (addr))
+#define pgm_read_word(addr) (*(int *) (addr))
+
+unsigned long millis(void);
 
 #endif	// defined unix_build
 
@@ -402,11 +408,7 @@ void connectBitlash(void);
 /////////////////////////////////////////////
 // bitlash-api.c
 //
-#ifdef ARDUINO_BUILD
 void initBitlash(unsigned long baud);	// start up and set baud rate
-#else
-void initBitlash(void);
-#endif
 void runBitlash(void);					// call this in loop(), frequently
 numvar doCommand(char *);					// execute a command from your sketch
 void doCharacter(char);					// pass an input character to the line editor
@@ -582,6 +584,7 @@ void vpush(numvar);							// push a numvar on the stack
 numvar vpop(void);							// pop a numvar
 extern byte vsptr;
 #define vsempty() vsptr==0
+numvar *arg;								// argument frame pointer
 numvar getVar(uint8_t id);					// return value of bitlash variable.  id is [0..25] for [a..z]
 void assignVar(uint8_t id, numvar value);	// assign value to variable.  id is [0..25] for [a..z]
 numvar incVar(uint8_t id);					// increment variable.  id is [0..25] for [a..z]

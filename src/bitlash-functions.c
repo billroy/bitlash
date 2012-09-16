@@ -96,13 +96,14 @@ numvar ret;
 #endif
 }
 
+#if 0
 void zapheap(void) {
 int heaptop;
 extern int __bss_end;
 	//Serial.println((int) &__bss_end, DEC);
 	memset(((char *)&__bss_end)+1, 0xbb, (&heaptop - &__bss_end) - 6);
 }
-
+#endif
 
 ///////////////////////////////////////////////
 //	Dead Beef Random Number Generator
@@ -368,7 +369,11 @@ bitlash_function fp;
 	else
 #endif
 	// built-in function
+#ifdef UNIX_BUILD
+	fp = function_table[entry];
+#else
 	fp = (bitlash_function) pgm_read_word(&function_table[entry]);
+#endif
 
 	parsearglist();			// parse the arguments
 	numvar ret = (*fp)();	// call the function 
