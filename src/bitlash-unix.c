@@ -32,14 +32,16 @@
 issues
 
 doesn't receive console input
+serialAvailable
+serialRead
+serialWrite
+
+crash
 
 auto detect gcc for build, set unix_build flag
 
 sizeof(numvar) is 8!
 
-serialAvailable
-serialRead
-serialWrite
 */
 
 #if _POSIX_TIMERS	// not on the Mac, unfortunately
@@ -89,10 +91,54 @@ unsigned long millis(void) {
 #endif
 
 
-#include "conio.h"
+#if 0
+// after http://stackoverflow.com/questions/4025891/create-a-function-to-check-for-key-press-in-unix-using-ncurses
+#include <ncurses.h>
 
-int serialAvailable(void) { return 1; }
+int init_keyboard(void) {
+	initscr();
+	cbreak();
+	noecho();
+	nodelay(stdscr, TRUE);
+	scrollok(stdscr, TRUE);
+}
+
+int serialAvailable(void) {
+	int ch = getch();
+
+	if (ch != ERR) {
+		ungetch(ch);
+		return 1;
+	} 
+	else return 0;
+}
+
 int serialRead(void) { return getch(); }
+#endif
+
+#if 1
+//#include "conio.h"
+int lookahead_key = -1;
+
+int serialAvailable(void) { 
+	if (lookahead_key != -1) return 1; 
+	lookahead_key = mygetch();
+	if (lookahead_key == -1) return 0;
+	//printf("getch: %d ", lookahead_key);
+	return 1;
+}
+
+int serialRead(void) {
+	if (lookahead_key != -1) {
+		int retval = lookahead_key;
+		lookahead_key = -1;
+		//printf("key: %d", retval);
+		return retval;
+	}
+	return mygetch();
+}
+#endif
+	
 void spb (char c) { 
 	putchar(c);
 	//printf("%c", c);
@@ -136,6 +182,14 @@ void eewrite(int addr, byte value) { fake_eeprom[addr] = value; }
 
 int main () {
 	init_fake_eeprom();
+	//init_keyboard();
 	initBitlash(0);
+//	doCommand("function hi {print \"hello\";}");
+//	doCommand("ls");
+//	doCommand("help");
+//	doCommand("peep");
+//	doCommand("hi");
+//	doCommand("hi");
+//	doCommand("run hello,1000");
 	for (;;) runBitlash();
 }

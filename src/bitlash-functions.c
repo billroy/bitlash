@@ -63,7 +63,7 @@ void reqargs(byte n) { if (arg[0] < n) missing(M_arg); }
 //
 //#define USE_NATIVE_TONE
 #ifdef USE_NATIVE_TONE
-void beep(unumvar pin, unumvar frequency, unumvar duration) {
+void make_beep(unumvar pin, unumvar frequency, unumvar duration) {
 	tone(pin, frequency, duration);
 	delay(duration);
 }

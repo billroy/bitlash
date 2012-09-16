@@ -413,7 +413,7 @@ void runBitlash(void);					// call this in loop(), frequently
 numvar doCommand(char *);					// execute a command from your sketch
 void doCharacter(char);					// pass an input character to the line editor
 
-void flash(unsigned int, int);
+//void flash(unsigned int, int);
 
 
 /////////////////////////////////////////////
@@ -502,7 +502,7 @@ void show_user_functions(void);
 
 void dofunctioncall(byte);
 numvar func_free(void);
-void beep(unumvar, unumvar, unumvar);
+void make_beep(unumvar, unumvar, unumvar);
 
 extern const prog_char functiondict[] PROGMEM;
 extern const prog_char aliasdict[] PROGMEM;
