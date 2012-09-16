@@ -31,8 +31,6 @@
 /*
 issues
 
-parsepoint crash on foo, while
-
 burning CPU 
 	polling the keyboard
 		make it a task
@@ -40,12 +38,13 @@ burning CPU
 	sleep?
 		keyboard wakeup instead of poll
 
-echoes chars, thus double printing them
+full help text
+boot segfaults ;)
 
 auto detect gcc for build, set unix_build flag
 
 sizeof(numvar) is 8!
-
+	printinteger
 */
 
 #if _POSIX_TIMERS	// not on the Mac, unfortunately
@@ -120,7 +119,7 @@ int serialAvailable(void) {
 int serialRead(void) { return getch(); }
 #endif
 
-#if 1
+#if 0
 //#include "conio.h"
 int lookahead_key = -1;
 
@@ -141,6 +140,17 @@ int serialRead(void) {
 	}
 	return mygetch();
 }
+#endif
+
+#if 1
+int serialAvailable(void) { 
+	return 0;
+}
+
+int serialRead(void) {
+	return '$';
+}
+
 #endif
 	
 void spb (char c) { 
@@ -197,5 +207,31 @@ int main () {
 //	doCommand("hi");
 //	doCommand("run hello,1000");
 
-	for (;;) runBitlash();
+	for (;;) {
+		char * ret = fgets(lbuf, STRVALLEN, stdin);
+		if (ret == NULL) break;	
+		doCommand(lbuf);
+		initlbuf();
+	}
+
+#if 0
+	unsigned long next_key_time = 0L;
+	unsigned long next_task_time = 0L;
+
+	for (;;) {
+		if (millis() > next_key_time) {
+//		if (1) {
+
+			// Pipe the serial input into the command handler
+			while (serialAvailable()) doCharacter(serialRead());
+			next_key_time = millis() + 100L;
+		}
+
+		// Background macro handler: feed it one call each time through
+		if (millis() > next_task_time) {
+			if (!runBackgroundTasks()) next_task_time = millis() + 10L;
+		}
+	}
+#endif
+
 }

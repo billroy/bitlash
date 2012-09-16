@@ -552,7 +552,7 @@ void cmd_print(void);
 // bitlash-taskmgr.c
 //
 void initTaskList(void);
-void runBackgroundTasks(void);
+byte runBackgroundTasks(void);
 void stopTask(byte);
 void startTask(int, numvar);
 void snooze(unumvar);

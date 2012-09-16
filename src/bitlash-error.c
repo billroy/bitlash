@@ -42,7 +42,7 @@ void fatal2(char msg1, char msg2) {
 	resetOutput();
 #endif
 
-#if defined(SOFTWARE_SERIAL_TX) || defined(HARDWARE_SERIAL_TX)
+#if defined(SOFTWARE_SERIAL_TX) || defined(HARDWARE_SERIAL_TX) || defined(UNIX_BUILD)
 	pointToError(); 
 	msgp(msg1); 
 	if (msg2) msgpl(msg2); 
