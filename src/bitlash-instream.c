@@ -51,7 +51,7 @@ byte scriptfileexists(char *scriptname) { return 0; }
 #endif
 
 // masks for stashing the pointer type in the high nibble
-#ifdef UNIX_BUILD
+#if defined(UNIX_BUILD) && defined(__x86_64__)
 #define MARK_SHIFT 60
 #define ADDR_MASK 0xfffffffffffffffL
 #else
