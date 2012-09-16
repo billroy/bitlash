@@ -358,7 +358,7 @@ void beginSerial(unsigned long baud) { ; }
 #undef SOFTWARE_SERIAL_TX
 #define beginSerial(x)
 
-#define E2END 2048
+#define E2END 2047
 
 #define uint8_t unsigned char
 #define uint32_t unsigned long int

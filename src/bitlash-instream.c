@@ -50,6 +50,14 @@ void scriptwritebyte(byte b);
 byte scriptfileexists(char *scriptname) { return 0; }
 #endif
 
+// masks for stashing the pointer type in the high nibble
+#ifdef UNIX_BUILD
+#define MARK_SHIFT 60
+#define ADDR_MASK 0xfffffffffffffffL
+#else
+#define MARK_SHIFT 28
+#define ADDR_MASK 0xfffffffL
+#endif
 
 // forward declaration
 void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname);
@@ -174,7 +182,8 @@ numvar markparsepoint(void) {
 
 	// stash the fetch context type in the high nibble of fetchptr
 	// LIMIT: longest script is 2^29-1 bytes
-	numvar ret = ((numvar) fetchtype << 28) | (fetchptr & 0x0fffffffL);
+	// UNIX LIMIT: 2^60-1
+	numvar ret = ((numvar) fetchtype << MARK_SHIFT) | (fetchptr & ADDR_MASK);
 
 #ifdef PARSER_TRACE
 	if (trace) {
@@ -219,23 +228,32 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 	primec();	// re-fetch inchar
 }
 
-void returntoparsepoint(numvar fetchmark, byte returntoparent) {
+
+
+#ifdef UNIX_BUILD
 
 char *topname = ".top.";
 
-#ifdef UNIX_BUILD
+void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 	// restore parse type and location; for script files, pass name from string pool
+	byte ftype = fetchmark >> MARK_SHIFT;
 	char *scriptname = calleename;
 	if (returntoparent) {
-		if (arg[2]) scriptname = callername;
-		else scriptname = topname;
+		if ((ftype == SCRIPT_NONE) || (ftype == SCRIPT_RAM))
+			scriptname = topname;
+		else if (arg[2]) scriptname = callername;
 	}
-	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, scriptname);
+	initparsepoint(fetchmark >> MARK_SHIFT, fetchmark & ADDR_MASK, scriptname);
+}
+
 #else
+
+void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 	// restore parse type and location; for script files, pass name from string pool
 	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, 
 		returntoparent ? callername : calleename);
 			//((char *) ((numvar *) arg[2]) [1]) : ((char *) arg[1]) );
+}
 #endif
 
 #ifdef PARSER_TRACE
@@ -247,8 +265,6 @@ char *topname = ".top.";
 		speol();
 	}
 #endif
-
-}
 
 
 /////////

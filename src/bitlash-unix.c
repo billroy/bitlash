@@ -31,12 +31,16 @@
 /*
 issues
 
-doesn't receive console input
-serialAvailable
-serialRead
-serialWrite
+parsepoint crash on foo, while
 
-crash
+burning CPU 
+	polling the keyboard
+		make it a task
+	polling background tasks
+	sleep?
+		keyboard wakeup instead of poll
+
+echoes chars, thus double printing them
 
 auto detect gcc for build, set unix_build flag
 
@@ -93,7 +97,7 @@ unsigned long millis(void) {
 
 #if 0
 // after http://stackoverflow.com/questions/4025891/create-a-function-to-check-for-key-press-in-unix-using-ncurses
-#include <ncurses.h>
+//#include <ncurses.h>
 
 int init_keyboard(void) {
 	initscr();
@@ -174,16 +178,17 @@ void delayMicroseconds(unsigned int us) {;}
 byte fake_eeprom[E2END];
 void init_fake_eeprom(void) {
 int i=0;
-	while (i < E2END) eewrite(i++, 0xff);
+	while (i <= E2END) eewrite(i++, 0xff);
 }
 byte eeread(int addr) { return fake_eeprom[addr]; }
 void eewrite(int addr, byte value) { fake_eeprom[addr] = value; }
 
 
 int main () {
+	millis();	// init millisecond timer
 	init_fake_eeprom();
-	//init_keyboard();
 	initBitlash(0);
+
 //	doCommand("function hi {print \"hello\";}");
 //	doCommand("ls");
 //	doCommand("help");
@@ -191,5 +196,6 @@ int main () {
 //	doCommand("hi");
 //	doCommand("hi");
 //	doCommand("run hello,1000");
+
 	for (;;) runBitlash();
 }
