@@ -36,7 +36,9 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
+#if defined(__x86_64__) || defined(__i386__)
 #define UNIX_BUILD 1
+#endif
 
 #ifndef UNIX_BUILD
 #include "avr/io.h"
@@ -552,7 +554,7 @@ void cmd_print(void);
 // bitlash-taskmgr.c
 //
 void initTaskList(void);
-byte runBackgroundTasks(void);
+void runBackgroundTasks(void);
 void stopTask(byte);
 void startTask(int, numvar);
 void snooze(unumvar);

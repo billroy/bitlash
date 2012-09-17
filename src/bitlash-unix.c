@@ -194,19 +194,38 @@ byte eeread(int addr) { return fake_eeprom[addr]; }
 void eewrite(int addr, byte value) { fake_eeprom[addr] = value; }
 
 
+// background function thread
+#include <pthread.h>
+pthread_mutex_t executing;
+pthread_t background_thread;
+struct timespec wait_time;
+
+void *BackgroundMacroThread(void *threadid) {
+	for (;;) {
+		pthread_mutex_lock(&executing);
+		runBackgroundTasks();
+		pthread_mutex_unlock(&executing);
+
+		// sleep until next task runtime
+		int sleep_time = millisUntilNextTask();
+		int seconds = sleep_time / 1000;
+		wait_time.tv_sec = seconds;
+		wait_time.tv_nsec = (sleep_time - (seconds * 1000)) * 1000000L;
+		while (nanosleep(&wait_time, &wait_time) == -1) continue;
+	}
+	return 0;
+}
+
+
 int main () {
 	millis();	// init millisecond timer
 	init_fake_eeprom();
 	initBitlash(0);
 
-//	doCommand("function hi {print \"hello\";}");
-//	doCommand("ls");
-//	doCommand("help");
-//	doCommand("peep");
-//	doCommand("hi");
-//	doCommand("hi");
-//	doCommand("run hello,1000");
+	// run background functions on a separate thread
+	pthread_create(&background_thread, NULL, BackgroundMacroThread, 0);
 
+	// run the main stdin command loop
 	for (;;) {
 		char * ret = fgets(lbuf, STRVALLEN, stdin);
 		if (ret == NULL) break;	

@@ -89,7 +89,7 @@ void snooze(unumvar duration) {
 //	Runs one eligible background task per invocation
 //	Returns true if a task was run
 //
-byte runBackgroundTasks(void) {
+void runBackgroundTasks(void) {
 byte i;	
 
 #ifdef suspendBackground
@@ -108,13 +108,12 @@ byte i;
 			// schedule the next time quantum for this task
 			waketime[curtask] = millis() + snoozetime[curtask];
 			background = 0;
-			return 1;
+			break;
 		}
 	}
-	return 0;
 }
 
-unsigned long nextTaskTime(void) {
+unsigned long millisUntilNextTask(void) {
 byte slot;
 	unsigned long next_wake_time = millis() + 1000L;
 	for (slot=0; slot<NUMTASKS; slot++) {
@@ -122,7 +121,7 @@ byte slot;
 			if (waketime[slot] < next_wake_time) next_wake_time = waketime[slot];
 		}
 	}
-	return next_wake_time;
+	return next_wake_time - millis();		// millis until next task runs
 }
 
 void showTaskList(void) {
