@@ -29,22 +29,17 @@
 #include "bitlash.h"
 
 /*
-issues
+Issues
 
-burning CPU 
-	polling the keyboard
-		make it a task
-	polling background tasks
-	sleep?
-		keyboard wakeup instead of poll
+BUG: system() doesn't work: user functions
+BUG: background tasks stop sometimes; 100% cpu
+	foreground unaffected
 
 full help text
 boot segfaults ;)
+delay should use nanosleep
+command line
 
-auto detect gcc for build, set unix_build flag
-
-sizeof(numvar) is 8!
-	printinteger
 */
 
 #if _POSIX_TIMERS	// not on the Mac, unfortunately
@@ -207,19 +202,27 @@ void *BackgroundMacroThread(void *threadid) {
 		pthread_mutex_unlock(&executing);
 
 		// sleep until next task runtime
-		int sleep_time = millisUntilNextTask();
-		int seconds = sleep_time / 1000;
-		wait_time.tv_sec = seconds;
-		wait_time.tv_nsec = (sleep_time - (seconds * 1000)) * 1000000L;
-		while (nanosleep(&wait_time, &wait_time) == -1) continue;
+		unsigned long sleep_time = millisUntilNextTask();
+		if (sleep_time) {
+			unsigned long seconds = sleep_time / 1000;
+			wait_time.tv_sec = seconds;
+			wait_time.tv_nsec = (sleep_time - (seconds * 1000)) * 1000000L;
+			while (nanosleep(&wait_time, &wait_time) == -1) continue;
+		}
 	}
 	return 0;
+}
+
+
+numvar func_system(void) {
+	return system(getarg(1));
 }
 
 
 int main () {
 	millis();	// init millisecond timer
 	init_fake_eeprom();
+	addBitlashFunction("system", (bitlash_function) &func_system);
 	initBitlash(0);
 
 	// run background functions on a separate thread

@@ -115,13 +115,15 @@ byte i;
 
 unsigned long millisUntilNextTask(void) {
 byte slot;
-	unsigned long next_wake_time = millis() + 1000L;
+	long next_wake_time = millis() + 500L;
 	for (slot=0; slot<NUMTASKS; slot++) {
 		if (tasklist[slot] != SLOT_FREE) {
 			if (waketime[slot] < next_wake_time) next_wake_time = waketime[slot];
 		}
 	}
-	return next_wake_time - millis();		// millis until next task runs
+	long millis_to_wait = next_wake_time - millis();
+	if (millis_to_wait < 0) millis_to_wait = 0;
+	return millis_to_wait;			// millis until next task runs
 }
 
 void showTaskList(void) {

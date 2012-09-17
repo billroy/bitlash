@@ -190,7 +190,7 @@ void tb(void) {		// print a mini-trace
 ///
 ///		Expression evaluation stack
 ///
-#if defined(MEGA)
+#if defined(MEGA) || defined(UNIX_BUILD)
 #define VSTACKLEN 256
 #else
 #define VSTACKLEN 64
@@ -596,9 +596,7 @@ void parseid(void) {
 	else if (findpinname(idbuf)) {;}		// sym and symval are set in findpinname
 #endif
 
-#ifdef USER_FUNCTIONS
 	else if (find_user_function(idbuf)) sym = s_nfunct;
-#endif
 
 	else findscript(idbuf);
 }
