@@ -51,6 +51,7 @@
 #else
 #include <stdio.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 #include "ctype.h"
 #include "setjmp.h"
@@ -542,6 +543,7 @@ typedef void (*serialOutputFunc)(byte);
 byte serialIsOverridden(void);
 void setOutputHandler(serialOutputFunc);
 void resetOutputHandler(void);
+serialOutputFunc serial_override_handler;
 #endif
 
 #ifdef ARDUINO_BUILD

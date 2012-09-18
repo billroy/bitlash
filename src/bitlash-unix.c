@@ -31,9 +31,10 @@
 /*
 Issues
 
-BUG: system() doesn't work: user functions
 BUG: background tasks stop sometimes; 100% cpu
 	foreground unaffected
+
+system() using printf()
 
 full help text
 boot segfaults ;)
@@ -58,11 +59,11 @@ struct timespec time_diff(timespec start, timespec end) {
 	return temp;
 }
 
+void init_millis(void) {
+	clock_gettime(CLOCK_REALTIME, &startup_time);
+}
+
 unsigned long millis(void) {
-	if ((startup_time.tv_sec == 0) && (startup_time.tv_nsec == 0)) {
-		clock_gettime(CLOCK_REALTIME, &startup_time);
-		return 0;
-	}
 	clock_gettime(CLOCK_REALTIME, &current_time);	
 	elapsed_time = time_diff(startup_time, current_time);
 	return (elapsed_time.tv_sec * 1000UL) + (elapsed_time.tv_nsec / 1000000UL);
@@ -74,12 +75,12 @@ unsigned long startup_millis, current_millis, elapsed_millis;
 struct timeval startup_time, current_time;
 
 // after http://laclefyoshi.blogspot.com/2011/05/getting-nanoseconds-in-c-on-freebsd.html
+void init_millis(void) {
+	gettimeofday(&startup_time, NULL);
+	startup_millis = (startup_time.tv_sec * 1000) + (startup_time.tv_usec /1000);
+}
+
 unsigned long millis(void) {
-	if (startup_millis == 0) {
-		gettimeofday(&startup_time, NULL);
-		startup_millis = (startup_time.tv_sec * 1000) + (startup_time.tv_usec /1000);
-		return 0UL;
-	}
 	gettimeofday(&current_time, NULL);
 	current_millis = (current_time.tv_sec * 1000) + (current_time.tv_usec / 1000);
 	elapsed_millis = current_millis - startup_millis;
@@ -148,10 +149,13 @@ int serialRead(void) {
 
 #endif
 	
-void spb (char c) { 
-	putchar(c);
-	//printf("%c", c);
-	fflush(stdout);
+void spb (char c) {
+	if (serial_override_handler) (*serial_override_handler)(c);
+	else {
+		putchar(c);
+		//printf("%c", c);
+		fflush(stdout);
+	}
 }
 void sp(const char *str) { while (*str) spb(*str++); }
 void speol(void) { spb(13); spb(10); }
@@ -182,11 +186,29 @@ void delayMicroseconds(unsigned int us) {;}
 // fake eeprom
 byte fake_eeprom[E2END];
 void init_fake_eeprom(void) {
-int i=0;
+int i=0, fd;
 	while (i <= E2END) eewrite(i++, 0xff);
 }
 byte eeread(int addr) { return fake_eeprom[addr]; }
 void eewrite(int addr, byte value) { fake_eeprom[addr] = value; }
+
+FILE *savefd;
+void fputbyte(byte b) {
+	fwrite(&b, 1, 1, savefd);	
+}
+
+numvar func_save(void) {
+	char *fname = "eeprom";
+	if (getarg(0) > 0) fname = (char *) getarg(1);
+	savefd = fopen(fname, "w");
+	if (!savefd) return 0;
+	setOutputHandler(&fputbyte);
+	cmd_ls();
+	resetOutputHandler();
+	fclose(savefd);
+	return 1;
+};
+
 
 
 // background function thread
@@ -215,14 +237,21 @@ void *BackgroundMacroThread(void *threadid) {
 
 
 numvar func_system(void) {
-	return system(getarg(1));
+	return system((char *) getarg(1));
+}
+
+numvar func_exit(void) {
+	if (getarg(0) > 0) exit(getarg(1));
+	exit(0);
 }
 
 
 int main () {
-	millis();	// init millisecond timer
 	init_fake_eeprom();
 	addBitlashFunction("system", (bitlash_function) &func_system);
+	addBitlashFunction("exit", (bitlash_function) &func_exit);
+	addBitlashFunction("save", (bitlash_function) &func_save);
+	init_millis();
 	initBitlash(0);
 
 	// run background functions on a separate thread
