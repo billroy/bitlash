@@ -172,7 +172,7 @@ void callscriptfunction(byte scripttype, numvar scriptaddress) {
 //	
 numvar markparsepoint(void) {
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 	if (fetchtype == SCRIPT_FILE) {
 		// the location we wish to return to is the point from which we read inchar, 
 		// which is one byte before the current file pointer since it auto-advances
@@ -215,13 +215,18 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 	// if we're restoring to idle, we're done
 	if (fetchtype == SCRIPT_NONE) return;
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 	// handle file transition side effects here, once per transition,
 	// rather than once per character below in primec()
 	if (fetchtype == SCRIPT_FILE) {
 
+#if defined(UNIX_BUILD)
+		// ask the file glue to open and position the file for us
+		if (!scriptopen(scriptname, scriptaddress, 0)) unexpected(M_oops);		// TODO: error message
+#else
 		// ask the file glue to open and position the file for us
 		if (!scriptopen(scriptname, scriptaddress, O_READ)) unexpected(M_oops);		// TODO: error message
+#endif
 	}
 #endif
 
@@ -300,7 +305,7 @@ void primec(void) {
 		case SCRIPT_PROGMEM:	inchar = pgm_read_byte(fetchptr); 	break;
 		case SCRIPT_EEPROM:		inchar = eeread((int) fetchptr);	break;
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 		case SCRIPT_FILE:		inchar = scriptread();				break;
 #endif
 

@@ -148,7 +148,7 @@ byte scriptwrite(char *filename, char *contents, byte append) {
 	outfile = fopen(filename, flags);
 	if (!outfile) return 0;
 	if (strlen(contents)) {
-		if (fwrite(&contents, 1, strlen(contents), outfile) != strlen(contents)) {
+		if (fwrite(contents, 1, strlen(contents), outfile) != strlen(contents)) {
 			fclose(outfile);
 			return 0;
 		}
@@ -194,6 +194,13 @@ numvar exec(void) {
 	return doCommand((char *) getarg(1));
 }
 
+numvar func_pwd(void) {
+	#define PWD_BUF_LEN 256
+	char buf[PWD_BUF_LEN];
+	getcwd(buf, PWD_BUF_LEN);
+	sp(buf); speol();
+	return 0;
+}
 
 
 #if 0

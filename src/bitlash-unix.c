@@ -54,6 +54,10 @@ boot segfaults ;)
 
 */
 
+#define PATH_LEN 256
+char bitlash_directory[PATH_LEN];
+#define DEFAULT_BITLASH_PATH "/Users/bill/.bitlash/"
+
 
 #if _POSIX_TIMERS	// not on the Mac, unfortunately
 struct timespec startup_time, current_time, elapsed_time;
@@ -280,13 +284,19 @@ void inthandler(int signal) {
 
 
 int main () {
+
+	strcpy(bitlash_directory, DEFAULT_BITLASH_PATH);
+	if (chdir(bitlash_directory) != 0) {
+		sp("Cannot enter .bitlash directory.  Does it exist?\n");
+	}
+
 	init_fake_eeprom();
 	addBitlashFunction("system", (bitlash_function) &func_system);
 	addBitlashFunction("exit", (bitlash_function) &func_exit);
 	addBitlashFunction("save", (bitlash_function) &func_save);
 
 	// from bitlash-unix-file.c
-	extern bitlash_function exec, sdls, sdexists, sdrm, sdcreate, sdappend, sdcat, sdcd, sdmd;
+	extern bitlash_function exec, sdls, sdexists, sdrm, sdcreate, sdappend, sdcat, sdcd, sdmd, func_pwd;
 	addBitlashFunction("exec", (bitlash_function) &exec);
 	addBitlashFunction("dir", (bitlash_function) &sdls);
 	addBitlashFunction("exists", (bitlash_function) &sdexists);
@@ -296,6 +306,7 @@ int main () {
 	addBitlashFunction("type", (bitlash_function) &sdcat);
 	addBitlashFunction("cd", (bitlash_function) &sdcd);
 	addBitlashFunction("md", (bitlash_function) &sdmd);
+	addBitlashFunction("pwd", (bitlash_function) &func_pwd);
 	addBitlashFunction("fprintf", (bitlash_function) &func_fprintf);
 
 
