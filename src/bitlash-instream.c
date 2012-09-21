@@ -46,7 +46,7 @@ numvar scriptgetpos(void);
 byte scriptread(void);
 byte scriptwrite(char *filename, char *contents, byte append);
 void scriptwritebyte(byte b);
-#else
+#elif !defined(UNIX_BUILD)
 byte scriptfileexists(char *scriptname) { return 0; }
 #endif
 
@@ -332,7 +332,7 @@ numvar *a = arg;
 }
 
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 
 /////////
 //
@@ -357,9 +357,16 @@ numvar sdcat(void) {
 //	sdwrite: write or append a line to a file
 //
 numvar sdwrite(char *filename, char *contents, byte append) {
+#if !defined(UNIX_BUILD)
 	numvar fetchmark = markparsepoint();
+#endif
+
 	if (!scriptwrite(filename, contents, append)) unexpected(M_oops);
+
+#if !defined(UNIX_BUILD)
 	returntoparsepoint(fetchmark, 1);
+#endif
+
 	return 1;
 }
 
@@ -374,6 +381,7 @@ numvar func_fprintf(void) {
 	scriptwrite((char *) getarg(1), "", 1);		// open the file for append (but append nothing)
 
 	//serialOutputFunc saved_handler = serial_override_handler;	// save previous output handler
+	void scriptwritebyte(byte);
 	setOutputHandler(scriptwritebyte);			// set file output handler
 
 	func_printf_handler(2,3);	// format=arg(2), optional args start at 3

@@ -29,19 +29,31 @@
 #include "bitlash.h"
 
 /*
+
+Build:
+				cd bitlash/src
+	mac:		gcc *.c -o bitlash
+	linux:		gcc -pthread *.c -o bitlash
+
 Issues
 
-BUG: background tasks stop sometimes; 100% cpu
-	foreground unaffected
+
+^C exits instead of STOP *
+	signal handler
+
+run scripts from file
+	integrate bitlashsd.pde and adjust for POSIX
 
 system() using printf()
+	print to buffer
+
+command line arguments
 
 full help text
 boot segfaults ;)
-delay should use nanosleep
-command line
 
 */
+
 
 #if _POSIX_TIMERS	// not on the Mac, unfortunately
 struct timespec startup_time, current_time, elapsed_time;
@@ -178,15 +190,27 @@ int pulseIn(int pin, int mode, int duration) { return 0; }
 // stubs for the time functions
 //
 void delay(unsigned long ms) {
-	unsigned long start = millis();
-	while (millis() - start < ms) { ; }
+//	unsigned long start = millis();
+//	while (millis() - start < ms) { ; }
+	struct timespec delay_time;
+	long seconds = ms / 1000L;
+	delay_time.tv_sec = seconds;
+	delay_time.tv_nsec = (ms - (seconds * 1000L)) * 1000000L;
+	while (nanosleep(&delay_time, &delay_time) == -1) continue;
 }
-void delayMicroseconds(unsigned int us) {;}
+
+void delayMicroseconds(unsigned int us) {
+	struct timespec delay_time;
+	long seconds = us / 1000000L;
+	delay_time.tv_sec = seconds;
+	delay_time.tv_nsec = (us - (seconds * 1000000L)) * 1000L;
+	while (nanosleep(&delay_time, &delay_time) == -1) continue;
+}
 
 // fake eeprom
 byte fake_eeprom[E2END];
 void init_fake_eeprom(void) {
-int i=0, fd;
+int i=0;
 	while (i <= E2END) eewrite(i++, 0xff);
 }
 byte eeread(int addr) { return fake_eeprom[addr]; }
@@ -246,13 +270,40 @@ numvar func_exit(void) {
 }
 
 
+#include <signal.h>
+
+byte break_received;
+
+void inthandler(int signal) {
+	break_received = 1;
+}
+
+
 int main () {
 	init_fake_eeprom();
 	addBitlashFunction("system", (bitlash_function) &func_system);
 	addBitlashFunction("exit", (bitlash_function) &func_exit);
 	addBitlashFunction("save", (bitlash_function) &func_save);
+
+	// from bitlash-unix-file.c
+	extern bitlash_function exec, sdls, sdexists, sdrm, sdcreate, sdappend, sdcat, sdcd, sdmd;
+	addBitlashFunction("exec", (bitlash_function) &exec);
+	addBitlashFunction("dir", (bitlash_function) &sdls);
+	addBitlashFunction("exists", (bitlash_function) &sdexists);
+	addBitlashFunction("del", (bitlash_function) &sdrm);
+//	addBitlashFunction("create", (bitlash_function) &sdcreate);
+	addBitlashFunction("append", (bitlash_function) &sdappend);
+	addBitlashFunction("type", (bitlash_function) &sdcat);
+	addBitlashFunction("cd", (bitlash_function) &sdcd);
+	addBitlashFunction("md", (bitlash_function) &sdmd);
+	addBitlashFunction("fprintf", (bitlash_function) &func_fprintf);
+
+
 	init_millis();
 	initBitlash(0);
+
+	//signal(SIGINT, inthandler);
+	//signal(SIGKILL, inthandler);
 
 	// run background functions on a separate thread
 	pthread_create(&background_thread, NULL, BackgroundMacroThread, 0);

@@ -324,8 +324,16 @@ void printBinary(unumvar n) { printIntegerInBase(n, 2, 0, '0'); }
 
 
 
-
-#if !defined(TINY85)
+#if defined(UNIX_BUILD)
+void chkbreak(void) {
+	extern byte break_received;
+	if (break_received) {
+		break_received = 0;
+		msgpl(M_ctrlc);
+		longjmp(env, X_EXIT);
+	}
+}
+#elif !defined(TINY85)
 // check serial input stream for ^C break
 void chkbreak(void) {
 	if (serialAvailable()) {		// allow ^C to break out
