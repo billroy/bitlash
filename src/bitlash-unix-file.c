@@ -98,7 +98,7 @@ byte scriptfileexists(char *scriptname) {
 }
 
 byte scriptclose(void) {
-	fclose(scriptfile);
+	if (scriptfile_is_open) fclose(scriptfile);
 	scriptfile_is_open = 0;
 	return 0;
 }
@@ -117,7 +117,8 @@ byte scriptopen(char *scriptname, numvar position, byte flags) {
 		scriptfile_is_open = 1;				// note it's open
 		if (position == 0L) return 1;		// save a seek, when we can
 	}
-	return lseek(scriptfile, position, 0);
+	if (lseek(scriptfile, position, 0) < 0) return 0;
+	return 1;
 }
 
 
@@ -128,8 +129,8 @@ numvar scriptgetpos(void) {
 byte scriptread(void) {
 	byte input;
 	if (!fread(&input, 1, 1, scriptfile)) {
-		fclose(scriptfile);
-		return 0;
+		scriptclose();
+		return 0;		// eof
 	}
 	return input;
 }
@@ -164,7 +165,7 @@ void scriptwritebyte(byte b) {
 
 
 numvar sdls(void) {
-// TODO
+	system("ls");
 	return 0;
 }
 numvar sdexists(void) { 
@@ -181,9 +182,7 @@ numvar sdappend(void) {
 }
 numvar sdcd(void) {
 	// close any cached open file handle
-	if (scriptfile_is_open) {
-		fclose(scriptfile);
-	}
+	if (scriptfile_is_open) scriptclose();
 	return chdir((char *) getarg(1));
 }
 numvar sdmd(void) { 
@@ -195,10 +194,11 @@ numvar exec(void) {
 }
 
 numvar func_pwd(void) {
-	#define PWD_BUF_LEN 256
-	char buf[PWD_BUF_LEN];
-	getcwd(buf, PWD_BUF_LEN);
-	sp(buf); speol();
+	system("pwd");
+//	#define PWD_BUF_LEN 256
+//	char buf[PWD_BUF_LEN];
+//	getcwd(buf, PWD_BUF_LEN);
+//	sp(buf); speol();
 	return 0;
 }
 
