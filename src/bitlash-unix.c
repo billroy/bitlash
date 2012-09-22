@@ -42,12 +42,17 @@ Issues
 	signal handler
 
 run scripts from file
-	integrate bitlashsd.pde and adjust for POSIX
+	runs one script okay
+	mux, which calls itself, fails
+
+fprintf makes 0-byte file
 
 system() using printf()
 	print to buffer
 
-command line arguments
+command line options
+	-e run command and exit
+	-d working directory
 
 full help text
 boot segfaults ;)
@@ -56,7 +61,7 @@ boot segfaults ;)
 
 #define PATH_LEN 256
 char bitlash_directory[PATH_LEN];
-#define DEFAULT_BITLASH_PATH "/Users/bill/.bitlash/"
+#define DEFAULT_BITLASH_PATH "/.bitlash/"
 
 
 #if _POSIX_TIMERS	// not on the Mac, unfortunately
@@ -285,7 +290,17 @@ void inthandler(int signal) {
 
 int main () {
 
-	strcpy(bitlash_directory, DEFAULT_BITLASH_PATH);
+	FILE *shell = popen("echo ~", "r");
+	if (!shell) {;}
+	int got = fread(&bitlash_directory, 1, PATH_LEN, shell);
+	pclose(shell);
+
+	bitlash_directory[strlen(bitlash_directory) - 1] = 0;	// trim /n
+	strcat(bitlash_directory, DEFAULT_BITLASH_PATH);
+
+	//sp("Working directory: ");
+	//sp(bitlash_directory); speol();
+
 	if (chdir(bitlash_directory) != 0) {
 		sp("Cannot enter .bitlash directory.  Does it exist?\n");
 	}
