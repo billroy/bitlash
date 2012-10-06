@@ -6,7 +6,7 @@
 	"description": "web serial terminal for arduino",
 	"scripts": {
 		"start": "node index",
-		"postdeploy": "cpp src/*.c -o src/bin/bitlash"
+		"postdeploy": "gcc -pthread src/*.c -o src/bitlash-binary"
 	},
 	"dependencies" : {
 		"tty.js"	: ">=0.2.6",

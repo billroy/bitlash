@@ -28,7 +28,7 @@ var config = {
 		'cert': null
 	},
 	'port': port,
-	'shell': 'src/bin/bitlash',
+	'shell': 'src/bitlash-binary',
 	//'shellArgs': shellargs,
 	//'limitGlobal': 1,
 	//'limitPerUser': 1,
