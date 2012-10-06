@@ -9,6 +9,7 @@
 		"postdeploy": "gcc src/*.c -o src/bin/bitlash"
 	},
 	"dependencies" : {
+		"node"		: ">=0.6.0",
 		"tty.js"	: ">=0.2.6",
 		"optimist"  : ">=0.3.4"
 	},
