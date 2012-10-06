@@ -45,6 +45,8 @@ run scripts from file
 	runs one script okay
 	mux, which calls itself, fails
 
+foo1 calling foo2 calling foo1
+
 fprintf makes 0-byte file
 
 system() using printf()
