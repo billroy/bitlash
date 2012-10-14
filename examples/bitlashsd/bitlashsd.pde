@@ -40,9 +40,9 @@
 	- on Arduino 1.0.1
 
 - Edit bitlash/src/bitlash.h to turn on the SDFILE define: at or near line 340, make this:
-		#define SDFILE
-look like this:
 		//#define SDFILE
+look like this:
+		#define SDFILE
 
 - If you are using a Mega2560, edit SdFat/SdFatConfig.h @ line 85, make this change:
 	#define MEGA_SOFT_SPI 1

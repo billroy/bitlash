@@ -97,6 +97,7 @@ byte serialIsOverridden(void);
 void setOutputHandler(serialOutputFunc);
 void setOutput(byte pin);
 void resetOutputHandler(void);
+numvar func_printf_handler(byte, byte);
 
 ///////////////////////
 //	File functions

@@ -544,6 +544,7 @@ void resetOutputHandler(void);
 void chkbreak(void);
 void cmd_print(void);
 #endif
+numvar func_printf_handler(byte, byte);
 
 
 /////////////////////////////////////////////

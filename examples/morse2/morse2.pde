@@ -304,7 +304,6 @@ numvar func_printm(void) {
 	setOutputHandler(&morsePut);
 
 	// do the print-to-morse
-	extern numvar func_printf_handler(byte, byte);
 	func_printf_handler(1,2);	// format=arg(1), optional args start at 2
 
 	// restore normal output
