@@ -209,7 +209,7 @@ numvar retval = 0;
 //char *fetchmark;
 numvar fetchmark;
 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 	chkbreak();
 #endif
 
@@ -261,7 +261,7 @@ numvar fetchmark;
 		sym = s_returning;		// signal we're returning up the line
 	}
 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 	else if (sym == s_switch) retval = getswitchstatement();
 #endif
 
@@ -302,14 +302,14 @@ numvar fetchmark;
 		if (sym == s_script_eeprom) {
 			eraseentry(idbuf);
 		} 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 		else if (sym == s_mul) nukeeeprom();
 #endif
 		else if (sym != s_undef) expected(M_id);
 		getsym();
 	}
 	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 	else if (sym == s_boot) reboot();
 	else if (sym == s_ps) 		{ getsym();	showTaskList(); }
 	else if (sym == s_peep) 	{ getsym(); cmd_peep(); }

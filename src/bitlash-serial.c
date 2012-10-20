@@ -321,7 +321,7 @@ void printBinary(unumvar n) { printIntegerInBase(n, 2, 0, '0'); }
 
 
 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 // check serial input stream for ^C break
 void chkbreak(void) {
 	if (serialAvailable()) {		// allow ^C to break out
@@ -337,7 +337,7 @@ void chkbreak(void) {
 
 
 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 
 // Print command handler
 // 	print exprlist

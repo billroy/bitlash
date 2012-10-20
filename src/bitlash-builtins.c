@@ -65,7 +65,7 @@ const prog_char builtin_table[] PROGMEM = {
 
 	// The banner must be first.  Add new builtins below.
 	BUILT_IN("banner",	
-#if defined(TINY85)
+#if defined(TINY_BUILD)
 		"")
 #else
 		"print \"bitlash here! v2.0 (c) 2012 Bill Roy -type HELP-\",free,\"bytes free\"")

@@ -173,7 +173,7 @@ numvar func_pulsein(void) { reqargs(3); return pulseIn(arg1, arg2, arg3); }
 numvar func_snooze(void) { reqargs(1); snooze(arg1); return 0; }
 numvar func_delay(void) { reqargs(1); delay(arg1); return 0; }
 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 numvar func_setBaud(void) { reqargs(2); setBaud(arg1, arg2); return 0; }
 #endif
 
@@ -199,7 +199,7 @@ numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitc
 //	MAINTENANCE NOTE: 	This dictionary must be sorted in alpha order 
 //						and must be 1:1 with function_table below.
 //
-#if defined(TINY85)
+#if defined(TINY_BUILD)
 const prog_char functiondict[] PROGMEM = {
 //	"abs\0"
 //	"ar\0"
@@ -273,7 +273,7 @@ const prog_char functiondict[] PROGMEM = {
 //
 // this must be 1:1 with the symbols above, which in turn must be in alpha order
 //
-#if defined(TINY85)
+#if defined(TINY_BUILD)
 const bitlash_function function_table[] PROGMEM = {
 //	func_abs,
 //	func_ar,
@@ -344,7 +344,7 @@ const bitlash_function function_table[] PROGMEM = {
 // Enable USER_FUNCTIONS to include the add_bitlash_function() extension mechanism
 // This costs about 256 bytes
 //
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 #define USER_FUNCTIONS
 #endif
 

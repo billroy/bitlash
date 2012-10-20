@@ -265,10 +265,10 @@ void beginEthernet(unsigned long baud) {
 
 ///////////////////////////////////////////////////////
 //
-//	TINY85 BUILD OPTIONS
+//	TINY BUILD OPTIONS
 //
 #if defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny84__)
-#define TINY85 1
+#define TINY_BUILD 1
 #undef MINIMUM_FREE_RAM
 #define MINIMUM_FREE_RAM 20
 #define NUMPINS 6
@@ -278,7 +278,7 @@ void beginEthernet(unsigned long baud) {
 
 //#include "usbdrv.h"
 
-#endif		// tiny85
+#endif		// TINY_BUILD
 
 
 
@@ -377,7 +377,7 @@ void beginSerial(unsigned long baud) { ; }
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
-#if (defined(ARDUINO_BUILD) || defined(UNIX_BUILD)) && !defined(TINY85)
+#if (defined(ARDUINO_BUILD) || defined(UNIX_BUILD)) && !defined(TINY_BUILD)
 typedef long int numvar;
 typedef unsigned long int unumvar;
 #else
@@ -437,7 +437,7 @@ void delayMicroseconds(unsigned int);
 /////////////////////////////////////////////
 // bitlash-cmdline.c
 //
-#ifdef TINY85
+#ifdef TINY_BUILD
 byte putlbuf(char);
 void initlbuf(void);
 #endif
@@ -526,8 +526,8 @@ numvar func_printf(void);
 numvar func_printf_handler(byte,byte);
 
 #ifdef SOFTWARE_SERIAL_TX
-void resetOutput(void);
 numvar setBaud(numvar, unumvar);
+void resetOutput(void);
 #endif
 
 // serial override handling

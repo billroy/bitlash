@@ -59,7 +59,7 @@ char idbuf[IDLEN+1];
 
 
 const prog_char strings[] PROGMEM = { 
-#ifdef TINY85
+#if defined(TINY_BUILD)
 	"exp \0unexp \0mssng \0str\0 uflow \0oflow \0\0\0\0exp\0op\0\0eof\0var\0num\0)\0\0eep\0:=\"\0> \0char\0stack\0startup\0id\0prompt\0\r\n\0\0\0"
 #else
 	"expected \0unexpected \0missing \0string\0 underflow\0 overflow\0^C\0^B\0^U\0exp\0op\0:xby+-*/\0eof\0var\0number\0)\0saved\0eeprom\0:=\"\0> \0char\0stack\0startup\0id\0prompt\0\r\nFunctions:\0oops\0arg\0function\0"
@@ -358,7 +358,7 @@ void releaseargblock(void) {
 //
 //	MUST BE IN ALPHABETICAL ORDER!
 //
-#ifdef TINY85
+#if defined(TINY_BUILD)
 const prog_char reservedwords[] PROGMEM = { "boot\0if\0run\0stop\0switch\0while\0" };
 const prog_uchar reservedwordtypes[] PROGMEM = { s_boot, s_if, s_run, s_stop, s_switch, s_while };
 #else
@@ -382,7 +382,7 @@ byte findindex(char *id, const prog_char *wordlist, byte sorted) {
 }
 
 // return the pin number from a2 or d13
-#ifdef TINY85
+#if defined(TINY_BUILD)
 #define pinnum(id) (id[1] - '0')
 #else
 byte pinnum(char id[]) {
@@ -467,7 +467,7 @@ void skipcomment(void) {
 // Handle unexpected character
 void badsym(void) {
 	unexpected(M_char);
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 	printHex(inchar);speol();
 #endif
 }
@@ -572,7 +572,7 @@ void parseid(void) {
 	else if ((idbuflen <= 3) &&
 		((c == 'a') || (c == 'd')) && 
 		isdigit(idbuf[1]) && (
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 		isdigit(idbuf[2]) || 
 #endif
 		(idbuf[2] == 0))) {
@@ -612,7 +612,7 @@ byte findscript(char *idbuf) {
 	// script function in eeprom?
 	if ((symval=findKey(idbuf)) >= 0) sym = s_script_eeprom;
 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 	// script function in a file?
 	else if (scriptfileexists(idbuf)) sym = s_script_file;
 

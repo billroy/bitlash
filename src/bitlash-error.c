@@ -43,7 +43,7 @@ void fatal2(char msg1, char msg2) {
 #endif
 
 #if defined(SOFTWARE_SERIAL_TX) || defined(HARDWARE_SERIAL_TX)
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 	pointToError(); 
 #endif
 	msgp(msg1); 
@@ -62,7 +62,7 @@ void fatal2(char msg1, char msg2) {
 void fatal(char msgid) { fatal2(msgid, 0); }
 void expected(byte msgid) { fatal2(M_expected, msgid); }
 void expectedchar(byte c) { 
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 	spb(c); 
 #endif
 	fatal(M_expected); 
@@ -72,7 +72,7 @@ void missing(byte msgid) { fatal2(M_missing, msgid); }
 void underflow(byte msgid) { fatal2(msgid, M_underflow); }
 void overflow(byte msgid) { fatal2(msgid, M_overflow); }
 //void toolong(void) { overflow(M_string); }
-#if !defined(TINY85)
+#if !defined(TINY_BUILD)
 void oops(int errcode) { printInteger(errcode, 0, 0); fatal(M_oops); }
 #endif
 

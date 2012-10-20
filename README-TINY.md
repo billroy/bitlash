@@ -4,8 +4,11 @@ October 20, 2012
 ## Status
 
 - Builds and links for Tiny85 and Tiny84
-- Tiny85 size is 8032 of 8192
+
+- Tiny85/8MHz/Internal osc size is 7874 of 8192
+
 - many features cut for space; see list below
+
 - completely untested
 
 

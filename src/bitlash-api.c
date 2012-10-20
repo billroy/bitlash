@@ -52,7 +52,7 @@ numvar doCommand(char *cmd) {
 
 void initBitlash(unsigned long baud) {
 
-#if defined(TINY85)
+#if defined(TINY_BUILD)
 	beginSerial(9600);
 #else
 	beginSerial(baud);
