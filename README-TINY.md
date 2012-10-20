@@ -9,7 +9,7 @@ October 20, 2012
 
 - many features cut for space; see list below
 
-- completely untested
+- completely untested, no telling if it runs
 
 
 ## Using the Arduino-Tiny core (0100-0015) installed from:

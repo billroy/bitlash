@@ -286,6 +286,7 @@ numvar fetchmark;
 
 	else if (sym == s_stop) {
 		getsym();
+#if !defined(TINY_BUILD)
 		if (sym == s_mul) {						// stop * stops all tasks
 			initTaskList();
 			getsym();
@@ -294,7 +295,9 @@ numvar fetchmark;
 			if (background) stopTask(curtask);	// stop with no args stops the current task IF we're in back
 			else initTaskList();				// in foreground, stop all
 		}
-		else stopTask(getnum());
+		else 
+#endif
+			stopTask(getnum());
 	}
 
 	else if (sym == s_rm) {		// rm "sym" or rm *
@@ -314,8 +317,8 @@ numvar fetchmark;
 	else if (sym == s_ps) 		{ getsym();	showTaskList(); }
 	else if (sym == s_peep) 	{ getsym(); cmd_peep(); }
 	else if (sym == s_help) 	{ getsym(); cmd_help(); }
-	else if (sym == s_print) 	{ getsym(); cmd_print(); }
 #endif
+	else if (sym == s_print) 	{ getsym(); cmd_print(); }
 	else if (sym == s_semi)		{ ; }	// ;)
 
 #ifdef HEX_UPLOAD

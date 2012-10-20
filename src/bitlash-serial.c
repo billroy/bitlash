@@ -337,7 +337,7 @@ void chkbreak(void) {
 
 
 
-#if !defined(TINY_BUILD)
+#if 1	// !defined(TINY_BUILD)
 
 // Print command handler
 // 	print exprlist
