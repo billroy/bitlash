@@ -209,7 +209,9 @@ numvar retval = 0;
 //char *fetchmark;
 numvar fetchmark;
 
+#if !defined(TINY85)
 	chkbreak();
+#endif
 
 	if (sym == s_while) {
 		// at this point sym is pointing at s_while, before the conditional expression

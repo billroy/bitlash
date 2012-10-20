@@ -172,7 +172,11 @@ numvar func_pinmode(void) { reqargs(2); pinMode(arg1, arg2); return 0; }
 numvar func_pulsein(void) { reqargs(3); return pulseIn(arg1, arg2, arg3); }
 numvar func_snooze(void) { reqargs(1); snooze(arg1); return 0; }
 numvar func_delay(void) { reqargs(1); delay(arg1); return 0; }
+
+#if !defined(TINY85)
 numvar func_setBaud(void) { reqargs(2); setBaud(arg1, arg2); return 0; }
+#endif
+
 //numvar func_map(void) { reqargs(5); return map(arg1, arg2, arg3, arg4, arg5); }
 //numvar func_shiftout(void) { reqargs(4); shiftOut(arg1, arg2, arg3, arg4); return 0; }
 
@@ -199,7 +203,9 @@ const prog_char functiondict[] PROGMEM = {
 	"abs\0"
 	"ar\0"
 	"aw\0"
+#if !defined(TINY85)
 	"baud\0"
+#endif
 	"bc\0"
 	"beep\0"
 	"br\0"
@@ -237,7 +243,9 @@ const bitlash_function function_table[] PROGMEM = {
 	func_abs,
 	func_ar,
 	func_aw,
+#if !defined(TINY85)
 	func_setBaud,
+#endif
 	func_bitclear,
 	func_beep,
 	func_bitread,

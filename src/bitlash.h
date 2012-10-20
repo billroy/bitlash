@@ -269,13 +269,14 @@ void beginEthernet(unsigned long baud) {
 //
 #if defined(__AVR_ATtiny85__)
 #define TINY85 1
+#undef MINIMUM_FREE_RAM
 #define MINIMUM_FREE_RAM 20
 #define NUMPINS 6
-#undef HARDWARE_SERIAL_TX
+//#undef HARDWARE_SERIAL_TX
 #undef SOFTWARE_SERIAL_TX
 //#define SOFTWARE_SERIAL_TX 1
 
-#include "usbdrv.h"
+//#include "usbdrv.h"
 
 #endif		// tiny85
 
@@ -438,8 +439,6 @@ void delayMicroseconds(unsigned int);
 //
 #ifdef TINY85
 byte putlbuf(char);
-#define initlbuf() lbufptr=lbuf
-#else
 void initlbuf(void);
 #endif
 

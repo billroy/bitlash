@@ -39,16 +39,15 @@
 // Character io primitives
 //#define spb serialWrite
 
-
-#ifdef SOFTWARE_SERIAL_TX
-
 // The default default outpin is, of course, zero
 #ifndef DEFAULT_OUTPIN
 #define DEFAULT_OUTPIN 0
 #endif
+byte outpin = DEFAULT_OUTPIN;	// output pin
+
+#ifdef SOFTWARE_SERIAL_TX
 
 #define DEFAULT_SECONDARY_BAUD 9600L
-byte outpin = DEFAULT_OUTPIN;	// output pin
 
 #ifndef NUMPINS
 #define NUMPINS 32				// default to Arduino Diecimila/168..328
@@ -338,7 +337,7 @@ void chkbreak(void) {
 
 
 
-#if !defined(TINY85)
+//#if !defined(TINY85)
 
 // Print command handler
 // 	print exprlist
@@ -394,7 +393,7 @@ void cmd_print(void) {
 	resetOutput();
 #endif
 }
-#endif
+//#endif
 
 //////////
 //
