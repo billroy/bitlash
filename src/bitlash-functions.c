@@ -260,7 +260,7 @@ const prog_char functiondict[] PROGMEM = {
 	"pinmode\0"
 	"printf\0"
 	"pulsein\0"
-//	"random\0"
+	"random\0"
 //	"shiftout\0"
 	"sign\0"
 	"snooze\0"
