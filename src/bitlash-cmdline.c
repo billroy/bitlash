@@ -43,7 +43,7 @@ char lbuf[LBUFLEN];
 
 // Help text
 //
-#ifdef ARDUINO_BUILD
+#ifdef ARDUINO_BUILD && !defined(TINY85)
 const prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
 #else
 const prog_char helptext[] PROGMEM = { "http://bitlash.net\r\n\0" };

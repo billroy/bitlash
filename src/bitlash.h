@@ -377,7 +377,7 @@ void beginSerial(unsigned long baud) { ; }
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
-#if defined(ARDUINO_BUILD) || defined(UNIX_BUILD)
+#if (defined(ARDUINO_BUILD) || defined(UNIX_BUILD)) && !defined(TINY85)
 typedef long int numvar;
 typedef unsigned long int unumvar;
 #else

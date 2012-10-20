@@ -337,7 +337,7 @@ void chkbreak(void) {
 
 
 
-//#if !defined(TINY85)
+#if !defined(TINY85)
 
 // Print command handler
 // 	print exprlist
@@ -393,7 +393,7 @@ void cmd_print(void) {
 	resetOutput();
 #endif
 }
-//#endif
+#endif
 
 //////////
 //

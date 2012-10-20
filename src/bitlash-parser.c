@@ -612,11 +612,13 @@ byte findscript(char *idbuf) {
 	// script function in eeprom?
 	if ((symval=findKey(idbuf)) >= 0) sym = s_script_eeprom;
 
+#if !defined(TINY85)
 	// script function in a file?
 	else if (scriptfileexists(idbuf)) sym = s_script_file;
 
 	// script in the built-ins table?
 	else if (findbuiltin(idbuf)) {;}
+#endif
 
 	else {
 		sym = s_undef;		// huh?

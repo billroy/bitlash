@@ -199,13 +199,46 @@ numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitc
 //	MAINTENANCE NOTE: 	This dictionary must be sorted in alpha order 
 //						and must be 1:1 with function_table below.
 //
+#if defined(TINY85)
+const prog_char functiondict[] PROGMEM = {
+//	"abs\0"
+//	"ar\0"
+//	"aw\0"
+//	"baud\0"
+//	"bc\0"
+//	"beep\0"
+//	"br\0"
+//	"bs\0"
+//	"bw\0"
+//	"constrain\0"
+	"delay\0"
+//	"dr\0"
+//	"dw\0"
+//	"er\0"
+//	"ew\0"
+	"free\0"
+	"inb\0"
+//	"map\0"
+//	"max\0"
+	"millis\0"
+//	"min\0"
+	"outb\0"
+	"pinmode\0"
+//	"printf\0"
+//	"pulsein\0"
+//	"random\0"
+//	"shiftout\0"
+//	"sign\0"
+	"snooze\0"
+};
+
+#else		// standard function set
+
 const prog_char functiondict[] PROGMEM = {
 	"abs\0"
 	"ar\0"
 	"aw\0"
-#if !defined(TINY85)
 	"baud\0"
-#endif
 	"bc\0"
 	"beep\0"
 	"br\0"
@@ -227,25 +260,59 @@ const prog_char functiondict[] PROGMEM = {
 	"pinmode\0"
 	"printf\0"
 	"pulsein\0"
-	"random\0"
+//	"random\0"
 //	"shiftout\0"
 	"sign\0"
 	"snooze\0"
 };
+#endif
+
 
 
 // function_table
 //
 // this must be 1:1 with the symbols above, which in turn must be in alpha order
 //
+#if defined(TINY85)
+const bitlash_function function_table[] PROGMEM = {
+//	func_abs,
+//	func_ar,
+//	func_aw,
+//	func_setBaud,
+//	func_bitclear,
+//	func_beep,
+//	func_bitread,
+//	func_bitset,
+//	func_bitwrite,
+//	func_constrain,
+	func_delay,
+//	func_dr,
+//	func_dw,
+//	func_er,
+//	func_ew,
+	func_free,
+	func_inb,
+//	func_map,
+//	func_max,
+	(bitlash_function) millis,
+//	func_min,
+	func_outb,
+	func_pinmode,
+//	func_printf,
+//	func_pulsein,
+//	func_random,
+//	func_shiftout,
+//	func_sign,
+	func_snooze 		// last one no comma!
+ };
+
+#else		// standard function set
 
 const bitlash_function function_table[] PROGMEM = {
 	func_abs,
 	func_ar,
 	func_aw,
-#if !defined(TINY85)
 	func_setBaud,
-#endif
 	func_bitclear,
 	func_beep,
 	func_bitread,
@@ -271,13 +338,15 @@ const bitlash_function function_table[] PROGMEM = {
 //	func_shiftout,
 	func_sign,
 	func_snooze 		// last one no comma!
- 	};
-
+ };
+#endif
 
 // Enable USER_FUNCTIONS to include the add_bitlash_function() extension mechanism
 // This costs about 256 bytes
 //
+#if !defined(TINY85)
 #define USER_FUNCTIONS
+#endif
 
 #ifdef USER_FUNCTIONS
 #define MAX_USER_FUNCTIONS 20		// increase this if needed, but keep free() > 200 ish

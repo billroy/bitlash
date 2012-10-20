@@ -43,7 +43,9 @@ void fatal2(char msg1, char msg2) {
 #endif
 
 #if defined(SOFTWARE_SERIAL_TX) || defined(HARDWARE_SERIAL_TX)
+#if !defined(TINY85)
 	pointToError(); 
+#endif
 	msgp(msg1); 
 	if (msg2) msgpl(msg2); 
 #ifdef PARSER_TRACE

@@ -260,7 +260,10 @@ numvar fetchmark;
 		if ((sym != s_eof) && (sym != s_semi)) retval = getnum();
 		sym = s_returning;		// signal we're returning up the line
 	}
+
+#if !defined(TINY85)
 	else if (sym == s_switch) retval = getswitchstatement();
+#endif
 
 	else if (sym == s_function) cmd_function();
 
@@ -294,21 +297,25 @@ numvar fetchmark;
 		else stopTask(getnum());
 	}
 
-	else if (sym == s_boot) reboot();
 	else if (sym == s_rm) {		// rm "sym" or rm *
 		getsym();
 		if (sym == s_script_eeprom) {
 			eraseentry(idbuf);
 		} 
+#if !defined(TINY85)
 		else if (sym == s_mul) nukeeeprom();
+#endif
 		else if (sym != s_undef) expected(M_id);
 		getsym();
 	}
+	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
+#if !defined(TINY85)
+	else if (sym == s_boot) reboot();
 	else if (sym == s_ps) 		{ getsym();	showTaskList(); }
 	else if (sym == s_peep) 	{ getsym(); cmd_peep(); }
-	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
 	else if (sym == s_help) 	{ getsym(); cmd_help(); }
 	else if (sym == s_print) 	{ getsym(); cmd_print(); }
+#endif
 	else if (sym == s_semi)		{ ; }	// ;)
 
 #ifdef HEX_UPLOAD
