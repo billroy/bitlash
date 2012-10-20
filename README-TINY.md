@@ -1,17 +1,26 @@
-Notes on Tiny85 port
+# Notes on Tiny85 port
 October 20, 2012
 
-Using the Arduino-Tiny core (0100-0015) installed from:
+## Status
+
+- Builds and links for Tiny85 and Tiny84
+- Tiny85 size is 8032 of 8192
+- many features cut for space; see list below
+- completely untested
+
+
+## Using the Arduino-Tiny core (0100-0015) installed from:
 
 	http://code.google.com/p/arduino-tiny/
 
-To avoid R_AVR_13_PCREL errors at link time, 
-you must use a modified ld per this forum post:
+## To avoid R_AVR_13_PCREL errors at link time
+
+You must use a modified ld per this forum post:
 
 	http://arduino.cc/forum/index.php/topic,116674.msg878023.html#msg878023
 
 
-Much has been cut:
+## Much has been cut:
 
 feature	before	after	savings
 numvar 16 bit	5322	3644	1678
