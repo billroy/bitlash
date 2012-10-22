@@ -3,7 +3,11 @@
 
 ## NOTE: ARDUINO 1.5 IDE PROBLEM -- October 22, 2012
 
-- There is an apparent bug in the new Arduino 1.5 IDE that prevents Bitlash and certain other libraries from being recognized as a valid library.  Forum thread here: http://arduino.cc/forum/index.php/topic,128543.msg966899.html#msg966899
+- There is an apparent bug in the new Arduino 1.5 IDE that prevents Bitlash and certain other libraries from being recognized as a valid library.  
+
+- Issue thread here: http://code.google.com/p/arduino/issues/detail?can=2&start=0&num=100&q=&colspec=ID%20Type%20Status%20Priority%20Milestone%20Owner%20Summary&groupby=&sort=&id=1079
+
+- Forum thread here: http://arduino.cc/forum/index.php/topic,128543.msg966899.html#msg966899
 
 
 ## September 10, 2012
