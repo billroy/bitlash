@@ -84,10 +84,15 @@ void cmd_help(void) {
 
 void prompt(void) {
 char buf[IDLEN+1];
+
+#if defined(TINY_BUILD)
+	msgp(M_prompt);
+#else
 	// Run the script named "prompt" if there is one else print "> "
 	strncpy_P(buf, getmsg(M_promptid), IDLEN);	// get the name "prompt" in our cmd buf
 	if (findscript(buf)) doCommand(buf);
 	else msgp(M_prompt);							// else print default prompt
+#endif
 }
 
 void initlbuf(void) {
@@ -141,7 +146,7 @@ void pointToError(void) {
 //
 void doCharacter(char c) {
 
-	if ((c == '\r') || (c == '\n') || (c == '`')) {
+	if ((c == '\r') || (c == '\n')) {
 		speol();
 		*lbufptr = 0;
 		doCommand(lbuf);
@@ -152,9 +157,11 @@ void doCharacter(char c) {
 		initTaskList();
 		initlbuf();
 	}
+#if !defined(TINY_BUILD)
 	else if (c == 2) {			// ^B suspend Background macros
 		suspendBackground = !suspendBackground;
 	}
+#endif
 	else if ((c == 8) || (c == 0x7f)) {
 		if (lbufptr == lbuf) spb(7);		// bell
 		else {
@@ -168,12 +175,14 @@ void doCharacter(char c) {
 		//spb(7);
 	}
 #endif
+#if !defined(TINY_BUILD)
 	else if (c == 21) {		// ^U to get last line
 		msgpl(M_ctrlu);
 		prompt();
 		sp(lbuf);
 		lbufptr = lbuf + strlen(lbuf);
 	}
+#endif
 	else putlbuf(c);
 }
 

@@ -368,7 +368,9 @@ void cmd_print(void) {
 				getsym();		// cheat and look for var ref to x or b
 				if (sym == s_nvar) {
 					if 		(symval == 'x'-'a') printHex((unumvar) expval);		// :x print hex
+#if !defined(TINY_BUILD)
 					else if (symval == 'b'-'a') printBinary((unumvar) expval);	// :b print binary
+#endif
 					else if (symval == 'y'-'a') spb(expval);					// :y print byte
 					else if (symval == 's'-'a') sp((char *)expval);				// :s print string
 				}

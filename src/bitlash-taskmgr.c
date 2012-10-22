@@ -92,7 +92,8 @@ byte i;
 	for (i=0; i<NUMTASKS; i++) {
 		// run one task per call on a round robin basis
 		if (++curtask >= NUMTASKS) curtask = 0;
-		if ((tasklist[curtask] != SLOT_FREE) && (millis() >= waketime[curtask])) {
+		if ((tasklist[curtask] != SLOT_FREE) && 
+			(((signed long) millis() - (signed long) waketime[curtask])) >= 0) {
 
 			// run it with the background flag set
 			background = 1;

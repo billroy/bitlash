@@ -217,12 +217,12 @@ const prog_char functiondict[] PROGMEM = {
 //	"er\0"
 //	"ew\0"
 	"free\0"
-	"inb\0"
+//	"inb\0"
 //	"map\0"
 //	"max\0"
 	"millis\0"
 //	"min\0"
-	"outb\0"
+//	"outb\0"
 	"pinmode\0"
 //	"printf\0"
 //	"pulsein\0"
@@ -291,12 +291,12 @@ const bitlash_function function_table[] PROGMEM = {
 //	func_er,
 //	func_ew,
 	func_free,
-	func_inb,
+//	func_inb,
 //	func_map,
 //	func_max,
 	(bitlash_function) millis,
 //	func_min,
-	func_outb,
+//	func_outb,
 	func_pinmode,
 //	func_printf,
 //	func_pulsein,

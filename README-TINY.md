@@ -4,8 +4,9 @@ October 20, 2012
 ## Status
 
 - Builds and links for Tiny85 and Tiny84
+	8176/8192 bytes
 
-- Tiny85/8MHz/Internal osc size is 7874 of 8192
+- does not have serial input yet
 
 - many features cut for space; see list below
 
@@ -41,3 +42,6 @@ builtin lookup	404	278	126
 banner	278	204	74
 pointToError	204	136	68
 random()		??	0
+prompt function
+setup function
+
