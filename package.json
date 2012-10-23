@@ -1,0 +1,19 @@
+{
+	"name": "bitlash",
+	"preferGlobal": "false",
+	"version": "0.1.0",
+	"author": "Bill Roy <bill@bitlash.net>",
+	"description": "web serial terminal for arduino",
+	"scripts": {
+		"start": "node index",
+		"predeploy": "echo predeploy...",
+		"postdeploy": "echo compiling...; gcc -pthread src/*.c -o src/bitlash-binary"
+	},
+	"dependencies" : {
+		"tty.js"	: ">=0.2.6",
+		"optimist"  : ">=0.3.4"
+	},
+	"engines": {
+		"node": "0.6.x"
+	}
+}

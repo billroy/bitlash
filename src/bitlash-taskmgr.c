@@ -82,6 +82,13 @@ void snooze(unumvar duration) {
 }
 
 
+//////////
+//
+//	runBackgroundTasks
+//
+//	Runs one eligible background task per invocation
+//	Returns true if a task was run
+//
 void runBackgroundTasks(void) {
 byte i;	
 
@@ -107,6 +114,18 @@ byte i;
 	}
 }
 
+unsigned long millisUntilNextTask(void) {
+byte slot;
+	long next_wake_time = millis() + 500L;
+	for (slot=0; slot<NUMTASKS; slot++) {
+		if (tasklist[slot] != SLOT_FREE) {
+			if (waketime[slot] < next_wake_time) next_wake_time = waketime[slot];
+		}
+	}
+	long millis_to_wait = next_wake_time - millis();
+	if (millis_to_wait < 0) millis_to_wait = 0;
+	return millis_to_wait;			// millis until next task runs
+}
 
 void showTaskList(void) {
 byte slot;

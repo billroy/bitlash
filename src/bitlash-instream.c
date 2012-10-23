@@ -46,10 +46,18 @@ numvar scriptgetpos(void);
 byte scriptread(void);
 byte scriptwrite(char *filename, char *contents, byte append);
 void scriptwritebyte(byte b);
-#else
+#elif !defined(UNIX_BUILD)
 byte scriptfileexists(char *scriptname) { return 0; }
 #endif
 
+// masks for stashing the pointer type in the high nibble
+#if defined(UNIX_BUILD) && defined(__x86_64__)
+#define MARK_SHIFT 60
+#define ADDR_MASK 0xfffffffffffffffL
+#else
+#define MARK_SHIFT 28
+#define ADDR_MASK 0xfffffffL
+#endif
 
 // forward declaration
 void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname);
@@ -164,7 +172,7 @@ void callscriptfunction(byte scripttype, numvar scriptaddress) {
 //	
 numvar markparsepoint(void) {
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 	if (fetchtype == SCRIPT_FILE) {
 		// the location we wish to return to is the point from which we read inchar, 
 		// which is one byte before the current file pointer since it auto-advances
@@ -174,7 +182,8 @@ numvar markparsepoint(void) {
 
 	// stash the fetch context type in the high nibble of fetchptr
 	// LIMIT: longest script is 2^29-1 bytes
-	numvar ret = ((numvar) fetchtype << 28) | (fetchptr & 0x0fffffffL);
+	// UNIX LIMIT: 2^60-1
+	numvar ret = ((numvar) fetchtype << MARK_SHIFT) | (fetchptr & ADDR_MASK);
 
 #ifdef PARSER_TRACE
 	if (trace) {
@@ -206,13 +215,18 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 	// if we're restoring to idle, we're done
 	if (fetchtype == SCRIPT_NONE) return;
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 	// handle file transition side effects here, once per transition,
 	// rather than once per character below in primec()
 	if (fetchtype == SCRIPT_FILE) {
 
+#if defined(UNIX_BUILD)
+		// ask the file glue to open and position the file for us
+		if (!scriptopen(scriptname, scriptaddress, 0)) unexpected(M_oops);		// TODO: error message
+#else
 		// ask the file glue to open and position the file for us
 		if (!scriptopen(scriptname, scriptaddress, O_READ)) unexpected(M_oops);		// TODO: error message
+#endif
 	}
 #endif
 
@@ -220,13 +234,32 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 }
 
 
-void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 
+#ifdef UNIX_BUILD
+
+char *topname = ".top.";
+
+void returntoparsepoint(numvar fetchmark, byte returntoparent) {
+	// restore parse type and location; for script files, pass name from string pool
+	byte ftype = fetchmark >> MARK_SHIFT;
+	char *scriptname = calleename;
+	if (returntoparent) {
+		if ((ftype == SCRIPT_NONE) || (ftype == SCRIPT_RAM))
+			scriptname = topname;
+		else if (arg[2]) scriptname = callername;
+	}
+	initparsepoint(fetchmark >> MARK_SHIFT, fetchmark & ADDR_MASK, scriptname);
+}
+
+#else
+
+void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 	// restore parse type and location; for script files, pass name from string pool
 	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, 
 		returntoparent ? callername : calleename);
 			//((char *) ((numvar *) arg[2]) [1]) : ((char *) arg[1]) );
-
+}
+#endif
 
 #ifdef PARSER_TRACE
 	if (trace) {
@@ -237,8 +270,6 @@ void returntoparsepoint(numvar fetchmark, byte returntoparent) {
 		speol();
 	}
 #endif
-
-}
 
 
 /////////
@@ -274,7 +305,7 @@ void primec(void) {
 		case SCRIPT_PROGMEM:	inchar = pgm_read_byte(fetchptr); 	break;
 		case SCRIPT_EEPROM:		inchar = eeread((int) fetchptr);	break;
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 		case SCRIPT_FILE:		inchar = scriptread();				break;
 #endif
 
@@ -306,7 +337,7 @@ numvar *a = arg;
 }
 
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 
 /////////
 //
@@ -331,9 +362,16 @@ numvar sdcat(void) {
 //	sdwrite: write or append a line to a file
 //
 numvar sdwrite(char *filename, char *contents, byte append) {
+#if !defined(UNIX_BUILD)
 	numvar fetchmark = markparsepoint();
+#endif
+
 	if (!scriptwrite(filename, contents, append)) unexpected(M_oops);
+
+#if !defined(UNIX_BUILD)
 	returntoparsepoint(fetchmark, 1);
+#endif
+
 	return 1;
 }
 
@@ -348,6 +386,7 @@ numvar func_fprintf(void) {
 	scriptwrite((char *) getarg(1), "", 1);		// open the file for append (but append nothing)
 
 	//serialOutputFunc saved_handler = serial_override_handler;	// save previous output handler
+	void scriptwritebyte(byte);
 	setOutputHandler(scriptwritebyte);			// set file output handler
 
 	func_printf_handler(2,3);	// format=arg(2), optional args start at 3

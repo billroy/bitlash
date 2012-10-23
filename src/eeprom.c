@@ -27,7 +27,12 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
+#include "bitlash.h"
+#ifndef UNIX_BUILD
+
 #include "avr/eeprom.h"
 
 void eewrite(int addr, uint8_t value) { eeprom_write_byte((unsigned char *) addr, value); }
 uint8_t eeread(int addr) { return eeprom_read_byte((unsigned char *) addr); }
+
+#endif

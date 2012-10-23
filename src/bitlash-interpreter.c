@@ -67,7 +67,7 @@ void reboot(void) {
 	void (*bootvec)(void) = 0; (*bootvec)(); 	// we jump through 0 instead
 }
 
-void skipbyte(char) {;}
+void skipbyte(char c) {;}
 
 // Skip a statement without executing it
 //
@@ -209,7 +209,7 @@ numvar retval = 0;
 //char *fetchmark;
 numvar fetchmark;
 
-#if !defined(TINY_BUILD)
+#if !defined(TINY_BUILD) && !defined(UNIX_BUILD)
 	chkbreak();
 #endif
 

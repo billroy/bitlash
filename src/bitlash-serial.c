@@ -174,10 +174,6 @@ void sp(const char *str) { while (*str) spb(*str++); }
 void speol(void) { spb(13); spb(10); }
 #else
 // handle no-serial case
-// we have no serial io, so we don't define spb, sp, speol
-#define spb(x)
-#define sp(x)
-#define speol(x)
 #endif
 
 
@@ -283,7 +279,7 @@ void beginSoftSerial(unsigned long baud) {
 #endif // SOFTWARE_SERIAL_RX
 
 
-#if (defined(ARDUINO_BUILD) && (ARDUINO_VERSION >= 12)) || defined(AVROPENDOUS_BUILD)
+#if (defined(ARDUINO_BUILD) && (ARDUINO_VERSION >= 12)) || defined(AVROPENDOUS_BUILD) || defined(UNIX_BUILD)
 // From Arduino 0011/wiring_serial.c
 // These apparently were removed from wiring_serial.c in 0012
 
@@ -304,7 +300,14 @@ void printIntegerInBase(unumvar n, uint8_t base, numvar width, byte pad) {
 		while (width-- > 0) spb(pad);
 	}
 
+#ifdef UNIX_BUILD
+	while (--ptr >= buf) {
+		if (*ptr < 10) spb(*ptr + '0');
+		else spb(*ptr - 10 + 'A');
+	}
+#else
 	while (--ptr >= buf) spb((*ptr < 10) ? (*ptr + '0') : (*ptr - 10 + 'A'));
+#endif
 }
 void printInteger(numvar n, numvar width, byte pad) {
 	if (n < 0) {
@@ -320,8 +323,19 @@ void printBinary(unumvar n) { printIntegerInBase(n, 2, 0, '0'); }
 
 
 
+#if defined(UNIX_BUILD)
 
-#if !defined(TINY_BUILD)
+void chkbreak(void) {
+	extern byte break_received;
+	if (break_received) {
+		break_received = 0;
+		msgpl(M_ctrlc);
+		longjmp(env, X_EXIT);
+	}
+}
+
+#elif !defined(TINY_BUILD)
+
 // check serial input stream for ^C break
 void chkbreak(void) {
 	if (serialAvailable()) {		// allow ^C to break out

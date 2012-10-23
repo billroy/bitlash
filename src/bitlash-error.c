@@ -42,7 +42,6 @@ void fatal2(char msg1, char msg2) {
 	resetOutput();
 #endif
 
-#if defined(SOFTWARE_SERIAL_TX) || defined(HARDWARE_SERIAL_TX)
 #if !defined(TINY_BUILD)
 	pointToError(); 
 #endif
@@ -50,7 +49,6 @@ void fatal2(char msg1, char msg2) {
 	if (msg2) msgpl(msg2); 
 #ifdef PARSER_TRACE
 	tb();
-#endif
 #endif
 
 	//traceback();
