@@ -27,11 +27,15 @@
 
 ***/
 /***
-	Bitlash rollover testing
+	Bitlash millis rollover testing
+
+	This test sketch allows a bitlash program to set millis() to an arbitrary value,
+	which makes it easy to see what will happen when the millis counter rolls over
+	after 49 days of operation.
+	
+	Here is a test case showing proper background task scheduling through the rollover:
 
 	> function pm {print millis}
-	> setmillis(-1000);run pm,50
-
 	> ls
 	function pm {print millis};
 	> setMillis(-500);run pm,50    
