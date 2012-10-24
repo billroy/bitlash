@@ -1,11 +1,22 @@
 # Bitlash Release Notes
 
 
+## ARM Version compiles under Arduino 1.5
+
+- Bitlash builds under the github working code for the new Arduino 1.5 IDE, both for the customary AVR targets and for the new ARM targets for the Arduino Due.  You will still get errors with the current Arduino 1.5 beta until a refresh is announced.  See the forum thread below to test using the github code.
+
+- The ARM has no eeprom.  Bitlash function storage in this alpha is in a 4k ram buffer that simulates EEPROM, except it vanishes at power-off.
+
+- Without a Due here, I cannot test it, but field reports are welcome.
+
+
 ## NOTE: ARDUINO 1.5 IDE PROBLEM -- October 22, 2012
 
 - There is an apparent bug in the new Arduino 1.5 IDE that prevents Bitlash and certain other libraries from being recognized as a valid library.  
 
 - Issue thread here: http://code.google.com/p/arduino/issues/detail?can=2&start=0&num=100&q=&colspec=ID%20Type%20Status%20Priority%20Milestone%20Owner%20Summary&groupby=&sort=&id=1079
+
+The issue appears to be resolved in code scheduled for the next beta
 
 - Forum thread here: http://arduino.cc/forum/index.php/topic,128543.msg966899.html#msg966899
 
