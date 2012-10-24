@@ -35,7 +35,7 @@
 ***/
 #include "bitlash.h"
 
-#ifndef UNIX_BUILD
+#if defined(AVR_BUILD)
 #include "avr/eeprom.h"
 #endif
 

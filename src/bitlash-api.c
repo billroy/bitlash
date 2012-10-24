@@ -58,6 +58,10 @@ void initBitlash(unsigned long baud) {
 	beginSerial(baud);
 #endif
 
+#if defined(ARM_BUILD)
+	eeinit();
+#endif
+
 	initTaskList();
 	vinit();
 	displayBanner();

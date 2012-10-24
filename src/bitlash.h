@@ -38,17 +38,28 @@
 
 #if defined(__x86_64__) || defined(__i386__)
 #define UNIX_BUILD 1
+#elif defined(__SAM3X8E__)
+#define ARM_BUILD 1
+#else
+#define AVR_BUILD 1
 #endif
 
-#ifndef UNIX_BUILD
+
+#if defined(AVR_BUILD)
 #include "avr/io.h"
-#include "string.h"
 #include "avr/pgmspace.h"
 #include "avr/interrupt.h"
+#include <avr/wdt.h>
+#endif
+
+#if defined(AVR_BUILD) || defined(ARM_BUILD)
+#include "string.h"
 #include "ctype.h"
 #include "setjmp.h"
-#include <avr/wdt.h>
-#else
+#endif
+
+// Unix includes
+#if defined(UNIX_BUILD)
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -383,6 +394,21 @@ unsigned long millis(void);
 #endif	// defined unix_build
 
 
+////////////////////
+//
+//	ARM BUILD
+#if defined(ARM_BUILD)
+#define prog_char char
+#define prog_uchar byte
+#define PROGMEM
+#define pgm_read_byte(b) (*(char *)b)
+#define pgm_read_word(b) (*(int *)b)
+#define strncpy_P strncpy
+#define strcmp_P strcmp
+#define strlen_P strlen
+#define E2END 4096
+
+#endif
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
@@ -570,8 +596,17 @@ extern byte suspendBackground;
 // eeprom.c
 // they must live off piste due to aggressive compiler inlining.
 //
+#if defined(AVR_BUILD)
 void eewrite(int, byte) __attribute__((noinline));
 byte eeread(int) __attribute__((noinline));
+
+#elif defined(ARM_BUILD)
+void eewrite(int, byte);
+byte eeread(int);
+extern char virtual_eeprom[];
+void eeinit(void);
+#endif
+
 
 /////////////////////////////////////////////
 // bitlash-interpreter.c
@@ -634,7 +669,7 @@ extern byte fetchtype;		// current script type
 extern numvar fetchptr;		// pointer to current char in input buffer
 extern numvar symval;		// value of current numeric expression
 
-#define USE_GPIORS !defined(UNIX_BUILD)
+#define USE_GPIORS defined(AVR_BUILD)
 #if USE_GPIORS
 #define sym GPIOR0
 #define inchar GPIOR1

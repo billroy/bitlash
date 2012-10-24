@@ -86,7 +86,7 @@ numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
 #endif
 
 numvar func_free(void) {
-#ifdef UNIX_BUILD
+#if defined(UNIX_BUILD) || defined(ARM_BUILD)
 	return 1000L;
 #else
 numvar ret;
