@@ -220,12 +220,12 @@ void delayMicroseconds(unsigned int us) {
 
 // fake eeprom
 byte fake_eeprom[E2END];
+byte eeread(int addr) { return fake_eeprom[addr]; }
+void eewrite(int addr, byte value) { fake_eeprom[addr] = value; }
 void init_fake_eeprom(void) {
 int i=0;
 	while (i <= E2END) eewrite(i++, 0xff);
 }
-byte eeread(int addr) { return fake_eeprom[addr]; }
-void eewrite(int addr, byte value) { fake_eeprom[addr] = value; }
 
 FILE *savefd;
 void fputbyte(byte b) {
