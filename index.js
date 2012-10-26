@@ -28,7 +28,7 @@ var config = {
 		'cert': null
 	},
 	'port': port,
-	'shell': 'src/bin/bitlash-linux-32',
+	'shell': 'src/bin/bitlash-linux-32-heroku',
 	//'shellArgs': shellargs,
 	//'limitGlobal': 1,
 	//'limitPerUser': 1,

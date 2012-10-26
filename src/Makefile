@@ -1,4 +1,4 @@
 all: 
-	gcc *.c -o bin/bitlash
+	gcc -pthread *.c -o bin/bitlash
 
 
