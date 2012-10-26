@@ -186,6 +186,39 @@ numvar func_bitset(void) { reqargs(2); return arg1 | ((numvar)1 << arg2); }
 numvar func_bitread(void) { reqargs(2); return (arg1 & ((numvar)1 << arg2)) != 0; }
 numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitclear(); }
 
+numvar func_getkey(void) {
+	if (getarg(0) > 0) sp((char *) getarg(1));
+	while (!serialAvailable()) {;}		// blocking!
+	return (numvar) serialRead();
+}
+
+numvar func_getnum(void) {
+	numvar num = 0;
+	if (getarg(0) > 0) sp((char *) getarg(1));
+	for (;;) {
+		while (!serialAvailable()) {;}	// blocking!
+		int k = serialRead();
+		if ((k == '\r') || (k == '\n')) {
+			speol();
+			return num;
+		}
+		else if ((k >= '0') && (k <= '9')) {
+			num = num * 10L + (long) (k - '0');
+		}
+		else if (k == '-') num = -num;
+		else if ((k == 8) || (k == 0x7f)) {
+			if (num != 0) {
+				num /= 10L;
+				spb(8); spb(' '); spb(8);
+			}
+		}
+		else {
+			spb(7);	// beep
+			continue;
+		}
+		spb(k);			// else echo what we ate
+	}
+}
 
 //////////
 // Function name dictionary
@@ -252,6 +285,8 @@ const prog_char functiondict[] PROGMEM = {
 	"er\0"
 	"ew\0"
 	"free\0"
+	"getkey\0"
+	"getnum\0"
 	"inb\0"
 //	"map\0"
 	"max\0"
@@ -326,6 +361,8 @@ const bitlash_function function_table[] PROGMEM = {
 	func_er,
 	func_ew,
 	func_free,
+	func_getkey,
+	func_getnum,
 	func_inb,
 //	func_map,
 	func_max,

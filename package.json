@@ -5,7 +5,7 @@
 	"author": "Bill Roy <bill@bitlash.net>",
 	"description": "web serial terminal for arduino",
 	"scripts": {
-		"start": "node index",
+		"start": "node index"
 	},
 	"dependencies" : {
 		"tty.js"	: ">=0.2.6",
