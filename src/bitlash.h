@@ -68,6 +68,8 @@
 #include "setjmp.h"
 #include <time.h>
 #include <sys/types.h>
+#include <errno.h>
+//#include <unistd.h>
 #endif
 
 #ifndef byte

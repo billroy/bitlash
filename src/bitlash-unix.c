@@ -70,8 +70,8 @@ char bitlash_directory[PATH_LEN];
 struct timespec startup_time, current_time, elapsed_time;
 
 // from http://www.guyrutenberg.com/2007/09/22/profiling-code-using-clock_gettime/
-struct timespec time_diff(timespec start, timespec end) {
-	timespec temp;
+struct timespec time_diff(struct timespec start, struct timespec end) {
+	struct timespec temp;
 	if ((end.tv_nsec-start.tv_nsec)<0) {
 		temp.tv_sec = end.tv_sec-start.tv_sec-1;
 		temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;

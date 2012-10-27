@@ -61,7 +61,7 @@ void nukeeeprom(void) {
 	}
 }
 
-void reboot(void) {
+void avr_reboot(void) {
 	// This is recommended but does not work on Arduino
 	// Reset_AVR();
 	void (*bootvec)(void) = 0; (*bootvec)(); 	// we jump through 0 instead
@@ -207,7 +207,7 @@ byte thesym = sym;
 numvar getstatement(void) {
 numvar retval = 0;
 //char *fetchmark;
-numvar fetchmark;
+numvar fetcfhmark;
 
 #if !defined(TINY_BUILD) && !defined(UNIX_BUILD)
 	chkbreak();
@@ -217,11 +217,11 @@ numvar fetchmark;
 		// at this point sym is pointing at s_while, before the conditional expression
 		// save fetchptr so we can restart parsing from here as the while iterates
 		//fetchmark = fetchptr;
-		fetchmark = markparsepoint();
+		fetcfhmark = markparsepoint();
 		for (;;) {
 			//fetchptr = fetchmark;			// restore to mark
 			//primec();						// set up for mr. getsym()
-			returntoparsepoint(fetchmark, 0);
+			returntoparsepoint(fetcfhmark, 0);
 			getsym(); 						// fetch the start of the conditional
 			if (getnum()) {
 				retval = getstatement();
@@ -313,7 +313,7 @@ numvar fetchmark;
 	}
 	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
 #if !defined(TINY_BUILD)
-	else if (sym == s_boot) reboot();
+	else if (sym == s_boot) avr_reboot();
 	else if (sym == s_ps) 		{ getsym();	showTaskList(); }
 	else if (sym == s_peep) 	{ getsym(); cmd_peep(); }
 	else if (sym == s_help) 	{ getsym(); cmd_help(); }

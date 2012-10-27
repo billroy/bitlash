@@ -100,6 +100,8 @@ byte scriptfileexists(char *scriptname) {
 byte scriptclose(void) {
 	if (scriptfile_is_open) fclose(scriptfile);
 	scriptfile_is_open = 0;
+    scriptfile = 0;
+    *cachedname = 0;
 	return 0;
 }
 
@@ -117,7 +119,10 @@ byte scriptopen(char *scriptname, numvar position, byte flags) {
 		scriptfile_is_open = 1;				// note it's open
 		if (position == 0L) return 1;		// save a seek, when we can
 	}
-	if (lseek(scriptfile, position, 0) < 0) return 0;
+	extern off_t lseek(int fd, off_t offset, int whence);
+	off_t seek_status = fseek(scriptfile, (off_t) position, SEEK_SET);
+    int err = errno;
+    if (seek_status == -1) return 0;
 	return 1;
 }
 

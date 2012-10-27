@@ -73,4 +73,3 @@ void overflow(byte msgid) { fatal2(msgid, M_overflow); }
 #if !defined(TINY_BUILD)
 void oops(int errcode) { printInteger(errcode, 0, 0); fatal(M_oops); }
 #endif
-
