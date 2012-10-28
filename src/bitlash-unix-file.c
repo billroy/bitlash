@@ -148,18 +148,23 @@ byte scriptwrite(char *filename, char *contents, byte append) {
 
 	FILE *outfile;
 	char *flags;
-	if (append) flags = "wb";
+	if (append) flags = "a";
 	else flags = "w";
 
-	outfile = fopen(filename, flags);
-	if (!outfile) return 0;
-	if (strlen(contents)) {
+	if (scriptfile_is_open) scriptclose();
+	scriptfile = fopen(filename, flags);
+	if (!scriptfile) return 0;
+	strcpy(cachedname, filename);		// cache the name we have open
+	cachedflags = 1;					// and the mode
+	scriptfile_is_open = 1;				// note it's open
+	
+    if (strlen(contents)) {
 		if (fwrite(contents, 1, strlen(contents), outfile) != strlen(contents)) {
-			fclose(outfile);
+			//fclose(outfile);
 			return 0;
 		}
 	}
-	fclose(outfile);
+	//fclose(outfile);
 	return 1;
 }
 
