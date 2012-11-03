@@ -1,22 +1,30 @@
 # Bitlash Release Notes
 
 
-## ARM Version compiles under Arduino 1.5
+## November 3, 2012
 
-- Bitlash builds under the github working code for the new Arduino 1.5 IDE, both for the customary AVR targets and for the new ARM targets for the Arduino Due.  You will still get errors with the current Arduino 1.5 beta until a refresh is announced.  See the forum thread below to test using the github code.
+Recent Bitlash changes of note:
+
+- Published a new tool, "bloader.js", a program loader and serial monitor for Bitlash based on node.js.  See https://github.com/billroy/bloader.js
+
+- Published a new tool, "serial-web-terminal", which provides a browser-based serial terminal monitor for a usb-connected Arduino.  See https://github.com/billroy/serial-web-terminal.git
+
+- Fixed a millis rollover bug in the background task scheduler.  You can cherry-pick the fix at line 103 in src/bitlash-taskmgr.c -- also, there is a new example named examples/rollover that lets you set millis() to a value just before the rollover to test.
+
+- Added getkey([prompt]) and getint([prompt]) to get user input.
+
+- Compiles and runs on Linux and OS X, and there is a web-based Bitlash terminal you can run on Heroku so you can play with Bitlash in your browser.  See README-UNIX.md
+
+- Compiles on the tiny core, with many feature amputations.  Not tested.  See README-TINY.md
+
+
+## Bitlash Due Version compiles under Arduino 1.5
+
+- Bitlash builds under the github working code for the new Arduino 1.5 IDE, both for the customary AVR targets and for the new ARM targets for the Arduino Due.  You may still get errors with the current Arduino 1.5 beta until a refresh is announced.  See the forum thread below to test using the latest github IDE code.
 
 - The ARM has no eeprom.  Bitlash function storage in this alpha is in a 4k ram buffer that simulates EEPROM, except it vanishes at power-off.
 
 - Without a Due here, I cannot test it, but field reports are welcome.
-
-
-## NOTE: ARDUINO 1.5 IDE PROBLEM -- October 22, 2012
-
-- There is an apparent bug in the new Arduino 1.5 IDE that prevents Bitlash and certain other libraries from being recognized as a valid library.  
-
-- Issue thread here: http://code.google.com/p/arduino/issues/detail?can=2&start=0&num=100&q=&colspec=ID%20Type%20Status%20Priority%20Milestone%20Owner%20Summary&groupby=&sort=&id=1079
-
-The issue appears to be resolved in code scheduled for the next beta
 
 - Forum thread here: http://arduino.cc/forum/index.php/topic,128543.msg966899.html#msg966899
 
