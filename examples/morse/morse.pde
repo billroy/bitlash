@@ -110,7 +110,7 @@ TODO: print prosigns BK SK AR correctly
 #define m6(b) m(0,b)
 #define NIL m(6,0xc)
 #include "avr/pgmspace.h"
-prog_char morsetab[] PROGMEM = {
+const prog_char morsetab[] PROGMEM = {
 	//2 SP      !      "      #    $       %    &        '          (         )      *    +         ,      -      .          slash
 		NIL, m6(2), m6(6), NIL, m(7,9), NIL, m(5,8), m(6,0x1e), m(5,0x16), m6(3), NIL, m(5,0xa), m6(4), m6(5), m(6,0x15), m(5,0x12),
 	//3   0   		1   		2   	3   	4   		5   	6   	7   		8   		9   	 :  	;  		<    =   	   >    ?
@@ -127,9 +127,9 @@ $ m(7,9)
 
 #define NUM_SPECIAL_CHARS 13
 //                              012345 6789012
-prog_char outliers[] PROGMEM = ":;!),-\"'.?@_#";
+const prog_char outliers[] PROGMEM = ":;!),-\"'.?@_#";
 
-prog_char m6codes[NUM_SPECIAL_CHARS] PROGMEM = {
+const char m6codes[NUM_SPECIAL_CHARS] PROGMEM = {
 //	0=:  1=;  2=!  3=)  4=,  5=-  6="  7='  8=.  9=?  10=@ 11=_ 12=SK/#
 	0x38,0x2a,0x2b,0x2d,0x33,0x21,0x12,0x1e,0x15,0x0c,0x1a,0x0d,0x05
 };
