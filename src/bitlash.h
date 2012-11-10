@@ -126,6 +126,8 @@
 
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
+	#define prog_char char PROGMEM
+	#define prog_uchar char PROGMEM
 #else
 	#include "WProgram.h"
 	#include "WConstants.h"

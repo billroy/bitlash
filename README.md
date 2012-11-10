@@ -1,5 +1,12 @@
 # Bitlash Release Notes
 
+Questions and Bug Reports welcome!  https://github.com/billroy/bitlash/issues
+
+
+## November 10, 2012
+
+- Fixed prog_char bug that broke compile on Ubuntu with avr-gcc 4.7.0
+
 
 ## November 3, 2012
 
