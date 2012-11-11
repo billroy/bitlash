@@ -1,0 +1,110 @@
+
+// Hello world:
+print "Hello, world!"
+
+// Hello world with printf:
+printf("Hello, world!")
+
+// Blink:
+function t13 {d13=!d13}
+function setup {pinmode(13,1); run t13,500}
+
+// Fade up:
+function setup {pinmode(4,1); run fadeup,50}; function fadeup {a4=++i&0xff}
+
+// Fade up-down:
+function setup {pinmode(4,1); run fadeupdn,50}; 
+function fadeupdn {if ++i&0x100 a4=i&0xff; else a4=255-(i&0xff);}
+
+// Time stamper:
+function setup {run stamp,1000} function stamp {printf("Time: %010d\r\n", millis)}
+
+// What if you want the LED to be ON for 3 sec, and OFF for 5 min?
+http://arduino.cc/forum/index.php/topic,74861.msg576650.html
+
+function setup {pinmode(13,1); run winky; pinmode(14,1); run dinky}
+function winky {d13=!d13; if d13 snooze(3000) else snooze(5*60*1000)}
+function dinky {d14=!d14; if d14 snooze(6000) else snooze(8*60*1000)}
+
+function setup {pinmode(13,1); run tick}
+function tock {snooze(arg(s)*1000); if ++s>=arg(0) s=0}
+function tick {d13=!(s&1); tock(3,2,3,5*60)}
+
+// another approach
+function setup {pinmode(13,1); run tick}
+function setled {dw(arg(1), arg(2)&1)}
+function tock {setled(!arg(2),arg(1)); snooze(arg(arg(1)+2)*1000); if arg(1)<arg(0)-3 return arg(1)+1 else return 0}
+function tick13 {s=tock(s, 13, 3,2,3,5*60)}
+function tick14 {t=tock(t, 14, 2,3,3,2*60,3,2)}
+
+// D5 on for 100, off for 1000
+function setup {pinmode(5,1); run onoff;}
+function pick {return arg(arg(1)+2);}
+function onoff {d5=!d5; snooze(pick(d5,1000,10));}
+
+function onoff {snooze(pick(d5=!d5,1000,10));}
+
+// led chaser, arbitrary pins, constant blinking status
+// uses c and d
+//
+function chase { chaser(5,6,7,8,9,11,12,13); }
+function chaser { d=arg(++c); pinmode(d,1); dw(d,!dr(d)); if c>=arg(0) c=0; }
+function t2 { pinmode(2,1); d2=!d2; }
+function startup { run chase, 50; run t2, 250; }
+
+// rollover test (requires bitlash/examples/rollover.ino)
+//
+// done: interval-elapsed check, wraparound-proof
+// i: timeout interval in millis
+// s: starting value for millis
+// t: counts millis upward from s until done
+//
+// example: test(500, 50)
+// example: test(-500, 50)
+// 
+function done {return (t-s) >= i;}
+function test { s=t=arg(1); i=arg(2); while !done print s:x,++t:x,done; }
+
+// two blinkers on d13 and d12 controlled by pots on a1 and a2
+function t1 { d13=!d13; snooze(a1); }
+function t2 { d12=!d12; snooze(a2); }
+function startup { run t1; run t2; }
+
+// ascii table
+function ascii_table { c=0; while c<128 { showchar; if !(++c%16) print; }
+function showchar {if c<0x20 {printf("^%c",c+0x40);} else {printf(" %c",c);}
+
+//...using switch
+function showchar { switch c>=0x20 {printf("^%c",c+0x40); printf(" %c",c); }
+
+// Independently control two RGB LEDs on pins 3/5/6 and 9/10/11
+function setup { pinmode(3,1); pinmode(5,1); pinmode(6,1); pinmode(9,1); pinmode(10,1); pinmode(11,1); }
+function setleft  { a3=arg(1); a4=arg(2); a5=arg(3); }
+function setright { a9=arg(1); a10=arg(2); a11=arg(3); }
+
+// action at start and stop of interval
+function cycle {print "It is on."; run turnoff,2000};
+function turnoff {print "It is off.";stop};
+
+// Pulse stretcher with cancellation
+//
+// Pushbutton press D2 = LED D13 on for 10min, then off
+// Pushbutton press within the 10min = LED off
+function setup {pinmode(13,1); run button,100; run timeout,1000;}
+function button {if d2 {d13=!d13; t=millis;}}
+function timeout {if d13 && ((millis-t)>10*60*1000) d13=0;}
+
+// Dead man's switch / watchdog timer
+function trigger { print "triggered"; t=millis; }
+function deadman { if d2 t=millis; else if millis-t>3000 trigger(); }
+function setup { pinmode(2,1); run deadman,100; }
+
+// Use a pot on Analog0 to control LED brightness on D5
+function update {a5=a0/4;}
+function setup {run update,100;}
+
+// Blink with programmable delay
+// To change the delay, send "d=25\n" for 25 ms
+//
+function t13 {d13=!d13; snooze(d);}
+function startup {pinmode(13,1); d=100; run t13;}
