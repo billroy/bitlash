@@ -26,6 +26,14 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 ***/
 
+
+// Note: There is a companion project on GitHub that produces graphs
+// in a web browser of data sent to Redis by this client.
+//
+// see: https://github.com/billroy/arduino-redis-datalogger
+
+
+
 /*****
 
 This is a Bitlash-powered Ethernet Redis client for Arduino.

@@ -108,3 +108,18 @@ function setup {run update,100;}
 //
 function t13 {d13=!d13; snooze(d);}
 function startup {pinmode(13,1); d=100; run t13;}
+
+// LED Candle on pin 5
+function candle {a5=rnd(255); snooze(rnd(100));}
+function startup {pinmode(5,1); run candle;}
+
+// pwm motor controls
+//
+function startup { pinmode(6,1); pinmode(7,1); pinmode(8,1); }
+function gocw { d7=1; d8=1; a6=255; }
+function goccw { d7=0; d8=0; a6=100; }
+
+// LED d3 on for three seconds after 100 pushes of d4; then off 10 seconds
+function setup { pinmode(3,1); run button, 100; }
+function button { if !d3 && ((millis-t)>10000) if d4 (++c>=100) {d3=1; c=0; run ledoff, 3000; }}
+function ledoff { d3=0; t=millis; stop; }
