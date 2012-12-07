@@ -123,3 +123,37 @@ function goccw { d7=0; d8=0; a6=100; }
 function setup { pinmode(3,1); run button, 100; }
 function button { if !d3 && ((millis-t)>10000) if d4 (++c>=100) {d3=1; c=0; run ledoff, 3000; }}
 function ledoff { d3=0; t=millis; stop; }
+
+// PIR on d9 controls relays on D6 and D7 with 10 second on-lag and 15 minute off-lag
+function startup   { pinmode(3,1); pinmode(4,1); run watchpir,100; run checkrelays, 1000;}
+function watchpir  { if (d9!=d) {d=d9; t=millis;};
+function checkrelays { if (d) checkon; else checkoff; }
+function checkon  { if (d && (millis-t > 10000) && !d7) { d7=1; delay(1000); d6=1; }}
+function checkoff { if (!d && (millis-t > 15*60000) && d7) { d6=0; delay(10000); d7=0; }}
+
+// Select one of three state functions to run using active-low switches on D14..D16
+function startup {d14=d15=d16=1; run buttons, 100; run loop}
+function buttons {if !d14 s=0; else if !d15 s=1; else if !d16 s=2;}
+function loop {switch s {prog1; prog2; prog3}}
+function toggle13 {d13=!d13;}
+function prog1 {toggle13; snooze(125);}
+function prog2 {toggle13; snooze(500);}
+function prog3 {toggle13; snooze(1000);}
+
+// Same as above, one button on D14 cycles through modes
+function buttons {if !d14 {if ++s>2 s=0;}}
+
+// PIR on D19, active high, activates load on D12 for 10000ms
+function startup { pinmode(12,1); run pir,100; run timeout, 1000; }
+function pir { if d19!=d {d=d19; t=millis; if (d) activate;} }
+function timeout { if d12 && !d && ((millis-t) > 10000) deactivate; }
+function activate { d12=1; }
+function deactivate { d12=0; }
+
+// outie: set all the specified pins to output, ex: outie(2,4,7,8,12,13);
+function outie {i=1; while i<arg(0) pinmode(arg(i++),1);}
+
+// pushbutton on pin 6 lights LED on pin 3; stays on for 5 seconds after release
+function startup {pinmode(6,1); run pbcheck, 100; run timeout, 100}
+function pbcheck {if (d6) {d3=1; t=millis;}}
+function timeout {if (d3 && ((millis-t) > 5000)) d3=0;}
