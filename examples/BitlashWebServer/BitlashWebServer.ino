@@ -1,6 +1,6 @@
 /***
 
-	BitlashWebServer.pde: Bitlash Interactive Telnet Console and HTML Interactor
+	BitlashWebServer.ino: Bitlash Interactive Telnet Console and HTML Interactor
 
 	Copyright (C) 2008-2012 Bill Roy
 
@@ -41,7 +41,7 @@ To get started:
 		You can watch the web traffic and issue commands
 	4. Navigate to the configured IP/port in your browser
 		The default settings in the code below:
-			http://192.168.1.27:8080
+			http://192.168.0.27:8080
 		If you see the "Bitlash web server here!" banner you've connected
 		You'll see the hit logged on the serial monitor
 	5. For remote maintenance, telnet to the same address/port
@@ -66,7 +66,7 @@ There are two ways to define a web server page:
 			function _uptime {print "Uptime is ",millis,"ms";}
 
 			From another terminal window we can test what the browser might see:
-			$ curl http://192.168.1.27:8080/uptime
+			$ curl http://192.168.0.27:8080/uptime
 			Uptime is 123324 ms
 			$
 
@@ -91,9 +91,9 @@ The password-protected telnet console operating on the same IP/port as the web s
 provides full access to Bitlash, so you can log in with telnet or nc and do bitlash stuff,
 including of course defining a new _function to expose a new web page.
 
-	...$ telnet 192.168.1.27 8080
+	...$ telnet 192.168.0.27 8080
 	Trying 192.168.1.27...
-	Connected to 192.168.1.27.
+	Connected to 192.168.0.27.
 	Escape character is '^]'.
 	open sesame
 	Bitlash web server here! v0.4
@@ -207,12 +207,16 @@ const prog_char error_page[] PROGMEM = { "Not found.\r\n\0" };
 const prog_char analog0_url[] PROGMEM = { "analog0\0" };
 const prog_char analog0_page[] PROGMEM = { "{\"a0\":[print a0,]}\r\n\0" };
 
+// This example toggles D5 and prints its new value
+const prog_char toggle5_url[] PROGMEM = { "toggle5\0" };
+const prog_char toggle5_page[] PROGMEM = { "[pinmode(5,1);print d5=!d5,]" };
 
 // Add new pages here, just like these
 builtin_page builtin_page_list[] = {
 	{ index_url, default_index_page },
 	{ error_url, error_page },
 	{ analog0_url, analog0_page },
+	{ toggle5_url, toggle5_page },
 	{ 0, 0 }	// marks end, must be last
 };
 

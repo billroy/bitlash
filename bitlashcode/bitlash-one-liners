@@ -157,3 +157,14 @@ function outie {i=1; while i<arg(0) pinmode(arg(i++),1);}
 function startup {pinmode(6,1); run pbcheck, 100; run timeout, 100}
 function pbcheck {if (d6) {d3=1; t=millis;}}
 function timeout {if (d3 && ((millis-t) > 5000)) d3=0;}
+
+// Step v (value) toward g (goal) one unit each call
+function step { v = v + sign(v-g); }
+
+// Three valves on D3, D5, D7 cycle for 3,5,7 minutes with moisture abort on D2
+function startup { pinmode(3,1); pinmode(5,1); pinmode(7,1); s=0; run tick; run wet, 1000; }
+function wet  { if d2 tick; }
+function tick { switch (s) {run3; run5; run7; stop} }
+function run3 { d3=1; d5=0; d7=0; s=1; snooze(3*60000); }
+function run5 { d3=0; d5=1; d7=0; s=2; snooze(5*60000); }
+function run7 { d3=0; d5=0; d7=1; s=3; snooze(7*60000); }
