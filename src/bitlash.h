@@ -550,6 +550,7 @@ extern char startup[];
 /////////////////////////////////////////////
 // bitlash-serial.c
 //
+void printIntegerInBase(unumvar, uint8_t, numvar, byte);
 void printInteger(numvar,numvar, byte);
 void printHex(unumvar);
 void printBinary(unumvar);

@@ -168,3 +168,16 @@ function tick { switch (s) {run3; run5; run7; stop} }
 function run3 { d3=1; d5=0; d7=0; s=1; snooze(3*60000); }
 function run5 { d3=0; d5=1; d7=0; s=2; snooze(5*60000); }
 function run7 { d3=0; d5=0; d7=1; s=3; snooze(7*60000); }
+
+// emit 'doorbell' updates twice per second when switch on D3 is pressed
+function startup {run tick,500}
+function tick {switch s {idle; notify;}}
+function idle {if d3 {s=1; notify}}
+function notify {if d3 update('doorbell', 1); else turnoff}
+function turnoff {update('doorbell', 0);s=0;}
+
+// Simultaneous blinking and fading on D4 and D5
+function startup {pinmode(4,1); pinmode(5,1); run blink,500; run fade,50;}
+function blink {d4=!d4;}
+function fade {f=f+10; a5=f;}
+
