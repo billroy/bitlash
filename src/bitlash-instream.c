@@ -393,7 +393,9 @@ numvar func_fprintf(void) {
 
 	//setOutputHandler(saved_handler);// restore output handler
 	resetOutputHandler();
+#ifdef scriptclose
     scriptclose();          // close and flush the output
+#endif
 	returntoparsepoint(fetchmark, 1);
 }
 

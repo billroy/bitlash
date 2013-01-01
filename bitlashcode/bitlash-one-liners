@@ -145,10 +145,8 @@ function buttons {if !d14 {if ++s>2 s=0;}}
 
 // PIR on D19, active high, activates load on D12 for 10000ms
 function startup { pinmode(12,1); run pir,100; run timeout, 1000; }
-function pir { if d19!=d {d=d19; t=millis; if (d) activate;} }
-function timeout { if d12 && !d && ((millis-t) > 10000) deactivate; }
-function activate { d12=1; }
-function deactivate { d12=0; }
+function pir { if d19!=d {d=d19; t=millis; if d d12=1;} }
+function timeout { if d12 && !d && ((millis-t) > 10000) d12=0; }
 
 // outie: set all the specified pins to output, ex: outie(2,4,7,8,12,13);
 function outie {i=1; while i<arg(0) pinmode(arg(i++),1);}
@@ -181,3 +179,6 @@ function startup {pinmode(4,1); pinmode(5,1); run blink,500; run fade,50;}
 function blink {d4=!d4;}
 function fade {f=f+10; a5=f;}
 
+// Flash D3 on 100 and off 3000
+function startup {pinmode(3,1); run t3;}
+function t3 {d3=!d3; if d3 snooze(100); else snooze(1000);}
