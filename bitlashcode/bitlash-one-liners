@@ -182,3 +182,6 @@ function fade {f=f+10; a5=f;}
 // Flash D3 on 100 and off 3000
 function startup {pinmode(3,1); run t3;}
 function t3 {d3=!d3; if d3 snooze(100); else snooze(1000);}
+
+// Count bits set in word, Kernighan style
+function countbits {c=0; w=arg(1); while w { w = w&(w-1); ++c; } return c;}

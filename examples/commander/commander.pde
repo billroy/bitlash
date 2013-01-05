@@ -60,9 +60,9 @@ Thrown in for demos.
 
 numvar func_update() {
 	if (getarg(0) == 2) {
-		sp("{id:\"");
+		sp("{\"id\":\"");
 		sp((char *) getarg(1));
-		sp("\",value:");
+		sp("\",\"value\":");
 		printIntegerInBase(getarg(2), 10, 0, 0);
 		sp("}\n");
 	}
@@ -71,9 +71,9 @@ numvar func_update() {
 
 numvar func_updatestr() {
 	if (getarg(0) == 2) {
-		sp("{id:\"");
+		sp("{\"id\":\"");
 		sp((char *) getarg(1));
-		sp("\",value:\"");
+		sp("\",\"value\":\"");
 		sp((char *) getarg(2));
 		sp("\"}\n");
 	}
