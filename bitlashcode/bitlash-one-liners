@@ -185,3 +185,7 @@ function t3 {d3=!d3; if d3 snooze(100); else snooze(1000);}
 
 // Count bits set in word, Kernighan style
 function countbits {c=0; w=arg(1); while w { w = w&(w-1); ++c; } return c;}
+
+// Light three LED's on D4/D5/D6 one per button press on D2
+function setup {pinmode(4,1); pinmode(5,1); pinmode(6,1); run button,100;}
+function button {if d2 {b=++b%4; d4=(b>0); d5=(b>1); d6=(b>2);}}
