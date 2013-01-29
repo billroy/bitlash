@@ -31,17 +31,39 @@
 #include "bitlash.h"
 
 byte blinkm_addr = 0;
+byte red, green, blue;
 
 numvar func_setaddr(void) {
 	blinkm_addr = getarg(1);
 }
 
 numvar func_setrgb(void) {
-	BlinkM_setRGB(blinkm_addr, getarg(1), getarg(2), getarg(3));
+	red = getarg(1);
+	green = getarg(2);
+	blue = getarg(3);
+	BlinkM_setRGB(blinkm_addr, red, green, blue);
+}
+
+numvar func_red(void) {
+	red = getarg(1);
+	BlinkM_fadeToRGB(blinkm_addr, red, green, blue);
+}
+
+numvar func_blue(void) {
+	blue = getarg(1);
+	BlinkM_fadeToRGB(blinkm_addr, red, green, blue);
+}
+
+numvar func_green(void) {
+	green = getarg(1);
+	BlinkM_fadeToRGB(blinkm_addr, red, green, blue);
 }
 
 numvar func_fadetorgb(void) {
-	BlinkM_fadeToRGB(blinkm_addr, getarg(1), getarg(2), getarg(3));
+	red = getarg(1);
+	green = getarg(2);
+	blue = getarg(3);
+	BlinkM_fadeToRGB(blinkm_addr, red, green, blue);
 }
 
 numvar func_fadetohsb(void) {
@@ -61,6 +83,9 @@ void setup(void) {
 	addBitlashFunction("fadergb", (bitlash_function) func_fadetorgb);
 	addBitlashFunction("fadehsb", (bitlash_function) func_fadetohsb);
 	addBitlashFunction("setrgb", (bitlash_function) func_setrgb);
+	addBitlashFunction("red", (bitlash_function) func_red);
+	addBitlashFunction("green", (bitlash_function) func_green);
+	addBitlashFunction("blue", (bitlash_function) func_blue);
 	addBitlashFunction("setfade", (bitlash_function) func_setfade);
 	addBitlashFunction("setaddr", (bitlash_function) func_setaddr);
 }
