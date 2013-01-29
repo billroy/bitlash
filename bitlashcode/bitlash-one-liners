@@ -110,7 +110,7 @@ function t13 {d13=!d13; snooze(d);}
 function startup {pinmode(13,1); d=100; run t13;}
 
 // LED Candle on pin 5
-function candle {a5=rnd(255); snooze(rnd(100));}
+function candle {a5=random(255); snooze(random(100));}
 function startup {pinmode(5,1); run candle;}
 
 // pwm motor controls
