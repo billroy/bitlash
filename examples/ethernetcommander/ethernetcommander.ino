@@ -117,6 +117,8 @@ byte mac_addr[] = {'b','i','t','l','s','h'};
 byte ip[]  		= {192, 168, 0, 27};
 byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
+byte dnsserver[]= {0, 0, 0, 0};
+
 
 #ifndef PORT
 #define PORT 8080		// Arduino Ethernet library supports values other than 80 for PORT
@@ -260,7 +262,12 @@ void setup(void) {
 	addBitlashFunction("debug", (bitlash_function) func_debug);
 	addBitlashFunction("echo", (bitlash_function) func_echo);
 
+#if defined(ARDUINO) && ARDUINO >= 100
+	Ethernet.begin(mac_addr, ip, dnsserver, gateway, subnet);
+#else
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
+#endif
+
 	server.begin();
 }
 
