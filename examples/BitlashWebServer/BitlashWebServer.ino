@@ -2,7 +2,7 @@
 
 	BitlashWebServer.ino: Bitlash Interactive Telnet Console and HTML Interactor
 
-	Copyright (C) 2008-2012 Bill Roy
+	Copyright (C) 2008-2013 Bill Roy
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation

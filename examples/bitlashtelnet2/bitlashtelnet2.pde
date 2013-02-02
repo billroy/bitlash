@@ -1,7 +1,7 @@
 /***
 	bitlashtelnet2.pde:	Bitlash Telnet Server for the Ethernet Shield
 
-	Copyright (C) 2008-2012 Bill Roy
+	Copyright (C) 2008-2013 Bill Roy
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
@@ -45,10 +45,12 @@
 //	Ethernet configuration
 //	Adjust for local conditions
 //
-byte mac[] 		= {'b','i','t','l','s','h'};
+byte mac_addr[] = {'b','i','t','l','s','h'};
 byte ip[]  		= {192, 168, 0, 27};
 byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
+byte dnsserver[]= {0, 0, 0, 0};
+
 #define PORT 8080
 //
 ////////////////////////////////////////
@@ -70,7 +72,14 @@ void serialHandler(byte b) {
 void setup(void) {
 
 	initBitlash(57600);
-	Ethernet.begin(mac, ip, gateway, subnet);
+
+	// Arduino Ethernet library setup
+#if defined(ARDUINO) && ARDUINO >= 100
+	Ethernet.begin(mac_addr, ip, dnsserver, gateway, subnet);
+#else
+	Ethernet.begin(mac_addr, ip, gateway, subnet);
+#endif
+
 	server.begin();
 
 	setOutputHandler(&serialHandler);
