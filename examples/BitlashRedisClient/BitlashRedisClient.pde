@@ -535,7 +535,7 @@ void setup(void) {
 
 	// Arduino Ethernet library setup
 #if defined(ARDUINO) && ARDUINO >= 100
-	Ethernet.begin(mac_addr, ip, dns, gateway, subnet);
+	Ethernet.begin(mac_addr, ip, dnsserver, gateway, subnet);
 #else
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
 #endif

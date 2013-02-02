@@ -141,6 +141,8 @@ byte mac_addr[] = {'b','i','t','l','s','h'};
 byte ip[]  		= {192, 168, 0, 27};
 byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
+byte dnsserver[]= {0, 0, 0, 0};
+
 
 #ifndef PORT
 #define PORT 8080		// Arduino Ethernet library supports values other than 80 for PORT
@@ -152,7 +154,7 @@ byte subnet[] 	= {255, 255, 255, 0};
 //
 ////////////////////////////////////////
 
-#define BANNER "Bitlash web server here! v0.4\r\n"
+#define BANNER "Bitlash web server here! v0.5\r\n"
 #define INDEX_MACRO "_index"
 #define ERROR_MACRO "_error"
 #define ERROR_PAGE  "error"
@@ -388,7 +390,12 @@ void setup(void) {
 	initBitlash(57600);
 
 	// Arduino Ethernet library setup
+#if defined(ARDUINO) && ARDUINO >= 100
+	Ethernet.begin(mac_addr, ip, dnsserver, gateway, subnet);
+#else
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
+#endif
+
 	server.begin();
 
 	addBitlashFunction("logout", &func_logout);
