@@ -2,7 +2,7 @@
 
 	BitlashRedisClient.pde: Bitlash Redis Slave
 
-	Copyright (C) 2008-2012 Bill Roy
+	Copyright (C) 2008-2013 Bill Roy
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
@@ -167,6 +167,7 @@ byte mac_addr[] = {'b','i','t','l','s','h'};
 byte ip[]  		= {192, 168, 0, 27};
 byte gateway[] 	= {192, 168, 0, 1};
 byte subnet[] 	= {255, 255, 255, 0};
+byte dnsserver[]= {0, 0, 0, 0};
 
 
 ////////////////////////////////////////
@@ -533,7 +534,11 @@ void setup(void) {
 	Serial.begin(57600);
 
 	// Arduino Ethernet library setup
+#if defined(ARDUINO) && ARDUINO >= 100
+	Ethernet.begin(mac_addr, ip, dns, gateway, subnet);
+#else
 	Ethernet.begin(mac_addr, ip, gateway, subnet);
+#endif
 
 	addBitlashFunction("eval", &func_eval);
 

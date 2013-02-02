@@ -14,7 +14,7 @@ function setup {pinmode(4,1); run fadeup,50}; function fadeup {a4=++i&0xff}
 
 // Fade up-down:
 function setup {pinmode(4,1); run fadeupdn,50}; 
-function fadeupdn {if ++i&0x100 a4=i&0xff; else a4=255-(i&0xff);}
+function fadeupdn {if ++i&0x100 a4=i; else a4=~i;}
 
 // Time stamper:
 function setup {run stamp,1000} function stamp {printf("Time: %010d\r\n", millis)}
@@ -189,3 +189,8 @@ function countbits {c=0; w=arg(1); while w { w = w&(w-1); ++c; } return c;}
 // Light three LED's on D4/D5/D6 one per button press on D2
 function setup {pinmode(4,1); pinmode(5,1); pinmode(6,1); run button,100;}
 function button {if d2 {b=++b%4; d4=(b>0); d5=(b>1); d6=(b>2);}}
+
+// With blinkm example sketch: red, green, and blue throbbers
+function bthrob {if ++b&0x100 blue(b); else blue(~b);}
+function rthrob {if ++r&0x100 red(r); else red(~r);}
+function gthrob {if ++g&0x100 green(g); else green(~g);}
