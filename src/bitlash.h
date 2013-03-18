@@ -405,8 +405,8 @@ unsigned long millis(void);
 #define prog_char char
 #define prog_uchar byte
 #define PROGMEM
-#define pgm_read_byte(b) (*(char *)b)
-#define pgm_read_word(b) (*(int *)b)
+#define pgm_read_byte(b) (*(char *)(b))
+#define pgm_read_word(b) (*(int *)(b))
 #define strncpy_P strncpy
 #define strcmp_P strcmp
 #define strlen_P strlen

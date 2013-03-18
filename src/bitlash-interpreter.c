@@ -61,11 +61,24 @@ void nukeeeprom(void) {
 	}
 }
 
-void avr_reboot(void) {
+
+#if defined(AVR_BUILD)
+void cmd_boot(void) {
 	// This is recommended but does not work on Arduino
 	// Reset_AVR();
 	void (*bootvec)(void) = 0; (*bootvec)(); 	// we jump through 0 instead
 }
+#elif defined(ARM_BUILD)
+// SAM3XA software restart
+void cmd_boot(void) {
+	// See SAM3X data sheet for reference information.  This is a software
+	// reset of processor, peripherals, and raises the NRST pin.  Pretty
+	// much everything that can be reset is reset.
+	//
+	REG_RSTC_CR = (RSTC_CR_PROCRST | RSTC_CR_PERRST | RSTC_CR_EXTRST | RSTC_CR_KEY(0xA5));
+	while(1);
+}
+#endif
 
 void skipbyte(char c) {;}
 
@@ -311,15 +324,15 @@ numvar fetcfhmark;
 		else if (sym != s_undef) expected(M_id);
 		getsym();
 	}
-	else if (sym == s_ls) 		{ getsym(); cmd_ls(); }
+	else if (sym == s_ls) 	{ getsym(); cmd_ls(); }
 #if !defined(TINY_BUILD)
-	else if (sym == s_boot) avr_reboot();
-	else if (sym == s_ps) 		{ getsym();	showTaskList(); }
-	else if (sym == s_peep) 	{ getsym(); cmd_peep(); }
-	else if (sym == s_help) 	{ getsym(); cmd_help(); }
+	else if (sym == s_boot) cmd_boot();
+	else if (sym == s_ps) 	{ getsym();	showTaskList(); }
+	else if (sym == s_peep) { getsym(); cmd_peep(); }
+	else if (sym == s_help) { getsym(); cmd_help(); }
 #endif
-	else if (sym == s_print) 	{ getsym(); cmd_print(); }
-	else if (sym == s_semi)		{ ; }	// ;)
+	else if (sym == s_print) { getsym(); cmd_print(); }
+	else if (sym == s_semi)	{ ; }	// ;)
 
 #ifdef HEX_UPLOAD
 	// a line beginning with a colon is treated as a hex record

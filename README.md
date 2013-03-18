@@ -1,7 +1,20 @@
 # Bitlash Release Notes
 
-Questions and Bug Reports welcome!  https://github.com/billroy/bitlash/issues
+Questions / Bug Reports / Pull Requests welcome!  https://github.com/billroy/bitlash/issues
 
+
+## March 18, 2013
+
+- Applied contributed Due patches; Bitlash should run on Due now.  Thanks, Bruce.
+
+- Bumped copyright date in the startup banner.
+
+
+## Feb 2013
+
+- Added commander and ethernetcommander example sketches for Bitlash Commander.
+- Added blinkm example sketch
+- Added seriallcd example sketch
 
 ## November 10, 2012
 

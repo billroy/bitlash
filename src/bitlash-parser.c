@@ -190,7 +190,7 @@ void tb(void) {		// print a mini-trace
 ///
 ///		Expression evaluation stack
 ///
-#if defined(MEGA) || defined(UNIX_BUILD)
+#if defined(MEGA) || defined(UNIX_BUILD) || defined(ARM_BUILD)
 #define VSTACKLEN 256
 #else
 #define VSTACKLEN 64
@@ -230,8 +230,8 @@ void strpush(char *ptr) {
 #endif	// STRING_POOL
 
 
-void vinit(void) { 
-	vsptr = VSTACKLEN-1;
+void vinit(void) {
+	vsptr = VSTACKLEN-3;	// reserve two slots for callername and calleename
 	arg = &vstack[vsptr];	// point the argblock at the stack base
 	vpush(0);				// push a 0 there so arg(0) is 0 at the top
 #if defined(STRING_POOL)

@@ -135,7 +135,8 @@ numvar execscript(byte scripttype, numvar scriptaddress, char *scriptname) {
 
 // how to access the calling and called function names
 //
-#define callername ((char *) ((numvar *) arg[2]) [1])
+//#define callername ((char *) ((numvar *) arg[2]) [1])
+#define callername (arg[2] ? (char* ) (((numvar *) arg[2]) [1]) : NULL )
 #define calleename ((char *) arg[1]) 
 
 

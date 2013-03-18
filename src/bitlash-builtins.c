@@ -69,7 +69,7 @@ const prog_char builtin_table[] PROGMEM = {
 		"print 2+2")
 //		"while 1 {print millis;delay(999);}")
 #else
-		"print \"bitlash here! v2.0 (c) 2012 Bill Roy -type HELP-\",free,\"bytes free\"")
+		"print \"bitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
 #endif
 
 	// Add user built-ins here.  Some examples:
