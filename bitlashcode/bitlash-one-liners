@@ -198,3 +198,16 @@ function gthrob {if ++g&0x100 green(g); else green(~g);}
 // Generate pulses randomly separated by 1..1000 ms
 function startup {pinmode(13,1); run pulser}
 function pulser {d13=!d13; snooze(random(1000));}
+
+// Randomly light 1..8 of D2..D9
+function startup { i=2; while i<10 pinmode(i++,1);run lighter,1000; }
+function lighter { l=random(8); i=1; while ++i<10 dw(i, (i-2<l)); }
+
+// Six pots on A0..A5 control six servos on D2..D7
+// (with Bitlash servo example sketch on Arduino)
+function startup { run setservo; }
+function setservo { servo(i+2, ar(i)*180/1024); if (++i>5) i=0; }
+
+// Swap two variable values without using a third (interview question)
+function swapab { a=a^b; b=a^b; a=a^b; }
+
