@@ -78,6 +78,8 @@ void cmd_boot(void) {
 	REG_RSTC_CR = (RSTC_CR_PROCRST | RSTC_CR_PERRST | RSTC_CR_EXTRST | RSTC_CR_KEY(0xA5));
 	while(1);
 }
+#else
+void cmd_boot(void) {oops('boot');}
 #endif
 
 void skipbyte(char c) {;}

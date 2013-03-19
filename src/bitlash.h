@@ -663,6 +663,8 @@ void getexpression(void);
 byte hexval(char);
 byte is_end(void);
 numvar getarg(numvar);
+numvar isstring(void);
+numvar getstringarg(numvar);
 void releaseargblock(void);
 void parsearglist(void);
 extern const prog_char reservedwords[];

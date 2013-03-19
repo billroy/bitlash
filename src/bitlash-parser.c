@@ -293,21 +293,32 @@ numvar getarg(numvar which) {
 	return arg[-which];
 }
 
+#if defined(STRING_POOL)
+numvar isstringarg(numvar which) {		// isstringarg() api for C user functions
+	return ((arg[2] & (1<<(which-1))) != 0);
+}
 
-#if 0
-//	returns arg value from parent context
-//
-numvar getparentarg(void) {
-	if (arg[0] < 1) underflow(M_arg);
-	numvar *parentArg = *(arg-2);
-	if (arg[1] > parentArg[0]) overflow(M_arg);
-	return parentArg[arg[1]];
+//	Bitlash test function for isstr():
+//	function stringy {i=1;while (i<=arg(0)) {print i,arg(i),isstr(i);i++}}
+
+numvar isstring(void) {					// isstr() for Bitlash functions
+	// we are interested in the type of args in our
+	// parent's stack frame, the caller of isstr()
+	numvar *parentarg = (numvar *) arg[3];
+	return ((parentarg[2] & (1<<(getarg(1)-1))) != 0);
+}
+
+numvar getstringarg(numvar which) {
+	if (!isstringarg(which)) expected(M_string);
+	return getarg(which);
 }
 #endif
+
 
 void parsearglist(void) {
 	vpush((numvar) arg);				// save base of current argblock
 #if defined(STRING_POOL)
+	vpush(0);							// argtype: argument type vector, initially 0
 	vpush((numvar) stringPool);			// save stringPool base for later release
 	strpush(idbuf);						// save called function's name as arg[-1]
 #endif
@@ -324,6 +335,9 @@ void parsearglist(void) {
 				parsestring(&spush);		// parse it into the pool
 				spush(0);					// and terminate it
 				getsym();					// eat closing "
+
+				// bug: more than 32 args fails here
+				newarg[2] |= (1 << newarg[0]);	// argtype: set string bit for this arg
 			} else 
 #endif
 			vpush(getnum());				// push the value
@@ -347,6 +361,8 @@ void releaseargblock(void) {
 	// deallocate the string pool slab used by this function
 	// by popping the saved caller's stringPool
 	stringPool = (char *) vpop();
+
+	vpop();		// argtype: pop argument type storage
 #endif
 
 	arg = (numvar *) vpop();			// pop parent arg frame and we're back

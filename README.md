@@ -2,8 +2,58 @@
 
 Questions / Bug Reports / Pull Requests welcome!  https://github.com/billroy/bitlash/issues
 
+## March 19, 2013: Type checking for string arguments
 
-## March 18, 2013
+Bitlash supports string constants in function argument lists, but until now there hasn't been a way to distinguish such string arguments from numeric arguments once you're inside the called function, making it easy to reference forbidden memory by mistake.
+
+The new isstr() Bitlash function helps handle this problem by letting you check the type of a specified argument to the function it's called in:
+
+	> function stringy {i=1;while (i<=arg(0)) {print i,arg(i),isstr(i);i++}}
+	saved
+	> stringy("foo",1,2,3,"bar","baz")
+	1 541 1
+	2 1 0
+	3 2 0
+	4 3 0
+	5 545 1
+	6 549 1
+
+There is a corresponding C api for C User Functions:
+
+	numvar isstringarg(numvar);
+
+And a companion to getarg() that fetches an argument but throws an error if the argument is not a string:
+
+	numvar getstringarg(numvar);
+
+Here is an example sketch with a User Function called echo() that uses isstringarg() and getstringarg() to print string arguments separately from numeric ones.  The echo() function echoes back its arguments, with proper handling for strings:
+
+	#include "Arduino.h"
+	#include "bitlash.h"
+	#include "src/bitlash.h"  // for sp() and printInteger()
+
+	numvar func_echo(void) {
+		for (int i=1; i <= getarg(0); i++) {
+			if (isstringarg(i)) sp((const char *) getstringarg(i));
+			else printInteger(getarg(i), 0, ' ');
+			speol();
+		}
+	}
+
+	void setup(void) {
+		initBitlash(57600);	
+		addBitlashFunction("echo", (bitlash_function) func_echo);	
+	}
+
+	void loop(void) {
+		runBitlash();
+	}
+
+
+NOTE: The changes consume a little space on the expression evaluation stack, so some complex expressions that formerly worked may see an expression overflow.  Please report this if you see it.
+
+
+## March 18, 2013: Bitlash running on Due
 
 - Applied contributed Due patches; Bitlash should run on Due now.  Thanks, Bruce.
 

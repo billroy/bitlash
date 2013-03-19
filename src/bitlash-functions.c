@@ -288,6 +288,7 @@ const prog_char functiondict[] PROGMEM = {
 	"getkey\0"
 	"getnum\0"
 	"inb\0"
+	"isstr\0"
 //	"map\0"
 	"max\0"
 	"millis\0"
@@ -364,6 +365,7 @@ const bitlash_function function_table[] PROGMEM = {
 	func_getkey,
 	func_getnum,
 	func_inb,
+	isstring,
 //	func_map,
 	func_max,
 	(bitlash_function) millis,
