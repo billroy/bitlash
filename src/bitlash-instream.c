@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008-2012 Bill Roy
+	Copyright (C) 2008-2013 Bill Roy
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
@@ -75,7 +75,8 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname);
 numvar execscript(byte scripttype, numvar scriptaddress, char *scriptname) {
 
 	// save parse context
-	numvar fetchmark = markparsepoint();
+	parsepoint fetchmark;
+	markparsepoint(&fetchmark);
 	byte thesym = sym;
 	vpush(symval);
 
@@ -126,7 +127,7 @@ numvar execscript(byte scripttype, numvar scriptaddress, char *scriptname) {
 
 	// interpret the function text and collect its result
 	numvar ret = getstatementlist();
-	returntoparsepoint(fetchmark, 1);		// now where were we?
+	returntoparsepoint(&fetchmark, 1);		// now where were we?
 	sym = thesym;
 	symval = vpop();
 	return ret;
@@ -171,7 +172,7 @@ void callscriptfunction(byte scripttype, numvar scriptaddress) {
 // These routines allow the parser to drop anchor at a point in the stream 
 // and restore back to it.
 //	
-numvar markparsepoint(void) {
+void markparsepoint(parsepoint *p) {
 
 #if defined(SDFILE) || defined(UNIX_BUILD)
 	if (fetchtype == SCRIPT_FILE) {
@@ -181,21 +182,16 @@ numvar markparsepoint(void) {
 	}
 #endif
 
-	// stash the fetch context type in the high nibble of fetchptr
-	// LIMIT: longest script is 2^29-1 bytes
-	// UNIX LIMIT: 2^60-1
-	numvar ret = ((numvar) fetchtype << MARK_SHIFT) | (fetchptr & ADDR_MASK);
+	p->fetchptr = fetchptr;
+	p->fetchtype = fetchtype;
 
 #ifdef PARSER_TRACE
 	if (trace) {
 		speol();	
 		sp("mark:");printHex(fetchtype); spb(' '); printHex(fetchptr); 
-		spb('>'); printHex(ret);
 		speol();
 	}
 #endif
-
-	return ret;
 }
 
 
@@ -240,37 +236,36 @@ void initparsepoint(byte scripttype, numvar scriptaddress, char *scriptname) {
 
 char *topname = ".top.";
 
-void returntoparsepoint(numvar fetchmark, byte returntoparent) {
+void returntoparsepoint(parsepoint *p, byte returntoparent) {
 	// restore parse type and location; for script files, pass name from string pool
-	byte ftype = fetchmark >> MARK_SHIFT;
+	byte ftype = p->fetchtype;
 	char *scriptname = calleename;
 	if (returntoparent) {
 		if ((ftype == SCRIPT_NONE) || (ftype == SCRIPT_RAM))
 			scriptname = topname;
 		else if (arg[2]) scriptname = callername;
 	}
-	initparsepoint(fetchmark >> MARK_SHIFT, fetchmark & ADDR_MASK, scriptname);
-}
-
-#else
-
-void returntoparsepoint(numvar fetchmark, byte returntoparent) {
-	// restore parse type and location; for script files, pass name from string pool
-	initparsepoint(fetchmark >> 28, fetchmark & 0x0fffffffL, 
-		returntoparent ? callername : calleename);
-			//((char *) ((numvar *) arg[2]) [1]) : ((char *) arg[1]) );
-}
-#endif
+	initparsepoint(p->fetchtype, p->fetchptr, scriptname);
 
 #ifdef PARSER_TRACE
 	if (trace) {
 		speol();
 		sp("rest:");
-		printHex(fetchmark); spb('>');
 		printHex(fetchtype); spb(' '); printHex(fetchptr); spb(' ');printHex(returntoparent);
 		speol();
 	}
 #endif
+
+}
+
+#else
+
+void returntoparsepoint(parsepoint *p, byte returntoparent) {
+	// restore parse type and location; for script files, pass name from string pool
+	initparsepoint(p->fetchtype, p->fetchptr, returntoparent ? callername : calleename);
+}
+#endif
+
 
 
 /////////
@@ -317,7 +312,7 @@ void primec(void) {
 	if (trace) {
 		spb('<'); 
 		if (inchar >= 0x20) spb(inchar);
-		else { spb('\\'); printInteger(inchar); }
+		else { spb('\\'); printInteger(inchar, 0, ' '); }
 		spb('>');
 	}
 #endif
@@ -346,14 +341,15 @@ numvar *a = arg;
 //
 numvar sdcat(void) {
 	if (!scriptfileexists((char *) getarg(1))) return 0;
-	numvar fetchmark = markparsepoint();
+	parsepoint fetchmark;
+	markparsepoint(&fetchmark);
 	initparsepoint(SCRIPT_FILE, 0L, (char *) getarg(1));
 	while (inchar) {
 		if (inchar == '\n') spb('\r');
 		spb(inchar);
 		fetchc();
 	}
-	returntoparsepoint(fetchmark, 1);
+	returntoparsepoint(&fetchmark, 1);
 	return 1;
 }
 
@@ -364,13 +360,14 @@ numvar sdcat(void) {
 //
 numvar sdwrite(char *filename, char *contents, byte append) {
 #if !defined(UNIX_BUILD)
-	numvar fetchmark = markparsepoint();
+	parsepoint fetchmark;
+	markparsepoint(&fetchmark);
 #endif
 
 	if (!scriptwrite(filename, contents, append)) unexpected(M_oops);
 
 #if !defined(UNIX_BUILD)
-	returntoparsepoint(fetchmark, 1);
+	returntoparsepoint(&fetchmark, 1);
 #endif
 
 	return 1;
@@ -382,7 +379,8 @@ numvar sdwrite(char *filename, char *contents, byte append) {
 //
 //
 numvar func_fprintf(void) {
-	numvar fetchmark = markparsepoint();
+	parsepoint fetchmark;
+	markparsepoint(&fetchmark);
 
 	scriptwrite((char *) getarg(1), "", 1);		// open the file for append (but append nothing)
 
@@ -397,7 +395,7 @@ numvar func_fprintf(void) {
 #ifdef scriptclose
     scriptclose();          // close and flush the output
 #endif
-	returntoparsepoint(fetchmark, 1);
+	returntoparsepoint(&fetchmark, 1);
 }
 
 #endif	// SDFILE

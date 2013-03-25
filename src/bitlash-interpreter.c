@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008-2012 Bill Roy
+	Copyright (C) 2008-2013 Bill Roy
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
@@ -173,10 +173,9 @@ numvar getstatement(void);
 //
 numvar getswitchstatement(void) {
 numvar thesymval = symval;
-//char *fetchmark;
-numvar fetchmark;
 numvar retval = 0;
 byte thesym = sym;
+parsepoint fetchmark;
 
 	getsym();						// eat "switch"
 	getnum();						// evaluate the switch selector
@@ -189,8 +188,7 @@ byte thesym = sym;
 	// scan and discard the <selector>'s worth of statements 
 	// that sit before the one we want
 	while ((which > 0) && (sym != s_eof) && (sym != s_rcurly)) {
-		//fetchmark = fetchptr;
-		fetchmark = markparsepoint();
+		markparsepoint(&fetchmark);
 		thesym = sym;
 		thesymval = symval;
 		skipstatement();
@@ -200,9 +198,7 @@ byte thesym = sym;
 	// If the selector is greater than the number of statements,
 	// back up and execute the last one
 	if (which > 0) {					// oops ran out of piddys
-		//fetchptr = fetchmark;			// restore to last statement
-		//primec();						// set up for getsym()
-		returntoparsepoint(fetchmark, 0);
+		returntoparsepoint(&fetchmark, 0);
 		sym = thesym;
 		symval = thesymval;
 	}
@@ -221,8 +217,6 @@ byte thesym = sym;
 // Get a statement
 numvar getstatement(void) {
 numvar retval = 0;
-//char *fetchmark;
-numvar fetcfhmark;
 
 #if !defined(TINY_BUILD) && !defined(UNIX_BUILD)
 	chkbreak();
@@ -231,12 +225,10 @@ numvar fetcfhmark;
 	if (sym == s_while) {
 		// at this point sym is pointing at s_while, before the conditional expression
 		// save fetchptr so we can restart parsing from here as the while iterates
-		//fetchmark = fetchptr;
-		fetcfhmark = markparsepoint();
+		parsepoint fetchmark;
+		markparsepoint(&fetchmark);
 		for (;;) {
-			//fetchptr = fetchmark;			// restore to mark
-			//primec();						// set up for mr. getsym()
-			returntoparsepoint(fetcfhmark, 0);
+			returntoparsepoint(&fetchmark, 0);
 			getsym(); 						// fetch the start of the conditional
 			if (getnum()) {
 				retval = getstatement();

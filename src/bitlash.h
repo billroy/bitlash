@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008-2012 Bill Roy
+	Copyright (C) 2008-2013 Bill Roy
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
@@ -644,8 +644,14 @@ byte findscript(char *);
 byte scriptfileexists(char *);
 numvar execscript(byte, numvar, char *);
 void callscriptfunction(byte, numvar);
-numvar markparsepoint(void);
-void returntoparsepoint(numvar, byte);
+
+typedef struct {
+	numvar fetchptr;
+	byte fetchtype;
+} parsepoint;
+
+void markparsepoint(parsepoint *);
+void returntoparsepoint(parsepoint *, byte);
 void primec(void);
 void fetchc(void);
 void getsym(void);

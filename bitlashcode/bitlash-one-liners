@@ -211,3 +211,8 @@ function setservo { servo(i+2, ar(i)*180/1024); if (++i>5) i=0; }
 // Swap two variable values without using a third (interview question)
 function swapab { a=a^b; b=a^b; a=a^b; }
 
+// Fire relays on pins [4..7] randomly in short bursts up to a second apart
+function startup {pinmode(4,1);pinmode(5,1);pinmode(6,1);pinmode(7,1);run twitcher}
+function twitcher {twitch(4+random(4)); snooze(random(1000));}
+function twitch {dw(arg(1),1);delay(750);dw(arg(1),0);}
+

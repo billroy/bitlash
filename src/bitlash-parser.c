@@ -9,7 +9,7 @@
 	Bitlash lives at: http://bitlash.net
 	The author can be reached at: bill@bitlash.net
 
-	Copyright (C) 2008-2012 Bill Roy
+	Copyright (C) 2008-2013 Bill Roy
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
@@ -169,7 +169,7 @@ void getsym(void) {
 
 #ifdef PARSER_TRACE
 	if (trace) {
-		sp(" sym="); printInteger(sym); sp(" v="); printInteger(symval); spb(' ');
+		sp(" sym="); printInteger(sym, 0, ' '); sp(" v="); printInteger(symval, 0, ' '); spb(' ');
 	}
 #endif
 }
