@@ -58,7 +58,7 @@ void initBitlash(unsigned long baud) {
 	beginSerial(baud);
 #endif
 
-#if ((defined(ARM_BUILD)) && (ARM_BUILD!=2))
+#if defined(ARM_BUILD)
 	eeinit();
 #endif
 
