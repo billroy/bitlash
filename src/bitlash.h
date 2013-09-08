@@ -40,6 +40,9 @@
 #define UNIX_BUILD 1
 #elif defined(__SAM3X8E__)
 #define ARM_BUILD 1
+#elif defined(__MK20DX128__) && defined (CORE_TEENSY)
+  // Teensy 3
+  #define ARM_BUILD 2
 #else
 #define AVR_BUILD 1
 #endif
@@ -49,7 +52,6 @@
 #include "avr/io.h"
 #include "avr/pgmspace.h"
 #include "avr/interrupt.h"
-#include <avr/wdt.h>
 #endif
 
 #if defined(AVR_BUILD) || defined(ARM_BUILD)
@@ -402,7 +404,7 @@ unsigned long millis(void);
 //
 //	ARM BUILD
 #if defined(ARM_BUILD)
-#define prog_char char
+ #define prog_char char
 #define prog_uchar byte
 #define PROGMEM
 #define pgm_read_byte(b) (*(char *)(b))
@@ -410,7 +412,12 @@ unsigned long millis(void);
 #define strncpy_P strncpy
 #define strcmp_P strcmp
 #define strlen_P strlen
-#define E2END 4096
+#if ARM_BUILD==1
+  #define E2END 4096
+#else
+  // Teensy 3
+  #define E2END 2048
+#endif
 
 #endif
 

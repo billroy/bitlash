@@ -29,22 +29,20 @@
 ***/
 #include "bitlash.h"
 
-#if defined(AVR_BUILD)
-
-#include "avr/eeprom.h"
-void eewrite(int addr, uint8_t value) { eeprom_write_byte((unsigned char *) addr, value); }
-uint8_t eeread(int addr) { return eeprom_read_byte((unsigned char *) addr); }
-
+#if (defined(AVR_BUILD)) || ( (defined(ARM_BUILD)) && (ARM_BUILD==2))
+	#include "avr/eeprom.h"
+	void eewrite(int addr, uint8_t value) { eeprom_write_byte((unsigned char *) addr, value); }
+	uint8_t eeread(int addr) { return eeprom_read_byte((unsigned char *) addr); }
 #elif defined(ARM_BUILD)
+	#if ARM_BUILD=!1
+		// A little fake eeprom for ARM testing
+		char virtual_eeprom[E2END];
 
-// A little fake eeprom for ARM testing
-char virtual_eeprom[E2END];
+		void eeinit(void) {
+			for (int i=0; i<E2END; i++) virtual_eeprom[i] = 255;
+		}
 
-void eeinit(void) {
-	for (int i=0; i<E2END; i++) virtual_eeprom[i] = 255;
-}
-
-void eewrite(int addr, uint8_t value) { virtual_eeprom[addr] = value; }
-uint8_t eeread(int addr) { return virtual_eeprom[addr]; }
-
+		void eewrite(int addr, uint8_t value) { virtual_eeprom[addr] = value; }
+		uint8_t eeread(int addr) { return virtual_eeprom[addr]; }
+	#endif
 #endif
