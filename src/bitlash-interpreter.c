@@ -69,6 +69,8 @@ void cmd_boot(void) {
 	void (*bootvec)(void) = 0; (*bootvec)(); 	// we jump through 0 instead
 }
 #elif defined(ARM_BUILD)
+
+#if ARM_BUILD==1
 // SAM3XA software restart
 void cmd_boot(void) {
 	// See SAM3X data sheet for reference information.  This is a software
@@ -78,6 +80,18 @@ void cmd_boot(void) {
 	REG_RSTC_CR = (RSTC_CR_PROCRST | RSTC_CR_PERRST | RSTC_CR_EXTRST | RSTC_CR_KEY(0xA5));
 	while(1);
 }
+#else
+void cmd_boot(void) {
+  #ifndef SCB_AIRCR_SYSRESETREQ_MASK
+    #define SCB_AIRCR_SYSRESETREQ_MASK ((unsigned int) 0x00000004)
+  #endif
+
+  cli();
+  delay(100);
+  SCB_AIRCR = 0x05FA0000 | SCB_AIRCR_SYSRESETREQ_MASK;
+  while(1);
+}
+#endif
 #else
 void cmd_boot(void) {oops('boot');}
 #endif
