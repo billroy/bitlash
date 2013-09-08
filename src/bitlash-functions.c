@@ -89,32 +89,7 @@ numvar func_free(void) {
 #if defined(UNIX_BUILD)
 	return 1000L;
 #elif defined(ARM_BUILD)
-	numvar size = 0;
-	#if ARM_BUILD==1
-		// Arduino Due (96K)
-		// untested!!! reduce this to 32768 if arduino crashes on start
-		unsigned int bit = 65536; // Highest bit
-	#elif ARM_BUILD==2
-		// Teensy 3 (16K)
-		unsigned int bit = 4096; // Highest bit
-	#else
-		unsigned int bit = 4096; // Highest bit
-	#endif
-
-	while (bit>1)
-	{
-		cli();
-		byte *buf = (byte *) malloc(size+bit);
-		free(buf);
-		sei();
-		if (buf != NULL)
-		{
-			size=size+bit;
-		}
-		bit=bit>>1;
-	}
-	
-	return size;    
+	return 1000L;
 #else
 	numvar ret;
 	// from http://forum.pololu.com/viewtopic.php?f=10&t=989&view=unread#p4218
