@@ -86,10 +86,12 @@ numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
 #endif
 
 numvar func_free(void) {
-#if defined(UNIX_BUILD) || defined(ARM_BUILD)
+#if defined(UNIX_BUILD)
+	return 1000L;
+#elif defined(ARM_BUILD)
 	return 1000L;
 #else
-numvar ret;
+	numvar ret;
 	// from http://forum.pololu.com/viewtopic.php?f=10&t=989&view=unread#p4218
 	extern int __bss_end;
 	return ((int)&ret) - ((int)&__bss_end);
