@@ -227,7 +227,13 @@ void delay(unsigned long ms) {
 	long seconds = ms / 1000L;
 	delay_time.tv_sec = seconds;
 	delay_time.tv_nsec = (ms - (seconds * 1000L)) * 1000000L;
+
+#if defined(_MSC_VER)
+#pragma comment("TODO IMPLEMENT LATER")
+	Sleep(delay_time.tv_nsec / 1000);
+#else
 	while (nanosleep(&delay_time, &delay_time) == -1) continue;
+#endif
 }
 
 void delayMicroseconds(unsigned int us) {
@@ -235,7 +241,12 @@ void delayMicroseconds(unsigned int us) {
 	long seconds = us / 1000000L;
 	delay_time.tv_sec = seconds;
 	delay_time.tv_nsec = (us - (seconds * 1000000L)) * 1000L;
+#if defined(_MSC_VER)
+#pragma comment("TODO IMPLEMENT LATER")
+	Sleep(delay_time.tv_nsec / 1000);
+#else
 	while (nanosleep(&delay_time, &delay_time) == -1) continue;
+#endif
 }
 
 // fake eeprom
@@ -284,7 +295,12 @@ void *BackgroundMacroThread(void *threadid) {
 			unsigned long seconds = sleep_time / 1000;
 			wait_time.tv_sec = seconds;
 			wait_time.tv_nsec = (sleep_time - (seconds * 1000)) * 1000000L;
+#if defined(_MSC_VER)
+#pragma comment("TODO IMPLEMENT LATER")
+			Sleep(wait_time.tv_nsec/1000);
+#else
 			while (nanosleep(&wait_time, &wait_time) == -1) continue;
+#endif
 		}
 	}
 	return 0;
@@ -312,6 +328,7 @@ void inthandler(int signal) {
 
 int main () {
 
+#if !defined(_MSC_VER)
 	FILE *shell = popen("echo ~", "r");
 	if (!shell) {;}
 	int got = fread(&bitlash_directory, 1, PATH_LEN, shell);
@@ -326,6 +343,7 @@ int main () {
 	if (chdir(bitlash_directory) != 0) {
 		sp("Cannot enter .bitlash directory.  Does it exist?\n");
 	}
+#endif
 
 	init_fake_eeprom();
 	addBitlashFunction("system", (bitlash_function) &func_system);
@@ -354,7 +372,9 @@ int main () {
 	//signal(SIGKILL, inthandler);
 
 	// run background functions on a separate thread
+#if !defined(_MSC_VER)
 	pthread_create(&background_thread, NULL, BackgroundMacroThread, 0);
+#endif
 
 	// run the main stdin command loop
 	for (;;) {

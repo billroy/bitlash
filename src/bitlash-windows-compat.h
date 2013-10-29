@@ -33,6 +33,9 @@
 ////////////////////////////---> unix compat
 #include <time.h>
 #include <windows.h> //I've ommited this line.
+#include <stdint.h>
+#include <pthread.h>
+#pragma comment(lib,"pthreadVC2.lib")
 
 struct timezone 
 {

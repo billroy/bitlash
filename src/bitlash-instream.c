@@ -340,6 +340,9 @@ numvar *a = arg;
 //	"cat": copy file to serial out
 //
 numvar sdcat(void) {
+#if defined(_MSC_VER)
+#pragma message("TODO IMPLEMENT LATER")
+#else
 	if (!scriptfileexists((char *) getarg(1))) return 0;
 	parsepoint fetchmark;
 	markparsepoint(&fetchmark);
@@ -350,6 +353,7 @@ numvar sdcat(void) {
 		fetchc();
 	}
 	returntoparsepoint(&fetchmark, 1);
+#endif
 	return 1;
 }
 
