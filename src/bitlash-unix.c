@@ -276,6 +276,7 @@ numvar func_save(void) {
 };
 
 
+#if !defined(_MSC_VER)
 
 // background function thread
 #include <pthread.h>
@@ -295,16 +296,12 @@ void *BackgroundMacroThread(void *threadid) {
 			unsigned long seconds = sleep_time / 1000;
 			wait_time.tv_sec = seconds;
 			wait_time.tv_nsec = (sleep_time - (seconds * 1000)) * 1000000L;
-#if defined(_MSC_VER)
-#pragma comment("TODO IMPLEMENT LATER")
-			Sleep(wait_time.tv_nsec/1000);
-#else
 			while (nanosleep(&wait_time, &wait_time) == -1) continue;
-#endif
 		}
 	}
 	return 0;
 }
+#endif
 
 
 numvar func_system(void) {

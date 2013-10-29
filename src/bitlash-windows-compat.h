@@ -34,8 +34,13 @@
 #include <time.h>
 #include <windows.h> //I've ommited this line.
 #include <stdint.h>
-#include <pthread.h>
-#pragma comment(lib,"pthreadVC2.lib")
+//#include <pthread.h>
+//#pragma comment(lib,"pthreadVC2.lib")
+
+struct timespec {
+	time_t tv_sec;
+	long tv_nsec;
+};
 
 struct timezone 
 {
