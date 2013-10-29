@@ -13,3 +13,5 @@ ipch
 *.suo
 *.sdf
 *.user
+*.opensdf
+
