@@ -64,6 +64,8 @@ byte c;
 
 void displayBanner(void);
 
+void cmd_ls(void);
+
 void cmd_help(void) {
 	displayBanner();
 	showdict(helptext);
@@ -77,7 +79,6 @@ void cmd_help(void) {
 	speol();
 	show_user_functions();
 	speol();
-	void cmd_ls(void);
 	cmd_ls();
 }
 

@@ -91,6 +91,26 @@ unsigned long millis(void) {
 	elapsed_time = time_diff(startup_time, current_time);
 	return (elapsed_time.tv_sec * 1000UL) + (elapsed_time.tv_nsec / 1000000UL);
 }
+#elif defined(_MSC_VER)
+
+#include "bitlash-windows-compat.h"
+
+unsigned long startup_millis, current_millis, elapsed_millis;
+struct timeval startup_time, current_time;
+
+void init_millis(void) {
+	gettimeofday_compat(&startup_time, NULL);
+	startup_millis = (startup_time.tv_sec * 1000) + (startup_time.tv_usec /1000);
+}
+
+unsigned long millis(void) {
+	gettimeofday_compat(&current_time, NULL);
+	current_millis = (current_time.tv_sec * 1000) + (current_time.tv_usec / 1000);
+	elapsed_millis = current_millis - startup_millis;
+	return elapsed_millis;
+}
+
+
 #else
 #include <sys/time.h>
 

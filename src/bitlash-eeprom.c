@@ -163,6 +163,9 @@ void saveByte(char c) { eewrite(expval++, c); }
 
 // Parse and store a function definition
 //
+
+void skipstatement(void);
+
 void cmd_function(void) {
 char id[IDLEN+1];			// buffer for id
 
@@ -181,7 +184,6 @@ char id[IDLEN+1];			// buffer for id
 	//
 	// BUG: This is broken for file scripts
 	char *startmark = (char *) fetchptr;		// mark first char of macro text
-	void skipstatement(void);
 	skipstatement();				// gobble it up without executing it
 	char *endmark = (char *) fetchptr;		// and note the char past '}'
 
