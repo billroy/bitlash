@@ -362,7 +362,10 @@ numvar retval = 0;
 	}
 #endif
 
-	else getexpression();
+	else {
+	    getexpression();
+	    retval = expval;
+	}
 
 	if (sym == s_semi) getsym();		// eat trailing ';'
 	return retval;

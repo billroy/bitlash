@@ -216,3 +216,6 @@ function startup {pinmode(4,1);pinmode(5,1);pinmode(6,1);pinmode(7,1);run twitch
 function twitcher {twitch(4+random(4)); snooze(random(1000));}
 function twitch {dw(arg(1),1);delay(750);dw(arg(1),0);}
 
+// print ascii table
+function ascii {c=0; while c<128 { showchar; if !(++c%16) print; }}
+function showchar {if c<0x20 {printf("^%c",c+0x40);} else {printf(" %c",c);}}

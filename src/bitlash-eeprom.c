@@ -254,7 +254,8 @@ int i=0;
 		if (!(i&3)) spb(' ');		
 		byte c = eeread(i) & 0xff;
 
-		if (c == 0) spb('\\');
+		//if (c == 0) spb('\\');
+		if (c == 0) spb('$');
 		//else if ((c == 255) || (c < 0)) spb('.');
 		else if (c == 255) spb('.');
 		else if (c < ' ') spb('^');
