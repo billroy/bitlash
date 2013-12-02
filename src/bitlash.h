@@ -694,7 +694,7 @@ extern numvar fetchptr;		// pointer to current char in input buffer
 extern numvar symval;		// value of current numeric expression
 
 #define USE_GPIORS defined(AVR_BUILD)
-#if USE_GPIORS
+#if (defined USE_GPIORS && defined GPIOR0 && defined GPIOR1)
 #define sym GPIOR0
 #define inchar GPIOR1
 #else
