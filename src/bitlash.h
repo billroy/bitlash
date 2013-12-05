@@ -260,7 +260,7 @@ void beginEthernet(unsigned long baud) {
 // MEGA is auto-enabled to build for the Arduino Mega or Mega2560
 // if the '1280/'2560 define is present
 //
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega64__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #define MEGA 1
 #endif
 
@@ -284,6 +284,15 @@ void beginEthernet(unsigned long baud) {
 
 #endif	// defined (1280)
 
+#if defined(__AVR_ATmega64__)
+
+#define beginSerial Serial1.begin
+#define serialAvailable Serial1.available
+#define serialRead Serial1.read
+#define serialWrite Serial1.print
+
+#define NUMPINS (53)
+#endif
 
 
 
@@ -694,7 +703,11 @@ extern numvar fetchptr;		// pointer to current char in input buffer
 extern numvar symval;		// value of current numeric expression
 
 #define USE_GPIORS defined(AVR_BUILD)
-#if (defined USE_GPIORS && defined GPIOR0 && defined GPIOR1)
+
+#ifndef GPIOR0 || GPIOR1
+	#undef USE_GPIORS
+#endif
+#if (defined USE_GPIORS)
 #define sym GPIOR0
 #define inchar GPIOR1
 #else
