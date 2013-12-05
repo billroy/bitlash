@@ -508,7 +508,7 @@ int findend(int);
 void eeputs(int);
 
 #define EMPTY ((uint8_t)255)
-#define STARTDB 0
+#define STARTDB 0x002A
 #define FAIL ((int)-1)
 
 
