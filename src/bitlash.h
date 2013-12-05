@@ -726,7 +726,7 @@ extern byte exptype;				// type of expression: s_nval [or s_sval]
 extern numvar expval;				// value of numeric expr or length of string
 
 // Temporary buffer for ids
-#define IDLEN 12
+#define IDLEN 24
 extern char idbuf[IDLEN+1];
 
 
