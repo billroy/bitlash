@@ -40,7 +40,7 @@
 #define UNIX_BUILD 1
 #elif defined(__SAM3X8E__)
 #define ARM_BUILD 1
-#elif defined(__MK20DX128__) && defined (CORE_TEENSY)
+#elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
   // Teensy 3
   #define ARM_BUILD 2
 #else
