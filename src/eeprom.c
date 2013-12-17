@@ -40,6 +40,8 @@
 	#endif
 #elif defined(ARM_BUILD)
 	#if ARM_BUILD!=2
+
+
 		// A little fake eeprom for ARM testing
 		char virtual_eeprom[E2END];
 
@@ -47,7 +49,10 @@
 			for (int i=0; i<E2END; i++) virtual_eeprom[i] = 255;
 		}
 
+#if !defined(_MSC_VER)
 		void eewrite(int addr, uint8_t value) { virtual_eeprom[addr] = value; }
 		uint8_t eeread(int addr) { return virtual_eeprom[addr]; }
+#endif
+
 	#endif
 #endif

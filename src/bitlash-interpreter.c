@@ -86,9 +86,15 @@ void cmd_boot(void) {
     #define SCB_AIRCR_SYSRESETREQ_MASK ((unsigned int) 0x00000004)
   #endif
 
-  cli();
+#ifndef _MSC_VER
+	cli();
+#endif
   delay(100);
+
+#ifndef _MSC_VER
   SCB_AIRCR = 0x05FA0000 | SCB_AIRCR_SYSRESETREQ_MASK;
+#endif
+
   while(1);
 }
 #endif

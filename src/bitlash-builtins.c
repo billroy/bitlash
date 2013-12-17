@@ -64,12 +64,12 @@ like this, from the command line:
 const prog_char builtin_table[] PROGMEM = {
 
 	// The banner must be first.  Add new builtins below.
-	BUILT_IN("banner",	
+		
 #if defined(TINY_BUILD)
-		"print 2+2")
+		BUILT_IN("banner","print 2+2")
 //		"while 1 {print millis;delay(999);}")
 #else
-		"print \"bitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
+		BUILT_IN("banner","print \"bitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
 #endif
 
 	// Add user built-ins here.  Some examples:

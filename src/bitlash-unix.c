@@ -91,6 +91,26 @@ unsigned long millis(void) {
 	elapsed_time = time_diff(startup_time, current_time);
 	return (elapsed_time.tv_sec * 1000UL) + (elapsed_time.tv_nsec / 1000000UL);
 }
+#elif defined(_MSC_VER)
+
+#include "bitlash-windows-compat.h"
+
+unsigned long startup_millis, current_millis, elapsed_millis;
+struct timeval startup_time, current_time;
+
+void init_millis(void) {
+	gettimeofday_compat(&startup_time, NULL);
+	startup_millis = (startup_time.tv_sec * 1000) + (startup_time.tv_usec /1000);
+}
+
+unsigned long millis(void) {
+	gettimeofday_compat(&current_time, NULL);
+	current_millis = (current_time.tv_sec * 1000) + (current_time.tv_usec / 1000);
+	elapsed_millis = current_millis - startup_millis;
+	return elapsed_millis;
+}
+
+
 #else
 #include <sys/time.h>
 
@@ -207,7 +227,13 @@ void delay(unsigned long ms) {
 	long seconds = ms / 1000L;
 	delay_time.tv_sec = seconds;
 	delay_time.tv_nsec = (ms - (seconds * 1000L)) * 1000000L;
+
+#if defined(_MSC_VER)
+#pragma comment("TODO IMPLEMENT LATER")
+	Sleep(delay_time.tv_nsec / 1000);
+#else
 	while (nanosleep(&delay_time, &delay_time) == -1) continue;
+#endif
 }
 
 void delayMicroseconds(unsigned int us) {
@@ -215,7 +241,12 @@ void delayMicroseconds(unsigned int us) {
 	long seconds = us / 1000000L;
 	delay_time.tv_sec = seconds;
 	delay_time.tv_nsec = (us - (seconds * 1000000L)) * 1000L;
+#if defined(_MSC_VER)
+#pragma comment("TODO IMPLEMENT LATER")
+	Sleep(delay_time.tv_nsec / 1000);
+#else
 	while (nanosleep(&delay_time, &delay_time) == -1) continue;
+#endif
 }
 
 // fake eeprom
@@ -245,6 +276,7 @@ numvar func_save(void) {
 };
 
 
+#if !defined(_MSC_VER)
 
 // background function thread
 #include <pthread.h>
@@ -269,6 +301,7 @@ void *BackgroundMacroThread(void *threadid) {
 	}
 	return 0;
 }
+#endif
 
 
 numvar func_system(void) {
@@ -292,6 +325,7 @@ void inthandler(int signal) {
 
 int main () {
 
+#if !defined(_MSC_VER)
 	FILE *shell = popen("echo ~", "r");
 	if (!shell) {;}
 	int got = fread(&bitlash_directory, 1, PATH_LEN, shell);
@@ -306,6 +340,7 @@ int main () {
 	if (chdir(bitlash_directory) != 0) {
 		sp("Cannot enter .bitlash directory.  Does it exist?\n");
 	}
+#endif
 
 	init_fake_eeprom();
 	addBitlashFunction("system", (bitlash_function) &func_system);
@@ -334,7 +369,9 @@ int main () {
 	//signal(SIGKILL, inthandler);
 
 	// run background functions on a separate thread
+#if !defined(_MSC_VER)
 	pthread_create(&background_thread, NULL, BackgroundMacroThread, 0);
+#endif
 
 	// run the main stdin command loop
 	for (;;) {
