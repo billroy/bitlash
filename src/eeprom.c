@@ -29,7 +29,44 @@
 ***/
 #include "bitlash.h"
 
-#if (defined(AVR_BUILD)) || ( (defined(ARM_BUILD)) && (ARM_BUILD==2))
+//#define EEPROM_MICROCHIP_24XX32A	// uncomment to enable EEPROM via I2C
+#define EEPROM_ADDRESS 0x50			// default address for DigiX boards
+
+#if defined(EEPROM_MICROCHIP_24XX32A)
+	// Supports a Microchip 24xx32A EEPROM module attached to the I2C bus
+	// http://ww1.microchip.com/downloads/en/DeviceDoc/21713J.pdf
+	// Specifically, the DigiX has such a module onboard
+	// https://digistump.com/wiki/digix/tutorials/eeprom
+	#include "Wire.h"
+
+	void eeinit(void) {
+		Wire.begin();
+	}
+
+	// read/write functions shamefully copied from: https://github.com/IngloriousEngineer/Arduino
+	void eewrite(int addr, uint8_t value) { 
+		Wire.beginTransmission(EEPROM_ADDRESS);
+		Wire.write(highByte(addr));           
+		Wire.write(lowByte(addr));            
+		Wire.write((byte) value);             
+		Wire.endTransmission(true);           
+		delay(6);                             
+	}
+
+	uint8_t eeread(int addr) {
+		Wire.beginTransmission(EEPROM_ADDRESS);
+		Wire.write(highByte(addr));
+		Wire.write(lowByte(addr));
+		Wire.endTransmission(true);
+		Wire.requestFrom(EEPROM_ADDRESS, 0x01, true);
+		byte data_out = 64;
+		// read that byte
+		while(Wire.available() == 0) {}
+		data_out = Wire.read();
+		return data_out;
+	}
+
+#elif (defined(AVR_BUILD)) || ( (defined(ARM_BUILD)) && (ARM_BUILD==2))
 	// AVR or Teensy 3
 	#include "avr/eeprom.h"
 	void eewrite(int addr, uint8_t value) { eeprom_write_byte((unsigned char *) addr, value); }
