@@ -29,14 +29,8 @@
 ***/
 #include "bitlash.h"
 
-//#define EEPROM_MICROCHIP_24XX32A	// uncomment to enable EEPROM via I2C
-#define EEPROM_ADDRESS 0x50			// default address for DigiX boards
-
 #if defined(EEPROM_MICROCHIP_24XX32A)
-	// Supports a Microchip 24xx32A EEPROM module attached to the I2C bus
-	// http://ww1.microchip.com/downloads/en/DeviceDoc/21713J.pdf
-	// Specifically, the DigiX has such a module onboard
-	// https://digistump.com/wiki/digix/tutorials/eeprom
+
 	#include "Wire.h"
 
 	void eeinit(void) {
