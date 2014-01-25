@@ -32,33 +32,54 @@
 #if defined(EEPROM_MICROCHIP_24XX32A)
 
 	#include "Wire.h"
+	// A cache to speed up eeprom reads
+	uint8_t cache_eeprom[ENDEEPROM];
 
+
+	// read a 32 byte page from eeprom
+	// source: https://github.com/IngloriousEngineer/Arduino
+	void extEEPROMreadPage(int EEPROM_addr, int addr, uint8_t* data_target, int amount, int offset)
+	{
+	  Wire.beginTransmission(EEPROM_addr);            
+	  Wire.write(highByte(addr));                     
+	  Wire.write(lowByte(addr));                      
+	  Wire.endTransmission(true);                     
+	  Wire.requestFrom(EEPROM_addr, amount, true);    
+	  
+	  while(Wire.available() == 0)
+	  	{}                 
+	  
+	  for(int i = 0; i<amount; i++)
+	    data_target[offset + i] = Wire.read();
+	}  
+
+
+	// initializes I2C bus and loads eeprom contents into cache
 	void eeinit(void) {
 		Wire.begin();
+		
+		for(int offset=0; offset<=ENDEEPROM; offset+=32) {
+			extEEPROMreadPage(EEPROM_ADDRESS, offset, cache_eeprom, 32, offset); 
+		}
 	}
 
-	// read/write functions shamefully copied from: https://github.com/IngloriousEngineer/Arduino
+	// write a single byte to eeprom
+	// source: https://github.com/IngloriousEngineer/Arduino
 	void eewrite(int addr, uint8_t value) { 
+		
+		// update cache first
+		cache_eeprom[addr] = value;
+
+		// write back to eeprom
 		Wire.beginTransmission(EEPROM_ADDRESS);
 		Wire.write(highByte(addr));           
 		Wire.write(lowByte(addr));            
 		Wire.write((byte) value);             
-		Wire.endTransmission(true);           
-		delay(6);                             
+		Wire.endTransmission(true);
+		delay(6);  
 	}
 
-	uint8_t eeread(int addr) {
-		Wire.beginTransmission(EEPROM_ADDRESS);
-		Wire.write(highByte(addr));
-		Wire.write(lowByte(addr));
-		Wire.endTransmission(true);
-		Wire.requestFrom(EEPROM_ADDRESS, 0x01, true);
-		byte data_out = 64;
-		// read that byte
-		while(Wire.available() == 0) {}
-		data_out = Wire.read();
-		return data_out;
-	}
+	uint8_t eeread(int addr) { return cache_eeprom[addr]; }
 
 #elif (defined(AVR_BUILD)) || ( (defined(ARM_BUILD)) && (ARM_BUILD==2))
 	// AVR or Teensy 3

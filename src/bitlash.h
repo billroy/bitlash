@@ -528,7 +528,8 @@ void eeputs(int);
 									// http://ww1.microchip.com/downloads/en/DeviceDoc/21713J.pdf
 									// Specifically, the DigiX has such a module onboard
 									// https://digistump.com/wiki/digix/tutorials/eeprom
-//#define EEPROM_ADDRESS 0x50		// default address for DigiX boards
+
+#define EEPROM_ADDRESS 0x50			// default EEPROM address for DigiX boards
 
 ////////////////////////
 //
