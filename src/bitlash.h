@@ -520,6 +520,16 @@ void eeputs(int);
 #define STARTDB 0
 #define FAIL ((int)-1)
 
+/////////////////////////////////////////////
+// External EEPROM (I2C)
+//
+//#define EEPROM_MICROCHIP_24XX32A	// Uncomment to enable EEPROM via I2C
+									// Supports a Microchip 24xx32A EEPROM module attached to the I2C bus
+									// http://ww1.microchip.com/downloads/en/DeviceDoc/21713J.pdf
+									// Specifically, the DigiX has such a module onboard
+									// https://digistump.com/wiki/digix/tutorials/eeprom
+
+#define EEPROM_ADDRESS 0x50			// default EEPROM address for DigiX boards
 
 ////////////////////////
 //
@@ -527,9 +537,13 @@ void eeputs(int);
 //
 // Use the predefined constant from the avr-gcc support file
 //
-#define ENDDB E2END
-#define ENDEEPROM E2END
-
+#if defined(EEPROM_MICROCHIP_24XX32A)
+	#define ENDDB 4095
+	#define ENDEEPROM 4095
+#else
+	#define ENDDB E2END
+	#define ENDEEPROM E2END
+#endif
 
 /////////////////////////////////////////////
 // bitlash-error.c
