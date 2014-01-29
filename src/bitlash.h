@@ -139,12 +139,6 @@
 // Enable WIZ_ETHERNET true to build for telnet access to the official Arduino
 // WIZ-5100 Ethernet shield
 //#define WIZ_ETHERNET 1
-//
-// Enable AF_ETHERNET to build for telnet access to the Adafruit Ethernet shield 
-// configured per the pinout below
-//
-//#define AF_ETHERNET 1
-//
 
 ///////////////////////////////////////////////////////
 //	WIZNET ETHERNET CONFIGURATION
@@ -175,19 +169,6 @@ void beginEthernet(unsigned long baud) {
 }
 #endif	// WIZ_ETHERNET
 
-
-///////////////////////////////////////////////////////
-// ADAFRUIT XPORT ETHERNET CONFIGURATION
-//
-#ifdef AF_ETHERNET
-#define NET_TX 2
-#define NET_RX 3
-#define SOFTWARE_SERIAL_RX 1
-#define RXPIN NET_RX
-#undef HARDWARE_SERIAL_TX		// sorry, no room for pin 0/1 hard uart
-#define DEFAULT_OUTPIN NET_TX
-#define BAUD_OVERRIDE 9600
-#endif	// AF_ETHERNET
 
 
 
