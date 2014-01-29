@@ -132,48 +132,6 @@
 
 ///////////////////////////////////////////////////////
 //
-// ARDUINO ETHERNET BUILD OPTIONS
-//
-///////////////////////////////////////////////////////
-//
-// Enable WIZ_ETHERNET true to build for telnet access to the official Arduino
-// WIZ-5100 Ethernet shield
-//#define WIZ_ETHERNET 1
-
-///////////////////////////////////////////////////////
-//	WIZNET ETHERNET CONFIGURATION
-//
-#ifdef WIZ_ETHERNET
-
-//
-// You'll need these two lines in your sketch, as of Arduino-0022:
-//
-//	#include <SPI.h>
-//	#include <Ethernet.h>
-//
-
-byte mac[] 		= { 'b','i','t','l','s','h' };
-byte ip[]  		= { 192, 168, 1, 27 };
-byte gateway[] 	= { 192, 168, 1, 1 };
-byte subnet[] 	= {255,255,255,0};
-#define PORT 8080
-Server server = Server(PORT);
-
-#define beginSerial beginEthernet
-#define serialAvailable server.available
-#define serialRead server.available().read
-#define serialWrite server.write
-void beginEthernet(unsigned long baud) {
-	Ethernet.begin(mac, ip, gateway, subnet);
-	server.begin();
-}
-#endif	// WIZ_ETHERNET
-
-
-
-
-///////////////////////////////////////////////////////
-//
 // SANGUINO BUILD
 //
 ///////////////////////////////////////////////////////
