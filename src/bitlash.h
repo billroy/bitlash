@@ -65,30 +65,9 @@
 #include "avr/interrupt.h"
 #endif
 
-#if defined(AVR_BUILD) || defined(ARM_BUILD)
-#include "string.h"
-#include "ctype.h"
-#include "setjmp.h"
-#endif
-
-// Unix includes
-#if defined(UNIX_BUILD)
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
 #include <string.h>
-#include "ctype.h"
-#include "setjmp.h"
-#include <time.h>
-#include <sys/types.h>
-#include <errno.h>
-//#include <unistd.h>
-#endif
-
-#ifndef byte
-#define byte uint8_t
-#endif
-
+#include <ctype.h>
+#include <setjmp.h>
 
 ////////////////////////////////////////////////////
 // GLOBAL BUILD OPTIONS
@@ -396,6 +375,7 @@ void beginSerial(unsigned long baud) { ; }
 
 #define E2END 2047
 
+#define byte uint8_t
 #define uint8_t unsigned char
 #define uint32_t unsigned long int
 #define prog_char char
@@ -471,6 +451,11 @@ void doCharacter(char);					// pass an input character to the line editor
 
 //void flash(unsigned int, int);
 
+/////////////////////////////////////////////
+// bitlash-builtins.c
+//
+void displayBanner(void);
+byte findbuiltin(char *name);
 
 /////////////////////////////////////////////
 // bitlash-arduino.c
@@ -494,10 +479,9 @@ void delayMicroseconds(unsigned int);
 /////////////////////////////////////////////
 // bitlash-cmdline.c
 //
-#ifdef TINY_BUILD
-byte putlbuf(char);
 void initlbuf(void);
-#endif
+void pointToError(void);
+void cmd_help(void);
 
 // String value buffer size
 #ifdef AVR_BUILD
@@ -563,7 +547,7 @@ void expected(byte);
 void expectedchar(byte);
 void unexpected(byte);
 void missing(byte);
-//void oops(int);						// fatal exit
+void oops(int);						// fatal exit
 
 
 /////////////////////////////////////////////
@@ -571,6 +555,8 @@ void missing(byte);
 //
 typedef numvar (*bitlash_function)(void);
 void show_user_functions(void);
+char find_user_function(char *id);
+void addBitlashFunction(const char *name, bitlash_function func_ptr);
 
 void dofunctioncall(byte);
 numvar func_free(void);
@@ -600,6 +586,7 @@ void speol(void);
 
 numvar func_printf(void); 
 numvar func_printf_handler(byte,byte);
+void cmd_print(void);
 
 #ifdef SOFTWARE_SERIAL_TX
 numvar setBaud(numvar, unumvar);
@@ -632,6 +619,7 @@ void stopTask(byte);
 void startTask(int, numvar);
 void snooze(unumvar);
 void showTaskList(void);
+unsigned long millisUntilNextTask(void);
 extern byte background;
 extern byte curtask;
 extern byte suspendBackground;
@@ -639,15 +627,21 @@ extern byte suspendBackground;
 
 /////////////////////////////////////////////
 // eeprom.c
-// they must live off piste due to aggressive compiler inlining.
 //
-#if defined(AVR_BUILD)
-void eewrite(int, byte) __attribute__((noinline));
-byte eeread(int) __attribute__((noinline));
-
-#elif defined(ARM_BUILD)
 void eewrite(int, byte);
 byte eeread(int);
+void eraseentry(char *id);
+void cmd_function(void);
+void cmd_ls(void);
+void cmd_peep(void);
+
+#if defined(AVR_BUILD)
+// they must live off piste due to aggressive compiler inlining.
+void eewrite(int, byte) __attribute__((noinline));
+byte eeread(int) __attribute__((noinline));
+#endif
+
+#if defined(ARM_BUILD)
 extern char virtual_eeprom[];
 void eeinit(void);
 #endif
@@ -744,6 +738,47 @@ extern numvar expval;				// value of numeric expr or length of string
 // Temporary buffer for ids
 #define IDLEN 12
 extern char idbuf[IDLEN+1];
+
+/////////////////////////////////////////////
+// bitlash-instream.c
+//
+
+#if defined(SDFILE) || defined(UNIX_BUILD)
+numvar sdwrite(char *filename, char *contents, byte append);
+#endif
+
+/////////////////////////////////////////////
+// bitlash-unix-file.c
+//
+#if defined(UNIX_BUILD)
+numvar exec(void);
+numvar sdls(void);
+numvar sdexists(void);
+numvar sdrm(void);
+numvar sdcreate(void);
+numvar sdappend(void);
+numvar sdcat(void);
+numvar sdcd(void);
+numvar sdmd(void);
+numvar func_pwd(void);
+#endif
+
+/////////////////////////////////////////////
+// bitlash-unix.c
+//
+#if defined(UNIX_BUILD)
+int serialAvailable(void);
+int serialRead(void);
+void digitalWrite(uint8_t, uint8_t);
+int digitalRead(uint8_t);
+int analogRead(uint8_t);
+void analogWrite(byte, int);
+void pinMode(uint8_t, uint8_t);
+int pulseIn(int, int, int);
+unsigned long millis(void);
+void delay(unsigned long);
+void delayMicroseconds(unsigned int);
+#endif
 
 
 // Strings live in PROGMEM to save ram

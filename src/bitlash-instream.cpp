@@ -35,7 +35,7 @@
 ***/
 #include "bitlash.h"
 
-#if defined(SDFILE)
+#if defined(SDFILE) || defined(UNIX_BUILD)
 
 #define O_READ 0x01		// from SdFile.h
 
@@ -46,7 +46,7 @@ numvar scriptgetpos(void);
 byte scriptread(void);
 byte scriptwrite(char *filename, char *contents, byte append);
 void scriptwritebyte(byte b);
-#elif !defined(UNIX_BUILD)
+#else
 byte scriptfileexists(char *scriptname) { return 0; }
 #endif
 
