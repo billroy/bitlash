@@ -27,6 +27,10 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "bitlash.h"
+#include <unistd.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /*
 
@@ -313,7 +317,6 @@ int main () {
 	addBitlashFunction("save", (bitlash_function) &func_save);
 
 	// from bitlash-unix-file.c
-	extern bitlash_function exec, sdls, sdexists, sdrm, sdcreate, sdappend, sdcat, sdcd, sdmd, func_pwd;
 	addBitlashFunction("exec", (bitlash_function) &exec);
 	addBitlashFunction("dir", (bitlash_function) &sdls);
 	addBitlashFunction("exists", (bitlash_function) &sdexists);
