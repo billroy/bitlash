@@ -62,9 +62,7 @@
 
 
 #if defined(AVR_BUILD)
-#include "avr/io.h"
 #include "avr/pgmspace.h"
-#include "avr/interrupt.h"
 #endif
 
 #include <string.h>
