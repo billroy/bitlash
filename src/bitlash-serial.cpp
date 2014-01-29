@@ -263,11 +263,17 @@ void chkbreak(void) {
 
 // check serial input stream for ^C break
 void chkbreak(void) {
-	if (blconsole->available()) {		// allow ^C to break out
-		if (blconsole->read() == 3) {	// BUG: this gobblesnarfs input characters! - need serialPeek()
-			msgpl(M_ctrlc);
-			longjmp(env, X_EXIT);
-		}
+	// allow ^C to break out
+#if defined(ARDUINO) && ARDUINO < 100
+	// Arduino before 1.0 didn't have peek(), so just read a
+	// byte (this discards a byte when it wasn't ^C, though...
+	if (blconsole->read() == 3) {
+#else
+	if (blconsole->peek() == 3) {
+		blconsole->read();
+#endif
+		msgpl(M_ctrlc);
+		longjmp(env, X_EXIT);
 	}
 	if (func_free() < MINIMUM_FREE_RAM) overflow(M_stack);
 }
