@@ -35,11 +35,9 @@
 ***/
 #include "bitlash.h"
 
-// The default default outpin is, of course, zero
-#ifndef DEFAULT_OUTPIN
-#define DEFAULT_OUTPIN 0
-#endif
-byte outpin = DEFAULT_OUTPIN;	// output pin
+Stream *blconsole = &DEFAULT_CONSOLE;
+Print *bloutdefault = blconsole;
+Print *blout = blconsole;
 
 #ifdef SOFTWARE_SERIAL_TX
 
@@ -48,10 +46,46 @@ byte outpin = DEFAULT_OUTPIN;	// output pin
 #ifndef NUMPINS
 #define NUMPINS 32				// default to Arduino Diecimila/168..328
 #endif
-int bittime[NUMPINS];			// bit times (1000000/baud) per pin, 0 = uninitialized
 
 // set output back to 'stdout' ;)
-void resetOutput(void) { outpin = DEFAULT_OUTPIN; }
+void resetOutput(void) { blout = bloutdefault; }
+
+// TX-only minimal software serial implementation
+class SoftwareSerialTX : public Print {
+public:
+	uint8_t pin;
+	static uint16_t bittime[NUMPINS]; // bit times (1000000/baud) per pin, 0 = uninitialized
+
+	// bit whack a byte out the port designated by 'outpin'
+#if defined(ARDUINO) && ARDUINO < 100
+	virtual void write(uint8_t c) {
+#else
+	virtual size_t write(uint8_t c) {
+#endif
+		const uint16_t bt = bittime[this->pin];
+		char bits = 8; // 8 data bits
+		digitalWrite(this->pin, LOW);
+		delayMicroseconds(bt);
+		while (bits--) {
+			//if ((c & 1) == 0) digitalWrite(outpin, LOW);
+			//else digitalWrite(outpin, HIGH);
+			digitalWrite(this->pin, c & 1);
+			delayMicroseconds(bt);
+			c >>= 1;
+		}
+		digitalWrite(this->pin, HIGH);
+		delayMicroseconds(bt<<1);
+#if !(defined(ARDUINO) && ARDUINO < 100)
+		return 1;
+#endif
+	}
+
+
+};
+
+uint16_t SoftwareSerialTX::bittime[];
+
+static SoftwareSerialTX sstx;
 
 void chkpin(char pin) {
 	// TODO: fix this warning re: comparison
@@ -61,12 +95,12 @@ void chkpin(char pin) {
 numvar setBaud(numvar pin, unumvar baud) {
 	chkpin(pin);
 
-//#ifndef SOFTWARE_SERIAL_TX
+#ifdef DEFAULT_OUTPIN
 	if (pin == DEFAULT_OUTPIN) {
-		beginSerial(baud);
+		DEFAULT_CONSOLE.begin(baud);
 		return 0;
 	}
-//#endif
+#endif
 
 #ifdef ALTERNATE_OUTPIN
 	else if (pin == ALTERNATE_OUTPIN) {
@@ -75,45 +109,36 @@ numvar setBaud(numvar pin, unumvar baud) {
 	}
 #endif
 
-	bittime[pin] = (1000000/baud) - clockCyclesToMicroseconds(50);
+	sstx.bittime[pin] = (1000000/baud) - clockCyclesToMicroseconds(50);
 	pinMode(pin, OUTPUT);				// make it an output
 	digitalWrite(pin, HIGH);				// set idle
-	delayMicroseconds(bittime[pin]);		// let it quiesce
-	return bittime[pin];
+	delayMicroseconds(sstx.bittime[pin]);		// let it quiesce
+	return sstx.bittime[pin];
 }
 
 void setOutput(byte pin) {
 	chkpin(pin);
-	outpin = pin;
 
-#ifdef HARDWARE_SERIAL_TX
-	// skip soft baud check for the hardware uart
-	if (outpin != DEFAULT_OUTPIN)
+#ifdef DEFAULT_OUTPIN
+	if (pin == DEFAULT_OUTPIN) {
+		blout = &DEFAULT_CONSOLE;
+		return;
+	}
 #endif
+
 #ifdef ALTERNATE_OUTPIN
-	if (outpin != ALTERNATE_OUTPIN)
+	if (pin == ALTERNATE_OUTPIN) {
+		blout = &Serial1;
+		return;
+	}
 #endif
 
 	// set the softserial baud if it's not already set
-	if (!bittime[outpin]) setBaud(pin, DEFAULT_SECONDARY_BAUD);
+	if (!sstx.bittime[pin]) setBaud(pin, DEFAULT_SECONDARY_BAUD);
+	sstx.pin = pin;
+	blout = &sstx;
 }
 
-// bit whack a byte out the port designated by 'outpin'
-void whackabyte(unsigned char c) {
-	int bt = bittime[outpin];
-	char bits = 8;		// 8 data bits
-	digitalWrite(outpin, LOW);
-	delayMicroseconds(bt);
-	while (bits--) {
-		//if ((c & 1) == 0) digitalWrite(outpin, LOW);
-		//else digitalWrite(outpin, HIGH);
-		digitalWrite(outpin, c & 1);
-		delayMicroseconds(bt);
-		c >>= 1;
-	}
-	digitalWrite(outpin, HIGH);
-	delayMicroseconds(bt<<1);
-}
 #endif	// SOFTWARE_SERIAL_TX
 
 
@@ -125,16 +150,40 @@ void whackabyte(unsigned char c) {
 //
 serialOutputFunc serial_override_handler;
 
+class PrintToFunction : public Print {
+public:
+	serialOutputFunc func;
+
+#if defined(ARDUINO) && ARDUINO < 100
+	virtual void write(uint8_t c)
+#else
+	virtual size_t write(uint8_t c)
+#endif
+	{
+		func (c);
+#if !(defined(ARDUINO) && ARDUINO < 100)
+		return 1;
+#endif
+	}
+};
+
+static PrintToFunction outputHandlerPrint;
+
 byte serialIsOverridden(void) {
-	return serial_override_handler != 0;
+	return bloutdefault != blconsole;
 }
 
 void setOutputHandler(serialOutputFunc newHandler) {
-	serial_override_handler = newHandler;
+	outputHandlerPrint.func = newHandler;
+	blout = bloutdefault = &outputHandlerPrint;
+}
+
+void setOutputHandler(Print& print) {
+	blout = bloutdefault = &print;
 }
 
 void resetOutputHandler(void) {
-	serial_override_handler = 0;
+	blout = bloutdefault = blconsole;
 }
 
 #endif
@@ -146,31 +195,12 @@ void resetOutputHandler(void) {
 //
 // this is a pinchpoint on output.  all output funnels through spb.
 //
-#if defined(HARDWARE_SERIAL_TX) || defined(SOFTWARE_SERIAL_TX)
 void spb(char c) {
-#ifdef HARDWARE_SERIAL_TX
-	if (outpin == DEFAULT_OUTPIN) { 
-
-#ifdef SERIAL_OVERRIDE
-		if (serial_override_handler) (*serial_override_handler)(c);
-		else
-#endif
-		serialWrite(c); 
-		return;
-	}
-#endif
-#ifdef ALTERNATE_OUTPIN
-	if (outpin == ALTERNATE_OUTPIN) { Serial1.print(c); return; }
-#endif
-#ifdef SOFTWARE_SERIAL_TX
-	whackabyte(c);
-#endif
+	blout->write((uint8_t)c);
 }
+
 void sp(const char *str) { while (*str) spb(*str++); }
 void speol(void) { spb(13); spb(10); }
-#else
-// handle no-serial case
-#endif
 
 
 
@@ -233,8 +263,8 @@ void chkbreak(void) {
 
 // check serial input stream for ^C break
 void chkbreak(void) {
-	if (serialAvailable()) {		// allow ^C to break out
-		if (serialRead() == 3) {	// BUG: this gobblesnarfs input characters! - need serialPeek()
+	if (blconsole->available()) {		// allow ^C to break out
+		if (blconsole->read() == 3) {	// BUG: this gobblesnarfs input characters! - need serialPeek()
 			msgpl(M_ctrlc);
 			longjmp(env, X_EXIT);
 		}

@@ -190,16 +190,16 @@ numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitc
 
 numvar func_getkey(void) {
 	if (getarg(0) > 0) sp((const char *) getarg(1));
-	while (!serialAvailable()) {;}		// blocking!
-	return (numvar) serialRead();
+	while (!blconsole->available()) {;}		// blocking!
+	return (numvar) blconsole->read();
 }
 
 numvar func_getnum(void) {
 	numvar num = 0;
 	if (getarg(0) > 0) sp((const char *) getarg(1));
 	for (;;) {
-		while (!serialAvailable()) {;}	// blocking!
-		int k = serialRead();
+		while (!blconsole->available()) {;}	// blocking!
+		int k = blconsole->read();
 		if ((k == '\r') || (k == '\n')) {
 			speol();
 			return num;

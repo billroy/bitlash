@@ -51,6 +51,7 @@
 //	Start Bitlash, and give it cycles to do stuff
 //
 void initBitlash(unsigned long baud);	// start up and set baud rate
+void initBitlash(Stream& stream);
 void runBitlash(void);					// call this in loop(), frequently
 
 // Bitlash variables are of type "numvar"
@@ -98,6 +99,7 @@ numvar getstringarg(numvar which);
 typedef void (*serialOutputFunc)(byte);
 byte serialIsOverridden(void);
 void setOutputHandler(serialOutputFunc);
+void setOutputHandler(Print& newHandler);
 void setOutput(byte pin);
 void resetOutputHandler(void);
 numvar func_printf_handler(byte, byte);

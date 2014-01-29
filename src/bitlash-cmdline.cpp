@@ -106,7 +106,7 @@ void initlbuf(void) {
 	prompt();
 	
 	// flush any pending serial input
-	while (serialAvailable()) serialRead();
+	while (blconsole->read() >= 0) /* nothing */;
 }
 
 
@@ -197,7 +197,7 @@ void doCharacter(char c) {
 void runBitlash(void) {
 
 	// Pipe the serial input into the command handler
-	if (serialAvailable()) doCharacter(serialRead());
+	if (blconsole->available()) doCharacter(blconsole->read());
 
 	// Background macro handler: feed it one call each time through
 	runBackgroundTasks();
