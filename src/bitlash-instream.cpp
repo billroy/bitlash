@@ -373,6 +373,8 @@ numvar sdwrite(char *filename, char *contents, byte append) {
 	return 1;
 }
 
+// fprintf needs SERIAL_OVERRIDE to work
+#ifdef SERIAL_OVERRIDE
 //////////
 //
 //	func_fprintf(): implementation of fprintf() function
@@ -397,5 +399,6 @@ numvar func_fprintf(void) {
 #endif
 	returntoparsepoint(&fetchmark, 1);
 }
+#endif
 
 #endif	// SDFILE
