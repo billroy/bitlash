@@ -50,9 +50,7 @@ numvar doCommand(const char *cmd) {
 }
 
 
-void initBitlash(Stream& stream) {
-	blout = bloutdefault = blconsole = &stream;
-
+static void initBitlashInternal() {
 #if defined(ARM_BUILD)
 	eeinit();
 #endif
@@ -71,10 +69,17 @@ void initBitlash(Stream& stream) {
 	initlbuf();
 }
 
+#ifndef DEFAULT_CONSOLE_ONLY
+void initBitlash(Stream& stream) {
+	blout = bloutdefault = blconsole = &stream;
+	initBitlashInternal();
+}
+#endif
+
 void initBitlash(unsigned long baud) {
 	#if defined(TINY_BUILD)
 	baud = 9600;
 	#endif
 	DEFAULT_CONSOLE.begin(baud);
-	initBitlash(DEFAULT_CONSOLE);
+	initBitlashInternal();
 }

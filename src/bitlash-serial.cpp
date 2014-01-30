@@ -35,7 +35,10 @@
 ***/
 #include "bitlash.h"
 
+#ifndef DEFAULT_CONSOLE_ONLY
 Stream *blconsole = &DEFAULT_CONSOLE;
+#endif
+
 Print *bloutdefault = blconsole;
 Print *blout = blconsole;
 
