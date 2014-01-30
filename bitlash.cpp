@@ -34,12 +34,6 @@
 
 
 ***/
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
-
 #ifdef UNIX_BUILD
 #include "src/bitlash-unix.c"
 //#else
