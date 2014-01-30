@@ -36,9 +36,8 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
-#if defined(__x86_64__) || defined(__i386__)
-#define UNIX_BUILD 1
-#elif defined(__SAM3X8E__)
+#if !defined(UNIX_BUILD)
+#if defined(__SAM3X8E__)
 #define ARM_BUILD 1
 #elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
   // Teensy 3
@@ -46,6 +45,7 @@
 #else
 #define AVR_BUILD 1
 #endif
+#endif // !defined(UNIX_BUILD)
 
 
 #if defined(AVR_BUILD)
