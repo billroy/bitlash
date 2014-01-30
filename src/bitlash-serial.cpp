@@ -39,8 +39,13 @@
 Stream *blconsole = &DEFAULT_CONSOLE;
 #endif
 
+#ifdef SERIAL_OVERRIDE
 Print *bloutdefault = blconsole;
+#endif
+
+#ifdef SOFTWARE_SERIAL_TX
 Print *blout = blconsole;
+#endif
 
 #ifdef SOFTWARE_SERIAL_TX
 

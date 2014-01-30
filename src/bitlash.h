@@ -501,11 +501,28 @@ __typeof__(DEFAULT_CONSOLE) * const blconsole = &DEFAULT_CONSOLE;
 
 // The Print object where the print command normally goes (e.g. when not
 // redirected with print #10: "foo")
+#ifdef SERIAL_OVERRIDE
 extern Print *bloutdefault;
+#else
+// SERIAL_OVERRIDE is disabled, so print redirection should always just
+// reset blout to blconsole. Using this define, we essentially make both
+// identifiers refer to the same variable.
+#define bloutdefault blconsole
+#endif
 
 // The Print object where the print command goes right now
+#ifdef SOFTWARE_SERIAL_TX
 extern Print *blout;
+#else
+// SOFTWARE_SERIAL_TX is disabled, so printing should always just go to
+// bloutdefault.  Using this define, we essentiallyl make both
+// identifiers refer to the same variable.
+#define blout bloutdefault
+#endif
 
+// Note that if SOFTWARE_SERIAL_TX and SERIAL_OVERRIDE are disabled,
+// then blconsole, bloutdefault and blout are all effectively the same
+// variable.
 
 /////////////////////////////////////////////
 // bitlash-taskmgr.c
