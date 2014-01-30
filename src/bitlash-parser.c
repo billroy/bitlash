@@ -44,7 +44,7 @@ byte fetchtype;		// current script type
 numvar fetchptr;	// pointer to current char in script
 numvar symval;		// value of current numeric expression
 
-#if !USE_GPIORS
+#if !defined(USE_GPIORS)
 byte sym;			// current input symbol
 byte inchar;		// Current parser character
 #endif
