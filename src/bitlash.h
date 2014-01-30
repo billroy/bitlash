@@ -316,6 +316,12 @@ void beginEthernet(unsigned long baud) {
 #endif		// TINY_BUILD
 
 
+// Enable USER_FUNCTIONS to include the add_bitlash_function() extension mechanism
+// This costs about 256 bytes
+//
+#if !defined(TINY_BUILD)
+#define USER_FUNCTIONS
+#endif
 
 ///////////////////////////////////////////////////////
 //
