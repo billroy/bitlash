@@ -612,7 +612,9 @@ void parseid(void) {
 	else if (findpinname(idbuf)) {;}		// sym and symval are set in findpinname
 #endif
 
+#ifdef USER_FUNCTIONS
 	else if (find_user_function(idbuf)) sym = s_nfunct;
+#endif
 
 	else findscript(idbuf);
 }

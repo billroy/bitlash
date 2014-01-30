@@ -387,13 +387,6 @@ const bitlash_function function_table[] PROGMEM = {
  };
 #endif
 
-// Enable USER_FUNCTIONS to include the add_bitlash_function() extension mechanism
-// This costs about 256 bytes
-//
-#if !defined(TINY_BUILD)
-#define USER_FUNCTIONS
-#endif
-
 #ifdef USER_FUNCTIONS
 #define MAX_USER_FUNCTIONS 20		// increase this if needed, but keep free() > 200 ish
 #define USER_FUNCTION_FLAG 0x80
