@@ -35,9 +35,8 @@
 /*
 
 Build:
-				cd bitlash/src
-	mac:		gcc *.c -o bitlash
-	linux:		gcc -pthread *.c -o bitlash
+	cd bitlash/src
+	make
 
 Issues
 
