@@ -387,7 +387,7 @@ void beginSerial(unsigned long baud) { ; }
 //	Unix build options
 //	(not working)
 //
-//	> gcc bitlash.cpp -D UNIX_BUILD
+//	See README-UNIX.md for info about how to compile
 //
 #ifdef UNIX_BUILD
 #define MINIMUM_FREE_RAM 200

@@ -34,11 +34,6 @@
 
 
 ***/
-#ifdef UNIX_BUILD
-#include "src/bitlash-unix.c"
-//#else
-//#include "src/bitlash-arduino.c"
-#endif
 
 #include "src/bitlash-cmdline.c"
 #include "src/bitlash-eeprom.c"
