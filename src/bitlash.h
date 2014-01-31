@@ -451,32 +451,11 @@ void runBitlash(void);					// call this in loop(), frequently
 numvar doCommand(const char *);					// execute a command from your sketch
 void doCharacter(char);					// pass an input character to the line editor
 
-//void flash(unsigned int, int);
-
 /////////////////////////////////////////////
 // bitlash-builtins.c
 //
 void displayBanner(void);
 byte findbuiltin(const char *name);
-
-/////////////////////////////////////////////
-// bitlash-arduino.c
-//
-//#ifndef ARDUINO_BUILD
-#if 0
-void digitalWrite(uint8_t, uint8_t);
-int digitalRead(uint8_t);
-int analogRead(uint8_t);
-void pinMode(uint8_t, uint8_t);
-unsigned long millis(void);
-void delay(unsigned long);
-void delayMicroseconds(unsigned int);
-#define clockCyclesPerMicrosecond() ( F_CPU / 1000000L )
-#define clockCyclesToMicroseconds(a) ( (a) / clockCyclesPerMicrosecond() )
-#define INPUT 0
-#define OUTPUT 1
-#endif
-
 
 /////////////////////////////////////////////
 // bitlash-cmdline.c

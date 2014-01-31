@@ -35,10 +35,6 @@
 ***/
 #include "bitlash.h"
 
-
-// Character io primitives
-//#define spb serialWrite
-
 // The default default outpin is, of course, zero
 #ifndef DEFAULT_OUTPIN
 #define DEFAULT_OUTPIN 0
