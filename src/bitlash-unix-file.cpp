@@ -77,6 +77,11 @@
 
 ***/
 #include "bitlash.h"
+#include <errno.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #if defined(UNIX_BUILD)
 
@@ -196,7 +201,7 @@ numvar sdcd(void) {
 	return chdir((char *) getarg(1));
 }
 numvar sdmd(void) { 
-	return mkdir((char *) getarg(1));
+	return mkdir((char *) getarg(1), 0777);
 }
 
 numvar exec(void) {

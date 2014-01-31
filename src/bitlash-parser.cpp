@@ -44,7 +44,7 @@ byte fetchtype;		// current script type
 numvar fetchptr;	// pointer to current char in script
 numvar symval;		// value of current numeric expression
 
-#if !USE_GPIORS
+#if !defined(USE_GPIORS)
 byte sym;			// current input symbol
 byte inchar;		// Current parser character
 #endif
@@ -612,7 +612,9 @@ void parseid(void) {
 	else if (findpinname(idbuf)) {;}		// sym and symval are set in findpinname
 #endif
 
+#ifdef USER_FUNCTIONS
 	else if (find_user_function(idbuf)) sym = s_nfunct;
+#endif
 
 	else findscript(idbuf);
 }

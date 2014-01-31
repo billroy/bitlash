@@ -27,13 +27,16 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "bitlash.h"
+#include <unistd.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /*
 
 Build:
-				cd bitlash/src
-	mac:		gcc *.c -o bitlash
-	linux:		gcc -pthread *.c -o bitlash
+	cd bitlash/src
+	make
 
 Issues
 
@@ -232,6 +235,7 @@ void fputbyte(byte b) {
 	fwrite(&b, 1, 1, savefd);	
 }
 
+#ifdef SERIAL_OVERRIDE
 numvar func_save(void) {
 	char *fname = "eeprom";
 	if (getarg(0) > 0) fname = (char *) getarg(1);
@@ -243,6 +247,7 @@ numvar func_save(void) {
 	fclose(savefd);
 	return 1;
 };
+#endif
 
 
 
@@ -310,10 +315,11 @@ int main () {
 	init_fake_eeprom();
 	addBitlashFunction("system", (bitlash_function) &func_system);
 	addBitlashFunction("exit", (bitlash_function) &func_exit);
+	#ifdef SERIAL_OVERRIDE
 	addBitlashFunction("save", (bitlash_function) &func_save);
+	#endif
 
 	// from bitlash-unix-file.c
-	extern bitlash_function exec, sdls, sdexists, sdrm, sdcreate, sdappend, sdcat, sdcd, sdmd, func_pwd;
 	addBitlashFunction("exec", (bitlash_function) &exec);
 	addBitlashFunction("dir", (bitlash_function) &sdls);
 	addBitlashFunction("exists", (bitlash_function) &sdexists);
@@ -324,7 +330,9 @@ int main () {
 	addBitlashFunction("cd", (bitlash_function) &sdcd);
 	addBitlashFunction("md", (bitlash_function) &sdmd);
 	addBitlashFunction("pwd", (bitlash_function) &func_pwd);
+	#ifdef SERIAL_OVERRIDE
 	addBitlashFunction("fprintf", (bitlash_function) &func_fprintf);
+	#endif
 
 
 	init_millis();

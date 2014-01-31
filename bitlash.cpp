@@ -34,27 +34,16 @@
 
 
 ***/
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
 
-#ifdef UNIX_BUILD
-#include "src/bitlash-unix.c"
-//#else
-//#include "src/bitlash-arduino.c"
-#endif
-
-#include "src/bitlash-cmdline.c"
-#include "src/bitlash-eeprom.c"
-#include "src/bitlash-error.c"
-#include "src/bitlash-functions.c"
-#include "src/bitlash-builtins.c"
-#include "src/bitlash-interpreter.c"
-#include "src/bitlash-instream.c"
-#include "src/bitlash-parser.c"
-#include "src/bitlash-serial.c"
-#include "src/bitlash-taskmgr.c"
-#include "src/bitlash-api.c"
-#include "src/eeprom.c"
+#include "src/bitlash-cmdline.cpp"
+#include "src/bitlash-eeprom.cpp"
+#include "src/bitlash-error.cpp"
+#include "src/bitlash-functions.cpp"
+#include "src/bitlash-builtins.cpp"
+#include "src/bitlash-interpreter.cpp"
+#include "src/bitlash-instream.cpp"
+#include "src/bitlash-parser.cpp"
+#include "src/bitlash-serial.cpp"
+#include "src/bitlash-taskmgr.cpp"
+#include "src/bitlash-api.cpp"
+#include "src/eeprom.cpp"
