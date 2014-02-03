@@ -43,6 +43,8 @@
 #elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
   // Teensy 3
   #define ARM_BUILD 2
+#elif defined(PART_LM4F120H5QR) //support Energia.nu - Stellaris Launchpad / Tiva C Series 
+#define ARM_BUILD  4 //support Energia.nu - Stellaris Launchpad / Tiva C Series  
 #else
 #define AVR_BUILD 1
 #endif
