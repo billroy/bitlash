@@ -80,6 +80,10 @@ void cmd_boot(void) {
 	REG_RSTC_CR = (RSTC_CR_PROCRST | RSTC_CR_PERRST | RSTC_CR_EXTRST | RSTC_CR_KEY(0xA5));
 	while(1);
 }
+#elif ARM_BUILD==4
+void cmd_boot(void){
+  oops('boot');
+}
 #else
 void cmd_boot(void) {
   #ifndef SCB_AIRCR_SYSRESETREQ_MASK
