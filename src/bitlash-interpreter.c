@@ -82,7 +82,9 @@ void cmd_boot(void) {
 }
 #elif ARM_BUILD==4
 void cmd_boot(void){
-  oops('boot');
+  //Software RESET Stellaris / Tiva C Series Launchpad
+  HWREG(NVIC_APINT) = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ;
+  while(1);
 }
 #else
 void cmd_boot(void) {
