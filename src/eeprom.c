@@ -90,6 +90,30 @@
 		// Initialize Teensy 3 eeprom
 		void eeinit(void) { eeprom_initialize(); }
 	#endif
+#elif ( (defined(ARM_BUILD)) && (ARM_BUILD==4))
+#define BYTES_PER_WORD 	4
+#define WORDS_PER_BLOCK 16
+#define NUM_BLOCKS		32
+void eeinit(void) {
+   
+}
+void eewrite(int address, uint8_t value) { 
+	unsigned long byteAddr = address - (address % BYTES_PER_WORD);
+	unsigned long wordVal = 0;
+	ROM_EEPROMRead(&wordVal, byteAddr, 4);
+	wordVal &= ~(0xFF << (8*(address % BYTES_PER_WORD)));
+	wordVal += value << (8*(address % BYTES_PER_WORD));
+	ROM_EEPROMProgram(&wordVal, byteAddr, 4);
+}
+uint8_t eeread(int address) { 
+	unsigned long byteAddr = address - (address % BYTES_PER_WORD);
+	//int block = address / (BYTES_PER_WORD * WORDS_PER_BLOCK);
+	//int word = (address / BYTES_PER_WORD) % WORDS_PER_BLOCK;
+	unsigned long wordVal = 0;
+	ROM_EEPROMRead(&wordVal, byteAddr, 4);
+	wordVal = wordVal >> (8*(address % BYTES_PER_WORD));
+	return (uint8_t) wordVal;
+}		
 #elif defined(ARM_BUILD)
 	#if ARM_BUILD!=2
 		// A little fake eeprom for ARM testing
