@@ -425,6 +425,9 @@ unsigned long millis(void);
 #define strlen_P strlen
 #if ARM_BUILD==1
   #define E2END 4096
+#elif ARM_BUILD==4
+  //Stellaris / Tiva C Series
+  #define E2END 2047  
 #else
   // Teensy 3
   #define E2END 2048
