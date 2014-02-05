@@ -446,7 +446,7 @@ void connectBitlash(void);
 //
 void initBitlash(unsigned long baud);	// start up and set baud rate
 void runBitlash(void);					// call this in loop(), frequently
-numvar doCommand(char *);					// execute a command from your sketch
+numvar doCommand(const char *);					// execute a command from your sketch
 void doCharacter(char);					// pass an input character to the line editor
 
 //void flash(unsigned int, int);
@@ -455,7 +455,7 @@ void doCharacter(char);					// pass an input character to the line editor
 // bitlash-builtins.c
 //
 void displayBanner(void);
-byte findbuiltin(char *name);
+byte findbuiltin(const char *name);
 
 /////////////////////////////////////////////
 // bitlash-arduino.c
@@ -499,8 +499,8 @@ extern char lbuf[LBUFLEN];
 /////////////////////////////////////////////
 // bitlash-eeprom.c
 //
-int findKey(char *key);				// return location of macro keyname in EEPROM or -1
-int getValue(char *key);			// return location of macro value in EEPROM or -1
+int findKey(const char *key);				// return location of macro keyname in EEPROM or -1
+int getValue(const char *key);			// return location of macro value in EEPROM or -1
 
 int findoccupied(int);
 int findend(int);
@@ -555,7 +555,7 @@ void oops(int);						// fatal exit
 //
 typedef numvar (*bitlash_function)(void);
 void show_user_functions(void);
-char find_user_function(char *id);
+char find_user_function(const char *id);
 void addBitlashFunction(const char *name, bitlash_function func_ptr);
 
 void dofunctioncall(byte);
@@ -630,7 +630,7 @@ extern byte suspendBackground;
 //
 void eewrite(int, byte);
 byte eeread(int);
-void eraseentry(char *id);
+void eraseentry(const char *id);
 void cmd_function(void);
 void cmd_ls(void);
 void cmd_peep(void);
@@ -674,9 +674,9 @@ numvar incVar(uint8_t id);					// increment variable.  id is [0..25] for [a..z]
 #define SCRIPT_EEPROM 	3
 #define SCRIPT_FILE		4
 
-byte findscript(char *);
-byte scriptfileexists(char *);
-numvar execscript(byte, numvar, char *);
+byte findscript(const char *);
+byte scriptfileexists(const char *);
+numvar execscript(byte, numvar, const char *);
 void callscriptfunction(byte, numvar);
 
 typedef struct {
@@ -744,7 +744,7 @@ extern char idbuf[IDLEN+1];
 //
 
 #if defined(SDFILE) || defined(UNIX_BUILD)
-numvar sdwrite(char *filename, char *contents, byte append);
+numvar sdwrite(const char *filename, const char *contents, byte append);
 #endif
 
 /////////////////////////////////////////////

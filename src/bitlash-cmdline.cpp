@@ -125,7 +125,7 @@ byte putlbuf(char c) {
 
 void pointToError(void) {
 	if (fetchtype == SCRIPT_RAM) {
-		int i = (char *) fetchptr - lbuf;
+		int i = (const char *) fetchptr - lbuf;
 		if ((i < 0) || (i >= LBUFLEN)) return;
 		speol();
 		while (i-- >= 0) spb('-');

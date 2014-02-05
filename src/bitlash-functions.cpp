@@ -189,14 +189,14 @@ numvar func_bitread(void) { reqargs(2); return (arg1 & ((numvar)1 << arg2)) != 0
 numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitclear(); }
 
 numvar func_getkey(void) {
-	if (getarg(0) > 0) sp((char *) getarg(1));
+	if (getarg(0) > 0) sp((const char *) getarg(1));
 	while (!serialAvailable()) {;}		// blocking!
 	return (numvar) serialRead();
 }
 
 numvar func_getnum(void) {
 	numvar num = 0;
-	if (getarg(0) > 0) sp((char *) getarg(1));
+	if (getarg(0) > 0) sp((const char *) getarg(1));
 	for (;;) {
 		while (!serialAvailable()) {;}	// blocking!
 		int k = serialRead();
@@ -438,7 +438,7 @@ void addBitlashFunction(const char *name, bitlash_function func_ptr) {
 // find_user_function: find id in the user function table.  
 // return true if found, with the user function token in symval (with USER_FUNCTION_FLAG set)
 //
-char find_user_function(char *id) {
+char find_user_function(const char *id) {
 	symval = 0;
 	while (symval < bf_install_count) {
 		if (!strcmp(id, user_functions[symval].name)) {
