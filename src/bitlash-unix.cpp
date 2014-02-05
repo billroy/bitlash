@@ -237,8 +237,8 @@ void fputbyte(byte b) {
 
 #ifdef SERIAL_OVERRIDE
 numvar func_save(void) {
-	char *fname = "eeprom";
-	if (getarg(0) > 0) fname = (char *) getarg(1);
+	const char *fname = "eeprom";
+	if (getarg(0) > 0) fname = (const char *) getarg(1);
 	savefd = fopen(fname, "w");
 	if (!savefd) return 0;
 	setOutputHandler(&fputbyte);
@@ -277,7 +277,7 @@ void *BackgroundMacroThread(void *threadid) {
 
 
 numvar func_system(void) {
-	return system((char *) getarg(1));
+	return system((const char *) getarg(1));
 }
 
 numvar func_exit(void) {
@@ -346,7 +346,7 @@ int main () {
 
 	// run the main stdin command loop
 	for (;;) {
-		char * ret = fgets(lbuf, STRVALLEN, stdin);
+		const char * ret = fgets(lbuf, STRVALLEN, stdin);
 		if (ret == NULL) break;	
 		doCommand(lbuf);
 		initlbuf();

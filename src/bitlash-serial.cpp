@@ -386,7 +386,7 @@ void cmd_print(void) {
 					else if (symval == 'b'-'a') printBinary((unumvar) expval);	// :b print binary
 #endif
 					else if (symval == 'y'-'a') spb(expval);					// :y print byte
-					else if (symval == 's'-'a') sp((char *)expval);				// :s print string
+					else if (symval == 's'-'a') sp((const char *)expval);				// :s print string
 				}
 				else if (sym > ' ') while (expval-- > 0) spb(sym);	// any litsym
 				else expected(M_pfmts);
@@ -422,7 +422,7 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 // todo: get rid of s_pound
 
 	if (getarg(0) < formatarg) { speol(); return 0; }
-	char *fptr = (char *) getarg(formatarg);		// format string pointer
+	const char *fptr = (const char *) getarg(formatarg);		// format string pointer
 
 	while (*fptr) {
 		if (*fptr == '%') {
@@ -447,7 +447,7 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 				case 'b':	printIntegerInBase(getarg(optionalargs),  2, width, pad); break;	// binary
 
 				case 's': {			// string
-					char *sptr = (char *) getarg(optionalargs);
+					const char *sptr = (const char *) getarg(optionalargs);
 // BUG: width is the max not the prepad
 					width -= strlen(sptr);
 					while (width-- > 0) spb(' ');	// pre-pad with blanks

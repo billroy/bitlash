@@ -62,7 +62,7 @@ typedef unsigned long int unumvar;			// sometimes unsigned interpretation is bes
 ///////////////////////
 //	Pass a command to Bitlash for interpretation
 //
-numvar doCommand(char *);				// execute a command from your sketch
+numvar doCommand(const char *);				// execute a command from your sketch
 void doCharacter(char);					// pass an input character to the line editor
 
 ///////////////////////
@@ -80,8 +80,8 @@ numvar incVar(unsigned char);				// increment variable.  id is [0..25] for [a..z
 //
 // Lookup id and return TRUE if it exists
 //
-byte findscript(char *);		// returns TRUE if a script exists with this ID
-int getValue(char *key);			// return location of macro value in EEPROM or -1
+byte findscript(const char *);		// returns TRUE if a script exists with this ID
+int getValue(const char *key);			// return location of macro value in EEPROM or -1
 
 ///////////////////////
 //	Add a user function to Bitlash
@@ -106,5 +106,5 @@ numvar func_printf_handler(byte, byte);
 //	File functions
 //
 numvar sdcat(void);
-numvar sdwrite(char *filename, char *contents, byte append);
+numvar sdwrite(const char *filename, const char *contents, byte append);
 numvar func_fprintf(void);

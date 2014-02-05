@@ -87,7 +87,7 @@ const prog_char builtin_table[] PROGMEM = {
 
 
 
-byte findbuiltin(char *name) {
+byte findbuiltin(const char *name) {
 const prog_char *wordlist = builtin_table;
 
 	while (pgm_read_byte(wordlist)) {

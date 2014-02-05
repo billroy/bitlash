@@ -45,7 +45,7 @@ jmp_buf env;
 //
 // doCommand: main entry point to execute a bitlash command
 //
-numvar doCommand(char *cmd) {
+numvar doCommand(const char *cmd) {
 	return execscript(SCRIPT_RAM, (numvar) cmd, 0);
 }
 
