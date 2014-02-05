@@ -8,6 +8,11 @@ Here are some notes on experimental Unix support for Bitlash.
 	- the basic functions work
 	- on OS X, numvar is 64 bits, so everything is 64 bits wide
 	- Makefile in src/ will build the binary as src/bin/bitlash
+        - Requires the ArduinoUnix library, which can be cloned from
+          https://github.com/matthijskooijman/ArduinoUnix. The makefile
+          normally looks for a directory called "ArduinoUnix" next to
+          the bitlash directory, but this can be changed by setting
+          ARDUINO_UNIX_PATH when calling make.
 	- there are some precompiled binaries in src/bin/
 
 - eeprom is simulated
