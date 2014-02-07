@@ -46,7 +46,6 @@
 #if defined(ARDUINO)
 #if ARDUINO < 100
 	#include "WProgram.h"
-	#include "WConstants.h"
 #else
 	#include "Arduino.h"
 	#define prog_char char PROGMEM
