@@ -211,11 +211,6 @@ void sp(const char *str) { while (*str) spb(*str++); }
 void speol(void) { spb(13); spb(10); }
 
 
-
-#if (defined(ARDUINO) && (ARDUINO >= 12)) || defined(AVROPENDOUS_BUILD) || defined(UNIX_BUILD)
-// From Arduino 0011/wiring_serial.c
-// These apparently were removed from wiring_serial.c in 0012
-
 void printIntegerInBase(unumvar n, uint8_t base, numvar width, byte pad) {
 	char buf[8 * sizeof(numvar)];		// stack for the digits
 	char *ptr = buf;
@@ -252,9 +247,6 @@ void printInteger(numvar n, numvar width, byte pad) {
 }
 void printHex(unumvar n) { printIntegerInBase(n, 16, 0, '0'); }
 void printBinary(unumvar n) { printIntegerInBase(n, 2, 0, '0'); }
-#endif
-
-
 
 #if defined(UNIX_BUILD)
 
