@@ -31,7 +31,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 // syntactic sugar for func_handlers()
 #if 0	// 15022 bytes

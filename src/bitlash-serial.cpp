@@ -33,7 +33,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 #ifndef DEFAULT_CONSOLE_ONLY
 Stream *blconsole = &DEFAULT_CONSOLE;

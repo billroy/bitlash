@@ -76,7 +76,7 @@
 		... uploads memdump as "md"
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 #include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
