@@ -36,16 +36,23 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
-#if defined(HIGH) || defined(ARDUINO)		// this detects the Arduino build environment
-#if defined(ARDUINO) && ARDUINO >= 100
+// Uncomment this to set Arduino version if < 18:
+//#define ARDUINO 15
+
+#if !defined(ARDUINO) && !defined(UNIX_BUILD)
+#error "Building is only supported through Arduino and src/Makefile. If you have an Arduino version older than 018 which does not define the ARDUINO variable, manually set your Arduino version in src/bitlash.h"
+#endif
+
+#if defined(ARDUINO)
+#if ARDUINO < 100
+	#include "WProgram.h"
+	#include "WConstants.h"
+#else
 	#include "Arduino.h"
 	#define prog_char char PROGMEM
 	#define prog_uchar char PROGMEM
-#else
-	#include "WProgram.h"
-	#include "WConstants.h"
 #endif
-#endif // HIGH || ARDUINO
+#endif // defined(ARDUINO)
 
 #if !defined(UNIX_BUILD)
 #if defined(__SAM3X8E__)
@@ -90,30 +97,21 @@
 //
 ////////////////////////////////////////////////////
 //
-#if defined(HIGH) || defined(ARDUINO)		// this detects the Arduino build environment
-
-#define ARDUINO_BUILD 1
-
-//#define ARDUINO_VERSION 14	// working
-//#define ARDUINO_VERSION 15 	// working
-#define ARDUINO_VERSION 16		// working, released
+#if defined(ARDUINO)		// this detects the Arduino build environment
 
 // the serial support, she is changing all the time
-#if ARDUINO_VERSION >= 15
+#if ARDUINO >= 15
 #define beginSerial Serial.begin
 #define serialAvailable Serial.available
 #define serialRead Serial.read
 
-#if defined(ARDUINO) && ARDUINO >= 100
+#if ARDUINO >= 100
 	#define serialWrite Serial.write
 #else
 	#define serialWrite Serial.print
 #endif
 
 #endif
-
-// Arduino version: 11 - enable by hand if needed; see bitlash-serial.h
-//#define ARDUINO_VERSION 11
 
 // Enable Software Serial tx support for Arduino
 // this enables "setbaud(4, 4800); print #4:..."
@@ -127,7 +125,7 @@
 #else
 #define HIGH 1
 #define LOW 0
-#endif		// HIGH: arduino build
+#endif // defined(ARDUINO)
 
 
 ///////////////////////////////////////////////////////
@@ -357,7 +355,7 @@ unsigned long millis(void);
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
-#if (defined(ARDUINO_BUILD) || defined(UNIX_BUILD)) && !defined(TINY_BUILD)
+#if (defined(ARDUINO) || defined(UNIX_BUILD)) && !defined(TINY_BUILD)
 typedef long int numvar;
 typedef unsigned long int unumvar;
 #else
@@ -518,7 +516,7 @@ void resetOutputHandler(void);
 extern serialOutputFunc serial_override_handler;
 #endif
 
-#ifdef ARDUINO_BUILD
+#ifdef ARDUINO
 void chkbreak(void);
 void cmd_print(void);
 #endif

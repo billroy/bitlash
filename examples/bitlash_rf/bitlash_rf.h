@@ -57,10 +57,6 @@
 //#define RADIO_VIRTUALWIRE
 	//#include "VirtualWire.h"
 
-// Arduino detector
-//
-#define ARDUINO_BUILD 1
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "pkt.h"

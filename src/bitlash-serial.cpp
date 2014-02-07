@@ -174,7 +174,7 @@ void speol(void) { spb(13); spb(10); }
 
 
 
-#if (defined(ARDUINO_BUILD) && (ARDUINO_VERSION >= 12)) || defined(AVROPENDOUS_BUILD) || defined(UNIX_BUILD)
+#if (defined(ARDUINO) && (ARDUINO >= 12)) || defined(AVROPENDOUS_BUILD) || defined(UNIX_BUILD)
 // From Arduino 0011/wiring_serial.c
 // These apparently were removed from wiring_serial.c in 0012
 
