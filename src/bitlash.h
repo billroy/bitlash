@@ -302,7 +302,7 @@
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
-#if (defined(ARDUINO) || defined(UNIX_BUILD)) && !defined(TINY_BUILD)
+#if !defined(TINY_BUILD)
 typedef long int numvar;
 typedef unsigned long int unumvar;
 #else
