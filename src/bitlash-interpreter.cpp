@@ -33,7 +33,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 
 // Turn HEX_UPLOAD on to enable the hex file EEPROM uploader

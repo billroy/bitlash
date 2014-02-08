@@ -33,17 +33,19 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
-
-// Character io primitives
-//#define spb serialWrite
-
-// The default default outpin is, of course, zero
-#ifndef DEFAULT_OUTPIN
-#define DEFAULT_OUTPIN 0
+#ifndef DEFAULT_CONSOLE_ONLY
+Stream *blconsole = &DEFAULT_CONSOLE;
 #endif
-byte outpin = DEFAULT_OUTPIN;	// output pin
+
+#ifdef SERIAL_OVERRIDE
+Print *bloutdefault = blconsole;
+#endif
+
+#ifdef SOFTWARE_SERIAL_TX
+Print *blout = blconsole;
+#endif
 
 #ifdef SOFTWARE_SERIAL_TX
 
@@ -52,10 +54,46 @@ byte outpin = DEFAULT_OUTPIN;	// output pin
 #ifndef NUMPINS
 #define NUMPINS 32				// default to Arduino Diecimila/168..328
 #endif
-int bittime[NUMPINS];			// bit times (1000000/baud) per pin, 0 = uninitialized
 
 // set output back to 'stdout' ;)
-void resetOutput(void) { outpin = DEFAULT_OUTPIN; }
+void resetOutput(void) { blout = bloutdefault; }
+
+// TX-only minimal software serial implementation
+class SoftwareSerialTX : public Print {
+public:
+	uint8_t pin;
+	static uint16_t bittime[NUMPINS]; // bit times (1000000/baud) per pin, 0 = uninitialized
+
+	// bit whack a byte out the port designated by 'outpin'
+#if defined(ARDUINO) && ARDUINO < 100
+	virtual void write(uint8_t c) {
+#else
+	virtual size_t write(uint8_t c) {
+#endif
+		const uint16_t bt = bittime[this->pin];
+		char bits = 8; // 8 data bits
+		digitalWrite(this->pin, LOW);
+		delayMicroseconds(bt);
+		while (bits--) {
+			//if ((c & 1) == 0) digitalWrite(outpin, LOW);
+			//else digitalWrite(outpin, HIGH);
+			digitalWrite(this->pin, c & 1);
+			delayMicroseconds(bt);
+			c >>= 1;
+		}
+		digitalWrite(this->pin, HIGH);
+		delayMicroseconds(bt<<1);
+#if !(defined(ARDUINO) && ARDUINO < 100)
+		return 1;
+#endif
+	}
+
+
+};
+
+uint16_t SoftwareSerialTX::bittime[];
+
+static SoftwareSerialTX sstx;
 
 void chkpin(char pin) {
 	// TODO: fix this warning re: comparison
@@ -65,12 +103,12 @@ void chkpin(char pin) {
 numvar setBaud(numvar pin, unumvar baud) {
 	chkpin(pin);
 
-//#ifndef SOFTWARE_SERIAL_TX
+#ifdef DEFAULT_OUTPIN
 	if (pin == DEFAULT_OUTPIN) {
-		beginSerial(baud);
+		DEFAULT_CONSOLE.begin(baud);
 		return 0;
 	}
-//#endif
+#endif
 
 #ifdef ALTERNATE_OUTPIN
 	else if (pin == ALTERNATE_OUTPIN) {
@@ -79,45 +117,36 @@ numvar setBaud(numvar pin, unumvar baud) {
 	}
 #endif
 
-	bittime[pin] = (1000000/baud) - clockCyclesToMicroseconds(50);
+	sstx.bittime[pin] = (1000000/baud) - clockCyclesToMicroseconds(50);
 	pinMode(pin, OUTPUT);				// make it an output
 	digitalWrite(pin, HIGH);				// set idle
-	delayMicroseconds(bittime[pin]);		// let it quiesce
-	return bittime[pin];
+	delayMicroseconds(sstx.bittime[pin]);		// let it quiesce
+	return sstx.bittime[pin];
 }
 
 void setOutput(byte pin) {
 	chkpin(pin);
-	outpin = pin;
 
-#ifdef HARDWARE_SERIAL_TX
-	// skip soft baud check for the hardware uart
-	if (outpin != DEFAULT_OUTPIN)
+#ifdef DEFAULT_OUTPIN
+	if (pin == DEFAULT_OUTPIN) {
+		blout = &DEFAULT_CONSOLE;
+		return;
+	}
 #endif
+
 #ifdef ALTERNATE_OUTPIN
-	if (outpin != ALTERNATE_OUTPIN)
+	if (pin == ALTERNATE_OUTPIN) {
+		blout = &Serial1;
+		return;
+	}
 #endif
 
 	// set the softserial baud if it's not already set
-	if (!bittime[outpin]) setBaud(pin, DEFAULT_SECONDARY_BAUD);
+	if (!sstx.bittime[pin]) setBaud(pin, DEFAULT_SECONDARY_BAUD);
+	sstx.pin = pin;
+	blout = &sstx;
 }
 
-// bit whack a byte out the port designated by 'outpin'
-void whackabyte(unsigned char c) {
-	int bt = bittime[outpin];
-	char bits = 8;		// 8 data bits
-	digitalWrite(outpin, LOW);
-	delayMicroseconds(bt);
-	while (bits--) {
-		//if ((c & 1) == 0) digitalWrite(outpin, LOW);
-		//else digitalWrite(outpin, HIGH);
-		digitalWrite(outpin, c & 1);
-		delayMicroseconds(bt);
-		c >>= 1;
-	}
-	digitalWrite(outpin, HIGH);
-	delayMicroseconds(bt<<1);
-}
 #endif	// SOFTWARE_SERIAL_TX
 
 
@@ -129,16 +158,40 @@ void whackabyte(unsigned char c) {
 //
 serialOutputFunc serial_override_handler;
 
+class PrintToFunction : public Print {
+public:
+	serialOutputFunc func;
+
+#if defined(ARDUINO) && ARDUINO < 100
+	virtual void write(uint8_t c)
+#else
+	virtual size_t write(uint8_t c)
+#endif
+	{
+		func (c);
+#if !(defined(ARDUINO) && ARDUINO < 100)
+		return 1;
+#endif
+	}
+};
+
+static PrintToFunction outputHandlerPrint;
+
 byte serialIsOverridden(void) {
-	return serial_override_handler != 0;
+	return bloutdefault != blconsole;
 }
 
 void setOutputHandler(serialOutputFunc newHandler) {
-	serial_override_handler = newHandler;
+	outputHandlerPrint.func = newHandler;
+	blout = bloutdefault = &outputHandlerPrint;
+}
+
+void setOutputHandler(Print& print) {
+	blout = bloutdefault = &print;
 }
 
 void resetOutputHandler(void) {
-	serial_override_handler = 0;
+	blout = bloutdefault = blconsole;
 }
 
 #endif
@@ -150,138 +203,13 @@ void resetOutputHandler(void) {
 //
 // this is a pinchpoint on output.  all output funnels through spb.
 //
-#if defined(HARDWARE_SERIAL_TX) || defined(SOFTWARE_SERIAL_TX)
 void spb(char c) {
-#ifdef HARDWARE_SERIAL_TX
-	if (outpin == DEFAULT_OUTPIN) { 
-
-#ifdef SERIAL_OVERRIDE
-		if (serial_override_handler) (*serial_override_handler)(c);
-		else
-#endif
-		serialWrite(c); 
-		return;
-	}
-#endif
-#ifdef ALTERNATE_OUTPIN
-	if (outpin == ALTERNATE_OUTPIN) { Serial1.print(c); return; }
-#endif
-#ifdef SOFTWARE_SERIAL_TX
-	whackabyte(c);
-#endif
+	blout->write((uint8_t)c);
 }
+
 void sp(const char *str) { while (*str) spb(*str++); }
 void speol(void) { spb(13); spb(10); }
-#else
-// handle no-serial case
-#endif
 
-
-/*
-	bitlash software serial rx implementation adapted from:
-	SoftwareSerial.cpp - Software serial library
-	Copyright (c) 2006 David A. Mellis.	All right reserved. - hacked by ladyada 
-*/
-#ifdef SOFTWARE_SERIAL_RX
-
-#define MAX_SOFT_RX_BUFF 32
-volatile uint8_t soft_rx_buffer_head;
-uint8_t soft_rx_buffer_tail;
-char soft_rx_buffer[MAX_SOFT_RX_BUFF];
-
-//	Pin-change interrupt handlers
-//
-//	NOTE: Currently, software rx is supported only on pins d0..d7.
-//
-//SIGNAL(SIG_PIN_CHANGE0) {}
-
-#ifdef ARDUINO_BUILD
-#define RXPINCHANGEREG PCMSK2
-SIGNAL(SIG_PIN_CHANGE2) {
-#else
-#define RXPINCHANGEREG PCMSK0
-SIGNAL(PCINT0_vect) {
-#endif
-	if ((RXPIN < 8) && !digitalRead(RXPIN)) {
-		char c = 0;
-		int bitdelay = bittime[RXPIN];
-		// would be nice to know latency to here
-		delayMicroseconds(bitdelay >> 1);			// wait half a bit to get centered
-		for (uint8_t i=0; i<8; i++) { 
-			delayMicroseconds(bitdelay);
-			if (digitalRead(RXPIN)) c |= _BV(i); 
-		}
-		delayMicroseconds(bitdelay);	// fingers in ears for one stop bit
-
-		uint8_t newhead = soft_rx_buffer_head + 1;
-		if (newhead >= MAX_SOFT_RX_BUFF) newhead = 0;
-		if (newhead != soft_rx_buffer_tail) {
-			soft_rx_buffer[soft_rx_buffer_head] = c;
-			soft_rx_buffer_head = newhead;
-		}
-	}
-}
-	
-int softSerialRead(void) {
-	uint8_t c;
-	if (soft_rx_buffer_tail == soft_rx_buffer_head) return -1;
- 	c = soft_rx_buffer[soft_rx_buffer_tail];
-	cli();			// clean increment means less excrement
-	if (++soft_rx_buffer_tail >= MAX_SOFT_RX_BUFF) soft_rx_buffer_tail = 0;
-	sei();
-	return c;
-}
-
-int softSerialAvailable(void) {
-	cli();
-	uint8_t avail = (soft_rx_buffer_tail != soft_rx_buffer_head);
-	sei();
-	return avail;
-}
-
-void beginSoftSerial(unsigned long baud) {
-
-#ifdef BAUD_OVERRIDE
-	baud = BAUD_OVERRIDE;
-#endif
-	// set up the output pin and copy its bit rate
-	bittime[RXPIN] = setBaud(DEFAULT_OUTPIN, baud);
-	pinMode(RXPIN, INPUT); 						// make it an input
-	digitalWrite(RXPIN, HIGH);					// and engage the pullup
-	delayMicroseconds(bittime[RXPIN]);			// gratuitous stop bits
-
-	// Enable the pin-change interrupt for RXPIN
-	if (RXPIN < 8) {			// a PIND pin, PCINT16-23
-		RXPINCHANGEREG |= _BV(RXPIN);
-		PCICR |= _BV(2);
-	} 
-#if 0
-	// for pins above 7: enable these, set up a signal handler above,
-	// and off you go.
-	else if (RXPIN <= 13) {	// a PINB pin, PCINT0-5
-		PCMSK0 |= _BV(RXPIN-8);
-		PCICR |= _BV(0);		
-	} 
-	else if (RXPIN < 23) {	// a PINC pin, PCINT8-14
-		PCMSK1 |= _BV(RXPIN-14);
-		PCICR != _BV(1)
-	}
-#endif
-	else unexpected(M_number);
-	// todo: handle a0..7; pin out of range; extend for Sanguino, Mega, ...
-}
-
-// aliases for the rest of the interpreter
-#define serialAvailable softSerialAvailable
-#define serialRead softSerialRead
-#define beginSerial beginSoftSerial
-
-#endif // SOFTWARE_SERIAL_RX
-
-
-#if (defined(ARDUINO_BUILD) && (ARDUINO_VERSION >= 12)) || defined(AVROPENDOUS_BUILD) || defined(UNIX_BUILD)
-// From Arduino 0011/wiring_serial.c
-// These apparently were removed from wiring_serial.c in 0012
 
 void printIntegerInBase(unumvar n, uint8_t base, numvar width, byte pad) {
 	char buf[8 * sizeof(numvar)];		// stack for the digits
@@ -319,9 +247,6 @@ void printInteger(numvar n, numvar width, byte pad) {
 }
 void printHex(unumvar n) { printIntegerInBase(n, 16, 0, '0'); }
 void printBinary(unumvar n) { printIntegerInBase(n, 2, 0, '0'); }
-#endif
-
-
 
 #if defined(UNIX_BUILD)
 
@@ -338,11 +263,17 @@ void chkbreak(void) {
 
 // check serial input stream for ^C break
 void chkbreak(void) {
-	if (serialAvailable()) {		// allow ^C to break out
-		if (serialRead() == 3) {	// BUG: this gobblesnarfs input characters! - need serialPeek()
-			msgpl(M_ctrlc);
-			longjmp(env, X_EXIT);
-		}
+	// allow ^C to break out
+#if defined(ARDUINO) && ARDUINO < 100
+	// Arduino before 1.0 didn't have peek(), so just read a
+	// byte (this discards a byte when it wasn't ^C, though...
+	if (blconsole->read() == 3) {
+#else
+	if (blconsole->peek() == 3) {
+		blconsole->read();
+#endif
+		msgpl(M_ctrlc);
+		longjmp(env, X_EXIT);
 	}
 	if (func_free() < MINIMUM_FREE_RAM) overflow(M_stack);
 }
@@ -386,7 +317,7 @@ void cmd_print(void) {
 					else if (symval == 'b'-'a') printBinary((unumvar) expval);	// :b print binary
 #endif
 					else if (symval == 'y'-'a') spb(expval);					// :y print byte
-					else if (symval == 's'-'a') sp((char *)expval);				// :s print string
+					else if (symval == 's'-'a') sp((const char *)expval);				// :s print string
 				}
 				else if (sym > ' ') while (expval-- > 0) spb(sym);	// any litsym
 				else expected(M_pfmts);
@@ -422,7 +353,7 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 // todo: get rid of s_pound
 
 	if (getarg(0) < formatarg) { speol(); return 0; }
-	char *fptr = (char *) getarg(formatarg);		// format string pointer
+	const char *fptr = (const char *) getarg(formatarg);		// format string pointer
 
 	while (*fptr) {
 		if (*fptr == '%') {
@@ -447,7 +378,7 @@ numvar func_printf_handler(byte formatarg, byte optionalargs) {
 				case 'b':	printIntegerInBase(getarg(optionalargs),  2, width, pad); break;	// binary
 
 				case 's': {			// string
-					char *sptr = (char *) getarg(optionalargs);
+					const char *sptr = (const char *) getarg(optionalargs);
 // BUG: width is the max not the prepad
 					width -= strlen(sptr);
 					while (width-- > 0) spb(' ');	// pre-pad with blanks

@@ -31,7 +31,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 // syntactic sugar for func_handlers()
 #if 0	// 15022 bytes
@@ -176,7 +176,7 @@ numvar func_pulsein(void) { reqargs(3); return pulseIn(arg1, arg2, arg3); }
 numvar func_snooze(void) { reqargs(1); snooze(arg1); return 0; }
 numvar func_delay(void) { reqargs(1); delay(arg1); return 0; }
 
-#if !defined(TINY_BUILD)
+#if defined(SOFTWARE_SERIAL_TX)
 numvar func_setBaud(void) { reqargs(2); setBaud(arg1, arg2); return 0; }
 #endif
 
@@ -189,17 +189,17 @@ numvar func_bitread(void) { reqargs(2); return (arg1 & ((numvar)1 << arg2)) != 0
 numvar func_bitwrite(void) { reqargs(3); return arg3 ? func_bitset() : func_bitclear(); }
 
 numvar func_getkey(void) {
-	if (getarg(0) > 0) sp((char *) getarg(1));
-	while (!serialAvailable()) {;}		// blocking!
-	return (numvar) serialRead();
+	if (getarg(0) > 0) sp((const char *) getarg(1));
+	while (!blconsole->available()) {;}		// blocking!
+	return (numvar) blconsole->read();
 }
 
 numvar func_getnum(void) {
 	numvar num = 0;
-	if (getarg(0) > 0) sp((char *) getarg(1));
+	if (getarg(0) > 0) sp((const char *) getarg(1));
 	for (;;) {
-		while (!serialAvailable()) {;}	// blocking!
-		int k = serialRead();
+		while (!blconsole->available()) {;}	// blocking!
+		int k = blconsole->read();
 		if ((k == '\r') || (k == '\n')) {
 			speol();
 			return num;
@@ -274,7 +274,9 @@ const prog_char functiondict[] PROGMEM = {
 	"abs\0"
 	"ar\0"
 	"aw\0"
+#if defined(SOFTWARE_SERIAL_TX)
 	"baud\0"
+#endif
 	"bc\0"
 	"beep\0"
 	"br\0"
@@ -351,7 +353,9 @@ const bitlash_function function_table[] PROGMEM = {
 	func_abs,
 	func_ar,
 	func_aw,
+#if defined(SOFTWARE_SERIAL_TX)
 	func_setBaud,
+#endif
 	func_bitclear,
 	func_beep,
 	func_bitread,
@@ -381,13 +385,6 @@ const bitlash_function function_table[] PROGMEM = {
 	func_sign,
 	func_snooze 		// last one no comma!
  };
-#endif
-
-// Enable USER_FUNCTIONS to include the add_bitlash_function() extension mechanism
-// This costs about 256 bytes
-//
-#if !defined(TINY_BUILD)
-#define USER_FUNCTIONS
 #endif
 
 #ifdef USER_FUNCTIONS
@@ -441,7 +438,7 @@ void addBitlashFunction(const char *name, bitlash_function func_ptr) {
 // find_user_function: find id in the user function table.  
 // return true if found, with the user function token in symval (with USER_FUNCTION_FLAG set)
 //
-char find_user_function(char *id) {
+char find_user_function(const char *id) {
 	symval = 0;
 	while (symval < bf_install_count) {
 		if (!strcmp(id, user_functions[symval].name)) {

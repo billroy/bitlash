@@ -33,7 +33,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 
 // Exception handling state
@@ -45,19 +45,12 @@ jmp_buf env;
 //
 // doCommand: main entry point to execute a bitlash command
 //
-numvar doCommand(char *cmd) {
+numvar doCommand(const char *cmd) {
 	return execscript(SCRIPT_RAM, (numvar) cmd, 0);
 }
 
 
-void initBitlash(unsigned long baud) {
-
-#if defined(TINY_BUILD)
-	beginSerial(9600);
-#else
-	beginSerial(baud);
-#endif
-
+static void initBitlashInternal() {
 #if defined(ARM_BUILD)
 	eeinit();
 #endif
@@ -76,3 +69,17 @@ void initBitlash(unsigned long baud) {
 	initlbuf();
 }
 
+#ifndef DEFAULT_CONSOLE_ONLY
+void initBitlash(Stream& stream) {
+	blout = bloutdefault = blconsole = &stream;
+	initBitlashInternal();
+}
+#endif
+
+void initBitlash(unsigned long baud) {
+	#if defined(TINY_BUILD)
+	baud = 9600;
+	#endif
+	DEFAULT_CONSOLE.begin(baud);
+	initBitlashInternal();
+}

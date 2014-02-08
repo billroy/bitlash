@@ -33,7 +33,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 
 void fatal2(char msg1, char msg2) { 

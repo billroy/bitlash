@@ -33,78 +33,10 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "Arduino.h"
-	#define prog_char char PROGMEM
-	#define prog_uchar unsigned char PROGMEM
-#else
-	#include "WProgram.h"
-#endif
 
+#include "src/bitlash-public.h"
 
 // Un-comment the line below to expose all the internals
 // of the Bitlash core to your sketch.
 //
-//#include "src/bitlash.h"
-
-///////////////////////
-//	Start Bitlash, and give it cycles to do stuff
-//
-void initBitlash(unsigned long baud);	// start up and set baud rate
-void runBitlash(void);					// call this in loop(), frequently
-
-// Bitlash variables are of type "numvar"
-//
-typedef long int numvar;					// bitlash returns things of type numvar
-typedef unsigned long int unumvar;			// sometimes unsigned interpretation is best (like millis)
-
-
-///////////////////////
-//	Pass a command to Bitlash for interpretation
-//
-numvar doCommand(char *);				// execute a command from your sketch
-void doCharacter(char);					// pass an input character to the line editor
-
-///////////////////////
-//	Access to Numeric Variables
-//
-//	NOTE: access to variables a..z is via an index 0..25, not the variable names.  Got it?
-//
-numvar getVar(unsigned char);				// return value of bitlash variable.  id is [0..25] for [a..z]
-void assignVar(unsigned char, numvar);		// assign value to variable.  id is [0..25] for [a..z]
-numvar incVar(unsigned char);				// increment variable.  id is [0..25] for [a..z]
-
-
-///////////////////////
-//	Access to the Bitlash symbol table
-//
-// Lookup id and return TRUE if it exists
-//
-byte findscript(char *);		// returns TRUE if a script exists with this ID
-int getValue(char *key);			// return location of macro value in EEPROM or -1
-
-///////////////////////
-//	Add a user function to Bitlash
-//
-typedef numvar (*bitlash_function)(void);
-void addBitlashFunction(const char *, bitlash_function);
-numvar getarg(numvar);
-numvar isstringarg(numvar);
-numvar getstringarg(numvar which);
-
-///////////////////////
-//	Serial Output Capture
-//
-typedef void (*serialOutputFunc)(byte);
-byte serialIsOverridden(void);
-void setOutputHandler(serialOutputFunc);
-void setOutput(byte pin);
-void resetOutputHandler(void);
-numvar func_printf_handler(byte, byte);
-
-///////////////////////
-//	File functions
-//
-numvar sdcat(void);
-numvar sdwrite(char *filename, char *contents, byte append);
-numvar func_fprintf(void);
+//#include "src/bitlash-private.h"

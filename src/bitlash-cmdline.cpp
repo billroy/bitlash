@@ -33,7 +33,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 
 // Serial command line buffer
@@ -106,7 +106,7 @@ void initlbuf(void) {
 	prompt();
 	
 	// flush any pending serial input
-	while (serialAvailable()) serialRead();
+	while (blconsole->read() >= 0) /* nothing */;
 }
 
 
@@ -125,7 +125,7 @@ byte putlbuf(char c) {
 
 void pointToError(void) {
 	if (fetchtype == SCRIPT_RAM) {
-		int i = (char *) fetchptr - lbuf;
+		int i = (const char *) fetchptr - lbuf;
 		if ((i < 0) || (i >= LBUFLEN)) return;
 		speol();
 		while (i-- >= 0) spb('-');
@@ -197,7 +197,7 @@ void doCharacter(char c) {
 void runBitlash(void) {
 
 	// Pipe the serial input into the command handler
-	if (serialAvailable()) doCharacter(serialRead());
+	if (blconsole->available()) doCharacter(blconsole->read());
 
 	// Background macro handler: feed it one call each time through
 	runBackgroundTasks();

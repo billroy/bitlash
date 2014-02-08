@@ -33,7 +33,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 #if defined(AVR_BUILD)
 #include "avr/eeprom.h"
@@ -44,7 +44,7 @@ byte fetchtype;		// current script type
 numvar fetchptr;	// pointer to current char in script
 numvar symval;		// value of current numeric expression
 
-#if !USE_GPIORS
+#if !defined(USE_GPIORS)
 byte sym;			// current input symbol
 byte inchar;		// Current parser character
 #endif
@@ -222,7 +222,7 @@ void spush(char c) {
 }
 
 // push a string into the string pool
-void strpush(char *ptr) {
+void strpush(const char *ptr) {
 	while (*ptr) spush(*ptr++);
 	spush(0);
 }
@@ -383,7 +383,7 @@ const prog_uchar reservedwordtypes[] PROGMEM = { s_arg, s_boot, s_else, s_functi
 #endif
 
 // find id in PROGMEM wordlist.  result in symval, return true if found.
-byte findindex(char *id, const prog_char *wordlist, byte sorted) {
+byte findindex(const char *id, const prog_char *wordlist, byte sorted) {
 	symval = 0;
 	while (pgm_read_byte(wordlist)) {
 		int result = strcmp_P(id, wordlist);
@@ -436,7 +436,7 @@ const prog_uchar pinvalues[] PROGMEM = {
 	0, 1, 13, (PV_ANALOG | 1), (PV_VAR | 25)
 };
 
-byte findpinname(char *alias) {
+byte findpinname(const char *alias) {
 	if (!findindex(alias, (const prog_char *) pinnames, 0)) return 0;		// sets symval
 	byte pin = pgm_read_byte(pinvalues + symval);
 	//sym = (pin & PV_ANALOG) ? s_apin : s_dpin;
@@ -612,7 +612,9 @@ void parseid(void) {
 	else if (findpinname(idbuf)) {;}		// sym and symval are set in findpinname
 #endif
 
+#ifdef USER_FUNCTIONS
 	else if (find_user_function(idbuf)) sym = s_nfunct;
+#endif
 
 	else findscript(idbuf);
 }
@@ -622,7 +624,7 @@ void parseid(void) {
 //
 //	findscript: look up a script, with side effects
 //
-byte findscript(char *idbuf) {
+byte findscript(const char *idbuf) {
 
 	// script function in eeprom?
 	if ((symval=findKey(idbuf)) >= 0) sym = s_script_eeprom;

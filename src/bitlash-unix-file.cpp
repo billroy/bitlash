@@ -76,7 +76,12 @@
 		... uploads memdump as "md"
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
+#include <errno.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #if defined(UNIX_BUILD)
 
@@ -90,7 +95,7 @@ char cachedname[FNAMELEN];
 byte cachedflags;
 
 // return true iff script exists
-byte scriptfileexists(char *scriptname) {
+byte scriptfileexists(const char *scriptname) {
 	FILE *file;
 	if ((file = fopen(scriptname, "r")) == NULL) return 0;
 	fclose(file);
@@ -106,7 +111,7 @@ byte scriptclose(void) {
 }
 
 // open and set parse location on input file
-byte scriptopen(char *scriptname, numvar position, byte flags) {
+byte scriptopen(const char *scriptname, numvar position, byte flags) {
 
 	// open the input file if there is no file open, 
 	// or the open file does not match what we want
@@ -140,14 +145,14 @@ byte scriptread(void) {
 	return input;
 }
 
-byte scriptwrite(char *filename, char *contents, byte append) {
+byte scriptwrite(const char *filename, const char *contents, byte append) {
 
 ///	if (scriptfile_is_open) {
 ///		if (!scriptfile.close()) return 0;
 ///	}
 
 	FILE *outfile;
-	char *flags;
+	const char *flags;
 	if (append) flags = "a";
 	else flags = "w";
 
@@ -179,28 +184,28 @@ numvar sdls(void) {
 	return 0;
 }
 numvar sdexists(void) { 
-	return scriptfileexists((char *) getarg(1)); 
+	return scriptfileexists((const char *) getarg(1)); 
 }
 numvar sdrm(void) { 
-	return unlink((char *) getarg(1)); 
+	return unlink((const char *) getarg(1)); 
 }
 numvar sdcreate(void) { 
-	return sdwrite((char *) getarg(1), (char *) getarg(2), 0); 
+	return sdwrite((const char *) getarg(1), (const char *) getarg(2), 0); 
 }
 numvar sdappend(void) { 
-	return sdwrite((char *) getarg(1), (char *) getarg(2), 1); 
+	return sdwrite((const char *) getarg(1), (const char *) getarg(2), 1); 
 }
 numvar sdcd(void) {
 	// close any cached open file handle
 	if (scriptfile_is_open) scriptclose();
-	return chdir((char *) getarg(1));
+	return chdir((const char *) getarg(1));
 }
 numvar sdmd(void) { 
-	return mkdir((char *) getarg(1));
+	return mkdir((const char *) getarg(1), 0777);
 }
 
 numvar exec(void) {
-	return doCommand((char *) getarg(1));
+	return doCommand((const char *) getarg(1));
 }
 
 numvar func_pwd(void) {

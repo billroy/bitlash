@@ -27,7 +27,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 #if defined(EEPROM_MICROCHIP_24XX32A)
 

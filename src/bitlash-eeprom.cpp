@@ -33,7 +33,7 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 
 ***/
-#include "bitlash.h"
+#include "bitlash-private.h"
 
 
 /***
@@ -73,7 +73,7 @@ int findend(int addr) {
 
 
 // return true if string in EEPROM at addr matches string at str
-char eestrmatch(int addr, char *str) {
+char eestrmatch(int addr, const char *str) {
 	while (*str) if (eeread(addr++) != *str++) return 0;
 	if (eeread(addr) == 0) return 1;	// ended at the same place?
 	return 0;
@@ -81,7 +81,7 @@ char eestrmatch(int addr, char *str) {
 
 
 // find an entry in the db; return offset of id or FAIL
-int findKey(char *id) {
+int findKey(const char *id) {
 int start = STARTDB;
 	while (start < ENDDB-4) {
 		// find the next entry
@@ -100,7 +100,7 @@ int start = STARTDB;
 
 
 // Look up an entry by key.  Returns -1 on fail else addr of value.
-int getValue(char *key) {
+int getValue(const char *key) {
 	int kaddr = findKey(key);
 	return (kaddr < 0) ? kaddr : findend(kaddr);
 }
@@ -134,7 +134,7 @@ int starthole = STARTDB, endhole;
 //
 
 // Save string at str to EEPROM at addr
-void saveString(int addr, char *str) {
+void saveString(int addr, const char *str) {
 	while (*str) eewrite(addr++, *str++);
 	eewrite(addr, 0);
 }
@@ -150,7 +150,7 @@ int erasestr(int addr) {
 }
 
 // erase entry by id
-void eraseentry(char *id) {
+void eraseentry(const char *id) {
 	int entry = findKey(id);
 	if (entry >= 0) erasestr(erasestr(entry));
 }
@@ -180,10 +180,10 @@ char id[IDLEN+1];			// buffer for id
 	// fetchptr is on the character after '{'
 	//
 	// BUG: This is broken for file scripts
-	char *startmark = (char *) fetchptr;		// mark first char of macro text
+	const char *startmark = (const char *) fetchptr;		// mark first char of macro text
 	void skipstatement(void);
 	skipstatement();				// gobble it up without executing it
-	char *endmark = (char *) fetchptr;		// and note the char past '}'
+	const char *endmark = (const char *) fetchptr;		// and note the char past '}'
 
 	// endmark is past the closing '}' - back up and find it
 	do {
