@@ -91,6 +91,9 @@
 		void eeinit(void) { eeprom_initialize(); }
 	#endif
 #elif ( (defined(ARM_BUILD)) && (ARM_BUILD==4))
+
+// Tiva C Series / Stellaris Launchpad EEPROM support
+
 #define BYTES_PER_WORD 	4
 #define WORDS_PER_BLOCK 16
 #define NUM_BLOCKS		32
@@ -113,7 +116,9 @@ uint8_t eeread(int address) {
 	ROM_EEPROMRead(&wordVal, byteAddr, 4);
 	wordVal = wordVal >> (8*(address % BYTES_PER_WORD));
 	return (uint8_t) wordVal;
-}	
+}
+
+
 #elif defined(ARM_BUILD)
 	#if ARM_BUILD!=2
 		// A little fake eeprom for ARM testing
