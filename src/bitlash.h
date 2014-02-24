@@ -131,7 +131,7 @@
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
 	#define prog_char char PROGMEM
-	#define prog_uchar char PROGMEM
+	#define prog_uchar unsigned char PROGMEM
 #else
 	#include "WProgram.h"
 	#include "WConstants.h"
@@ -415,8 +415,8 @@ unsigned long millis(void);
 //
 //	ARM BUILD
 #if defined(ARM_BUILD)
- #define prog_char char
-#define prog_uchar byte
+ //#define prog_char char
+ //#define prog_uchar byte
 #define PROGMEM
 #define pgm_read_byte(b) (*(char *)(b))
 #define pgm_read_word(b) (*(int *)(b))
