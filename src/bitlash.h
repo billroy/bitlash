@@ -36,15 +36,28 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
+//
 #if defined(__x86_64__) || defined(__i386__)
 #define UNIX_BUILD 1
+
+//
 #elif defined(__SAM3X8E__)
 #define ARM_BUILD 1
+
+// Teensy 3
 #elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
-  // Teensy 3
-  #define ARM_BUILD 2
-#elif defined(PART_LM4F120H5QR) //support Energia.nu - Stellaris Launchpad / Tiva C Series 
-#define ARM_BUILD  4 //support Energia.nu - Stellaris Launchpad / Tiva C Series  
+#define ARM_BUILD 2
+
+//support Energia.nu - Stellaris Launchpad / Tiva C Series
+#elif defined(PART_LM4F120H5QR) 
+#define ARM_BUILD  4
+#define NUMPINS 40
+
+// Texas CC3200
+#elif (TARGET_IS_CC3101)
+#define ARM_BUILD  5
+#define NUMPINS 40
+
 #else
 #define AVR_BUILD 1
 #endif

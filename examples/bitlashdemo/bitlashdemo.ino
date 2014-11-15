@@ -41,7 +41,7 @@ void setup(void) {
 
 	// initialize bitlash and set primary serial port baud
 	// print startup banner and run the startup macro
-	initBitlash(57600);
+	initBitlash(115200);
 
 	// you can execute commands here to set up initial state
 	// bear in mind these execute after the startup macro

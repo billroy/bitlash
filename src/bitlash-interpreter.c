@@ -81,9 +81,21 @@ void cmd_boot(void) {
 	while(1);
 }
 #elif ARM_BUILD==4
+
+// Tiva C Series / Stellaris Launchpad software reset
+// Tested with Energia.nu - 0101E0011
+
 void cmd_boot(void){
-  oops('boot');
+  HWREG(NVIC_APINT) = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ;
+  while(1);
 }
+#elif ARM_BUILD==5
+
+// CC3200
+void cmd_boot(void){
+
+}
+
 #else
 void cmd_boot(void) {
   #ifndef SCB_AIRCR_SYSRESETREQ_MASK
