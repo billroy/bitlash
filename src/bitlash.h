@@ -48,9 +48,14 @@
 #elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
 #define ARM_BUILD 2
 
-//support Energia.nu - Stellaris Launchpad / Tiva C Series  
-#elif defined(PART_LM4F120H5QR)  
+//support Energia.nu - Stellaris Launchpad / Tiva C Series
+#elif defined(PART_LM4F120H5QR) 
 #define ARM_BUILD  4
+#define NUMPINS 40
+
+// Texas CC3200
+#elif (TARGET_IS_CC3101)
+#define ARM_BUILD  5
 #define NUMPINS 40
 
 #else
