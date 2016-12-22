@@ -624,6 +624,7 @@ numvar func_printf_handler(byte, byte);
 //
 void initTaskList(void);
 void runBackgroundTasks(void);
+void stopTaskByName(char *taskName);
 void stopTask(byte);
 void startTask(int, numvar);
 void snooze(unumvar);

@@ -58,6 +58,20 @@ void initTaskList(void) {
 
 void stopTask(byte slot) { if (slot < NUMTASKS) tasklist[slot] = SLOT_FREE; }
 
+void stopTaskByName(char *taskName)
+{
+    int entryID = findKey(taskName);
+
+    if (entryID == -1)  // not found
+        return;
+
+    for (byte slot = 0; slot < NUMTASKS; slot++) 
+    {
+        if (tasklist[slot] == entryID)
+            stopTask(slot);
+    }
+}
+
 // add task to run list
 void startTask(int macroid, numvar snoozems) {
 byte slot;

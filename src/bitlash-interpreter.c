@@ -322,7 +322,10 @@ numvar retval = 0;
 		}
 		else 
 #endif
-			stopTask(getnum());
+            if (sym == s_script_eeprom)
+                stopTaskByName(idbuf);
+            else
+                stopTask(getnum());
 	}
 
 	else if (sym == s_rm) {		// rm "sym" or rm *
