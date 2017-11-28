@@ -81,7 +81,7 @@
 
 	uint8_t eeread(int addr) { return cache_eeprom[addr]; }
 
-#elif (defined(AVR_BUILD)) || ( (defined(ARM_BUILD)) && (ARM_BUILD==2))
+#elif ((defined(AVR_BUILD)) || ( (defined(ARM_BUILD)) && (ARM_BUILD==2))) && ! defined(ESP32)
 	// AVR or Teensy 3
 	#include "avr/eeprom.h"
 	void eewrite(int addr, uint8_t value) { eeprom_write_byte((unsigned char *) addr, value); }
@@ -93,7 +93,7 @@
 #elif defined(ARM_BUILD)
 	#if ARM_BUILD!=2
 		// A little fake eeprom for ARM testing
-		char virtual_eeprom[E2END];
+                char virtual_eeprom[E2END];
 
 		void eeinit(void) {
 			for (int i=0; i<E2END; i++) virtual_eeprom[i] = 255;
@@ -102,4 +102,33 @@
 		void eewrite(int addr, uint8_t value) { virtual_eeprom[addr] = value; }
 		uint8_t eeread(int addr) { return virtual_eeprom[addr]; }
 	#endif
+#elif defined(ESP32)
+
+
+#if 0
+		// A little fake eeprom for ARM testing
+                char virtual_eeprom[E2END];
+
+		void eeinit(void) {
+			for (int i=0; i<E2END; i++) virtual_eeprom[i] = 255;
+		}
+
+		void eewrite(int addr, uint8_t value) { virtual_eeprom[addr] = value; }
+		uint8_t eeread(int addr) { return virtual_eeprom[addr]; }
+
+
+
+#else
+   
+void eeinit(void) {
+  for (int i=0; i<E2END; i++) eewrite(i, 255);
+  EEPROM.commit();
+}
+
+void eewrite(int addr, uint8_t value) { EEPROM.write(addr, value); }
+
+uint8_t eeread(int addr) { return EEPROM.read(addr); }
+
+#endif
+
 #endif

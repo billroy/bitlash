@@ -28,6 +28,8 @@
 */
 #include "bitlash.h"
 
+#if ! defined( ESP32 )
+
 /*
 
 Build:
@@ -365,3 +367,5 @@ int main () {
 #endif
 
 }
+
+#endif // if ! defined( ESP32 )

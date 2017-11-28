@@ -45,12 +45,13 @@
   #define ARM_BUILD 2
 #elif defined(PART_LM4F120H5QR) //support Energia.nu - Stellaris Launchpad / Tiva C Series 
 #define ARM_BUILD  4 //support Energia.nu - Stellaris Launchpad / Tiva C Series  
+#elif defined(ESP32)
+#define XTENSA_BUILD 1
 #else
 #define AVR_BUILD 1
 #endif
 
-
-#if defined(AVR_BUILD)
+#if defined(AVR_BUILD) && !defined(ESP32)
 #include "avr/io.h"
 #include "avr/pgmspace.h"
 #include "avr/interrupt.h"
@@ -133,7 +134,8 @@
 	#define prog_char char PROGMEM
 	#define prog_uchar char PROGMEM
 #else
-	#include "WProgram.h"
+
+        #include "WProgram.h"
 	#include "WConstants.h"
 #endif
 
@@ -432,6 +434,39 @@ unsigned long millis(void);
 
 #endif
 
+/////////////////////////////////// ESP32
+//
+//       ESP32 BUILD
+#if defined(ESP32)
+#include <Arduino.h>
+#include <stdint.h>
+//#ifdef __cplusplus
+#include <HardwareSerial.h>
+#include <EEPROM.h>
+//#endif
+
+extern void displayBanner(void);
+extern void initlbuf(void);
+extern void pointToError(void);
+extern void cmd_function(void);
+extern void eraseentry(char *id);
+extern void cmd_ls(void);
+extern void cmd_peep(void);
+extern void cmd_help(void);
+extern char find_user_function(char *id);
+extern byte findbuiltin(char *name);
+extern void analogWrite(byte pin, int value);
+extern void oops(int errcode);
+
+#define NUMPINS 39   
+
+#define E2END SPI_FLASH_SEC_SIZE   // 4096
+
+
+#endif // ESP32
+
+//////////////////////////////////  ESP32 END
+
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
 #if (defined(ARDUINO_BUILD) || defined(UNIX_BUILD)) && !defined(TINY_BUILD)
@@ -720,7 +755,7 @@ extern numvar symval;		// value of current numeric expression
 
 #define USE_GPIORS defined(AVR_BUILD)
 
-#ifndef GPIOR0 || GPIOR1
+#if !defined(GPIOR0) || !defined(GPIOR1)
 	#undef USE_GPIORS
 #endif
 #if (defined USE_GPIORS)

@@ -69,7 +69,7 @@ const prog_char builtin_table[] PROGMEM = {
 		"print 2+2")
 //		"while 1 {print millis;delay(999);}")
 #else
-		"print \"bitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
+		"print \"\nbitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
 #endif
 
 	// Add user built-ins here.  Some examples:
@@ -114,5 +114,7 @@ const prog_char *wordlist = builtin_table;
 void displayBanner(void) {
 	// print the banner and copyright notice
 	// please note the license requires that you maintain this notice
+  
 	execscript(SCRIPT_PROGMEM, (numvar) (builtin_table + strlen(builtin_table)+1), 0);
+  //  Serial.println("\nbitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\n");
 }

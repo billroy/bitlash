@@ -199,6 +199,7 @@ char id[IDLEN+1];			// buffer for id
 		eewrite(addr, 0);
 	}
 
+	EEPROM.commit();
 	msgpl(M_saved);
 }
 

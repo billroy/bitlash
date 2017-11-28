@@ -1,4 +1,7 @@
 // fromm http://pastebin.com/r6BRYDxV
+
+#if ! defined( ESP32 )
+
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
@@ -6,7 +9,11 @@
 #include "setjmp.h"
 #include <time.h>
 #include <sys/types.h>
+#ifndef (ESP32)
 #include <termios.h>
+#else
+#define __MAX_BAUD  B4000000
+#endif
 
 int mygetch() {
     char ch;
@@ -57,3 +64,6 @@ int mygetch() {
  
     return (error == 1 ? (int) ch : -1 );
 }
+
+
+#endif // if ! defined( ESP32 )
