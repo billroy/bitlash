@@ -62,6 +62,10 @@ void initBitlash(unsigned long baud) {
 	eeinit();
 #endif
 
+#if defined(ESP32)
+	EEPROM.begin(E2END);
+#endif
+	
 	initTaskList();
 	vinit();
 	displayBanner();

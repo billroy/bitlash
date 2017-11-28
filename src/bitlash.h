@@ -438,12 +438,11 @@ unsigned long millis(void);
 //
 //       ESP32 BUILD
 #if defined(ESP32)
+#warning  ESP32
 #include <Arduino.h>
 #include <stdint.h>
-//#ifdef __cplusplus
 #include <HardwareSerial.h>
 #include <EEPROM.h>
-//#endif
 
 extern void displayBanner(void);
 extern void initlbuf(void);

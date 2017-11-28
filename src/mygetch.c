@@ -1,7 +1,4 @@
 // fromm http://pastebin.com/r6BRYDxV
-
-#if ! defined( ESP32 )
-
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
@@ -64,6 +61,3 @@ int mygetch() {
  
     return (error == 1 ? (int) ch : -1 );
 }
-
-
-#endif // if ! defined( ESP32 )

@@ -1,0 +1,23 @@
+{
+  "name": "bitlash",
+  "keywords": "console cli shell bitlash",
+  "description": "Bitlash is a tiny language interpreter that provides a serial port shell environment for bit banging and hardware hacking.",
+  "build": {
+    "flags": "-xc++",
+    "srcFilter": "+<src/*> -<examples/> -<bitlash-unix.c> -<mygetch.c>"
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/billroy/bitlash.git"
+  },
+  "frameworks":
+  [
+    "arduino-espressif32"
+  ],
+  "platforms":
+  [
+    "atmelavr",
+    "espressif32"
+  ]
+}

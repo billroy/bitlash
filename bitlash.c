@@ -34,8 +34,20 @@
 
 
 ***/
+#ifndef ESP32
 
-#ifdef ESP32
+#if defined(ARDUINO) && ARDUINO >= 100
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
+#ifdef UNIX_BUILD
+#include "src/bitlash-unix.c"
+//#else
+//#include "src/bitlash-arduino.c"
+#endif
+
 
 #include "src/bitlash-cmdline.c"
 #include "src/bitlash-eeprom.c"
@@ -50,6 +62,6 @@
 #include "src/bitlash-api.c"
 #include "src/eeprom.c"
 
-#endif //ifdef ESP32
+#endif //ifndef ESP32
 
 
