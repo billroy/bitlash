@@ -37,7 +37,7 @@
 
 #ifdef ESP32
 
-//        AS Of 2017-11  not analogWrite yet
+//        AS Of 2017-11  no analogWrite yet
 void analogWrite(byte pin, int value) { sp("analogWrite() not supported yet!");oops('!'); }
 #endif
 
@@ -94,7 +94,6 @@ numvar func_beep(void) { 		// unumvar pin, unumvar frequency, unumvar duration)
 #endif
 
 numvar func_free(void) {
-
 #if defined(UNIX_BUILD)
 	return 1000L;
 #elif defined(ARM_BUILD)
@@ -160,8 +159,6 @@ void dbseed(uint32_t x) {
 //		>print inb(0x53)
 //		2
 //
-
-
 numvar func_inb(void) { reqargs(1); return *(volatile byte *) arg1; }
 numvar func_outb(void) { reqargs(2); *(volatile byte *) arg1 = (byte) arg2; return 0;}
 numvar func_abs(void) { reqargs(1); return arg1 < 0 ? -arg1 : arg1; }
@@ -181,7 +178,6 @@ numvar func_constrain(void) {
 }
 numvar func_ar(void) { reqargs(1); return analogRead(arg1); }
 numvar func_aw(void) { reqargs(2); analogWrite(arg1, arg2); return 0; }
-//numvar func_aw(void) { reqargs(2); sigmaDeltaWrite(arg1, arg2); return 0; }
 numvar func_dr(void) { reqargs(1); return digitalRead(arg1); }
 numvar func_dw(void) { reqargs(2); digitalWrite(arg1, arg2); return 0; }
 numvar func_er(void) { reqargs(1); return eeread(arg1); }
@@ -509,9 +505,7 @@ bitlash_function fp;
 #endif
 
 	parsearglist();			// parse the arguments
-
 	numvar ret = (*fp)();	// call the function
-	
 	releaseargblock();		// peel off the arguments
 	vpush(ret);				// and push the return value
 }

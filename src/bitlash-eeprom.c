@@ -199,7 +199,9 @@ char id[IDLEN+1];			// buffer for id
 		eewrite(addr, 0);
 	}
 
+#if defined(ESP32)
 	EEPROM.commit();
+#endif
 	msgpl(M_saved);
 }
 

@@ -46,26 +46,23 @@ jmp_buf env;
 // doCommand: main entry point to execute a bitlash command
 //
 numvar doCommand(char *cmd) {
-        return execscript(SCRIPT_RAM, (numvar) cmd, 0);
+	return execscript(SCRIPT_RAM, (numvar) cmd, 0);
 }
 
 
 void initBitlash(unsigned long baud) {
-
 #if defined(TINY_BUILD)
 	beginSerial(9600);
 #else
-       	beginSerial(baud);
+	beginSerial(baud);
 #endif
-
 #if defined(ARM_BUILD)
 	eeinit();
 #endif
-
 #if defined(ESP32)
 	EEPROM.begin(E2END);
-#endif
-	
+#endif	
+
 	initTaskList();
 	vinit();
 	displayBanner();

@@ -69,7 +69,7 @@ const prog_char builtin_table[] PROGMEM = {
 		"print 2+2")
 //		"while 1 {print millis;delay(999);}")
 #else
-		"print \"\nbitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
+		"print \"bitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\",free,\"bytes free\"")
 #endif
 
 	// Add user built-ins here.  Some examples:
@@ -79,6 +79,19 @@ const prog_char builtin_table[] PROGMEM = {
 	BUILT_IN("input",	"return 0")
 	BUILT_IN("output",	"return 1")
 	BUILT_IN("digitalread",	"return dr(arg(1))")
+#endif
+#if defined(ESP32)
+	BUILT_IN("low",		"return 0")
+	BUILT_IN("high",	"return 1")
+	BUILT_IN("input",	"return 1")
+	BUILT_IN("output",	"return 2")
+	BUILT_IN("pullup",      "return 4")
+	BUILT_IN("input_pullup","return 5")
+	BUILT_IN("pulldown",    "return 8")
+	BUILT_IN("input_pulldown","return 9")
+	BUILT_IN("open_drain",  "return 16")
+	BUILT_IN("output_open", "return 18")
+	BUILT_IN("analog",      "return 12")
 #endif
 
 	// This sentinel must be last	
@@ -114,7 +127,5 @@ const prog_char *wordlist = builtin_table;
 void displayBanner(void) {
 	// print the banner and copyright notice
 	// please note the license requires that you maintain this notice
-  
 	execscript(SCRIPT_PROGMEM, (numvar) (builtin_table + strlen(builtin_table)+1), 0);
-  //  Serial.println("\nbitlash here! v2.0 (c) 2013 Bill Roy -type HELP-\n");
 }

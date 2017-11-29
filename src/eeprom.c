@@ -93,7 +93,7 @@
 #elif defined(ARM_BUILD)
 	#if ARM_BUILD!=2
 		// A little fake eeprom for ARM testing
-                char virtual_eeprom[E2END];
+		char virtual_eeprom[E2END];
 
 		void eeinit(void) {
 			for (int i=0; i<E2END; i++) virtual_eeprom[i] = 255;

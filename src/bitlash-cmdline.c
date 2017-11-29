@@ -43,7 +43,9 @@ char lbuf[LBUFLEN];
 
 // Help text
 //
-#if !defined(TINY_BUILD)
+#if defined(ESP32)
+const prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license\r\nPins: d0-39,a0-39  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
+#elif !defined(TINY_BUILD)
 const prog_char helptext[] PROGMEM = { "http://bitlash.net\r\nSee LICENSE for license\r\nPins: d0-22,a0-22  Variables: a-z, 32 bit long integers\r\nOperators: + - * / ( ) < <= > >= == != << >> ! ^ & | ++ -- :=\r\nCommands: \0" };
 #else
 const prog_char helptext[] PROGMEM = { "http://bitlash.net\r\n\0" };
@@ -107,7 +109,6 @@ void initlbuf(void) {
 	
 	// flush any pending serial input
 	while (serialAvailable()) serialRead();
-
 }
 
 
@@ -150,10 +151,7 @@ void doCharacter(char c) {
 	if ((c == '\r') || (c == '\n')) {
 		speol();
 		*lbufptr = 0;
-		//  doCommand execute the typed command
-		//  and return its value
-		// here that value is droped???? why? so not output for free for example
-		doCommand(lbuf);   
+		doCommand(lbuf);
 		initlbuf();
 	}
 	else if (c == 3) {		// ^C break/stop
@@ -180,9 +178,9 @@ void doCharacter(char c) {
 	}
 #endif
 #if !defined(TINY_BUILD)
-	else if (c == 21 || c == 16) {		// ^U to get last line
-	        msgpl(M_ctrlu);
-	  	prompt();
+	else if (c == 21 || c == 16) {		// ^U or ^P to get last line
+		msgpl(M_ctrlu);
+		prompt();
 		sp(lbuf);
 		lbufptr = lbuf + strlen(lbuf);
 	}

@@ -438,7 +438,7 @@ unsigned long millis(void);
 //
 //       ESP32 BUILD
 #if defined(ESP32)
-#warning  ESP32
+
 #include <Arduino.h>
 #include <stdint.h>
 #include <HardwareSerial.h>

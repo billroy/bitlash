@@ -6,11 +6,7 @@
 #include "setjmp.h"
 #include <time.h>
 #include <sys/types.h>
-#ifndef (ESP32)
 #include <termios.h>
-#else
-#define __MAX_BAUD  B4000000
-#endif
 
 int mygetch() {
     char ch;

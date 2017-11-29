@@ -105,7 +105,6 @@ void cmd_boot(void) {esp_restart();}
 void cmd_boot(void) {oops('boot');}
 #endif
 
-
 void skipbyte(char c) {;}
 
 // Skip a statement without executing it
@@ -387,10 +386,8 @@ numvar retval = 0;
 //
 numvar getstatementlist(void) {
 numvar retval = 0;
- while ((sym != s_eof) && (sym != s_returning)) {
-   retval = getstatement();
- }
- return retval;
+	while ((sym != s_eof) && (sym != s_returning)) retval = getstatement();
+	return retval;
 }
 
 
