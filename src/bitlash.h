@@ -553,7 +553,8 @@ int findend(int);
 void eeputs(int);
 
 #define EMPTY ((uint8_t)255)
-#define STARTDB 0
+#define STARTDB 0               // the space to reserve at the begining of EEPROM
+//#define ENDDB  (E2END - xx)   // where xx is the space to reserve at the end of EEPROM
 #define FAIL ((int)-1)
 
 /////////////////////////////////////////////
