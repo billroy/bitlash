@@ -459,7 +459,7 @@ extern void oops(int errcode);
 
 #define NUMPINS 39   
 
-#define E2END SPI_FLASH_SEC_SIZE   // 4096
+#define E2END SPI_FLASH_SEC_SIZE - 1   // 4096
 
 
 #endif // ESP32
