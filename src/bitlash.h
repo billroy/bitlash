@@ -36,11 +36,12 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
+
 #if defined(__x86_64__) || defined(__i386__)
 #define UNIX_BUILD 1
 #elif defined(__SAM3X8E__)
 #define ARM_BUILD 1
-#elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
+#elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && (defined (CORE_TEENSY) || defined (TEENSYDUINO))
   // Teensy 3
   #define ARM_BUILD 2
 #elif defined(PART_LM4F120H5QR) //support Energia.nu - Stellaris Launchpad / Tiva C Series 
@@ -133,6 +134,7 @@
 	#include "Arduino.h"
 	#define prog_char char PROGMEM
 	#define prog_uchar char PROGMEM
+        #include <HardwareSerial.h>
 #else
 
         #include "WProgram.h"
@@ -426,13 +428,25 @@ unsigned long millis(void);
 #define strcmp_P strcmp
 #define strlen_P strlen
 #if ARM_BUILD==1
-  #define E2END 4096
-#else
-  // Teensy 3
-  #define E2END 2048
+  #define E2END 4095
+#elif ARM_BUILD==2     // Teensy 3 // 
+  #define E2END 2047
 #endif
 
 #endif
+
+extern void displayBanner(void);
+extern void initlbuf(void);
+extern void pointToError(void);
+extern void cmd_function(void);
+extern void eraseentry(char *id);
+extern void cmd_ls(void);
+extern void cmd_peep(void);
+extern void cmd_help(void);
+extern char find_user_function(char *id);
+extern byte findbuiltin(char *name);
+extern void analogWrite(byte pin, int value);
+extern void oops(int errcode);
 
 /////////////////////////////////// ESP32
 //
@@ -441,6 +455,7 @@ unsigned long millis(void);
 
 #include <Arduino.h>
 #include <stdint.h>
+#include <setjmp.h>
 #include <HardwareSerial.h>
 #include <EEPROM.h>
 
@@ -457,10 +472,13 @@ extern byte findbuiltin(char *name);
 extern void analogWrite(byte pin, int value);
 extern void oops(int errcode);
 
+
 #define NUMPINS 39   
 
 #define E2END SPI_FLASH_SEC_SIZE - 1   // 4096
-
+extern void eeinit(void);
+extern void eewrite(int addr, uint8_t value);
+extern uint8_t eeread(int addr);
 
 #endif // ESP32
 

@@ -4,7 +4,7 @@
   "description": "Bitlash is a tiny language interpreter that provides a serial port shell environment for bit banging and hardware hacking.",
   "build": {
     "flags": "",
-    "srcFilter": "+<../*.cpp> -<src/> -<examples/> -<bitlash-unix.c> -<mygetch.c>"
+    "srcFilter": "+<*.cpp>  -<examples/> -<bitlash-unix.c> -<mygetch.c>"
   },
   "repository":
   {

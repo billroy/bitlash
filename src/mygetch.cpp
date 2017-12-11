@@ -1,4 +1,6 @@
 // fromm http://pastebin.com/r6BRYDxV
+#if defined(UNIX_BUILD)
+
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
@@ -57,3 +59,6 @@ int mygetch() {
  
     return (error == 1 ? (int) ch : -1 );
 }
+
+
+#endif // #if defined(UNIX_BUILD)
