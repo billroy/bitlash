@@ -33,6 +33,14 @@
 ***/
 #include "bitlash.h"
 
+
+
+#ifdef ESP32
+
+//        AS Of 2017-11  no analogWrite yet
+void analogWrite(byte pin, int value) { sp("analogWrite() not supported yet!");oops('!'); }
+#endif
+
 // syntactic sugar for func_handlers()
 #if 0	// 15022 bytes
 #define arg1 getarg(1)
@@ -90,6 +98,9 @@ numvar func_free(void) {
 	return 1000L;
 #elif defined(ARM_BUILD)
 	return 1000L;
+#elif defined(ESP32)
+
+ 	return (numvar)esp_get_free_heap_size();
 #else
 	numvar ret;
 	// from http://forum.pololu.com/viewtopic.php?f=10&t=989&view=unread#p4218
@@ -487,14 +498,14 @@ bitlash_function fp;
 	else
 #endif
 	// built-in function
-#ifdef UNIX_BUILD
+#if defined(UNIX_BUILD) or defined(ESP32)
 	fp = function_table[entry];
 #else
 	fp = (bitlash_function) pgm_read_word(&function_table[entry]);
 #endif
 
 	parsearglist();			// parse the arguments
-	numvar ret = (*fp)();	// call the function 
+	numvar ret = (*fp)();	// call the function
 	releaseargblock();		// peel off the arguments
 	vpush(ret);				// and push the return value
 }

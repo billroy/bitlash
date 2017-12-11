@@ -51,16 +51,17 @@ numvar doCommand(char *cmd) {
 
 
 void initBitlash(unsigned long baud) {
-
 #if defined(TINY_BUILD)
 	beginSerial(9600);
 #else
 	beginSerial(baud);
 #endif
-
 #if defined(ARM_BUILD)
 	eeinit();
 #endif
+#if defined(ESP32)
+	EEPROM.begin(E2END);
+#endif	
 
 	initTaskList();
 	vinit();

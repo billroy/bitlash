@@ -80,6 +80,19 @@ const prog_char builtin_table[] PROGMEM = {
 	BUILT_IN("output",	"return 1")
 	BUILT_IN("digitalread",	"return dr(arg(1))")
 #endif
+#if defined(ESP32)
+	BUILT_IN("low",		"return 0")
+	BUILT_IN("high",	"return 1")
+	BUILT_IN("input",	"return 1")
+	BUILT_IN("output",	"return 2")
+	BUILT_IN("pullup",      "return 4")
+	BUILT_IN("input_pullup","return 5")
+	BUILT_IN("pulldown",    "return 8")
+	BUILT_IN("input_pulldown","return 9")
+	BUILT_IN("open_drain",  "return 16")
+	BUILT_IN("output_open", "return 18")
+	BUILT_IN("analog",      "return 12")
+#endif
 
 	// This sentinel must be last	
 	BUILT_IN("","")						// guards end of table, must be last

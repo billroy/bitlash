@@ -26,6 +26,9 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 */
+
+#if defined (UNIX_BUILD)
+
 #include "bitlash.h"
 
 /*
@@ -365,3 +368,5 @@ int main () {
 #endif
 
 }
+
+#endif   //if defined (UNIX_BUILD)

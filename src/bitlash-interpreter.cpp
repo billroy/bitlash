@@ -62,7 +62,7 @@ void nukeeeprom(void) {
 }
 
 
-#if defined(AVR_BUILD)
+#if defined(AVR_BUILD) && !defined(ESP32)
 void cmd_boot(void) {
 	// This is recommended but does not work on Arduino
 	// Reset_AVR();
@@ -95,7 +95,12 @@ void cmd_boot(void) {
   SCB_AIRCR = 0x05FA0000 | SCB_AIRCR_SYSRESETREQ_MASK;
   while(1);
 }
-#endif
+#endif  // if ARM_BUILD==1
+#elif defined(ESP32)
+
+void cmd_boot(void) {esp_restart();}
+
+
 #else
 void cmd_boot(void) {oops('boot');}
 #endif

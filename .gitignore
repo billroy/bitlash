@@ -8,3 +8,6 @@ examples/.DS_Store
 bitlash.o
 .DS_Store
 Bitlash/
+.pioenvs
+.piolibdeps
+*~

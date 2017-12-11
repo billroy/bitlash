@@ -35,7 +35,7 @@
 ***/
 #include "bitlash.h"
 
-#if defined(AVR_BUILD)
+#if defined(AVR_BUILD) && ! defined(ESP32)
 #include "avr/eeprom.h"
 #endif
 
@@ -421,7 +421,7 @@ byte pinnum(char id[]) {
 //  > d13=1		... and similarly for analog pinvars like a5
 //
 //
-//#define PIN_ALIASES 1
+#define PIN_ALIASES 1
 
 #ifdef PIN_ALIASES
 
@@ -430,10 +430,10 @@ byte pinnum(char id[]) {
 #define PV_MASK 0x3f
 
 const prog_char pinnames[] PROGMEM = { 
-	"tx\0rx\0led\0vin\0zed\0"
+	"tx\0rx\0led\0vin\0zed\0therm1\0therm2\0"
 };
 const prog_uchar pinvalues[] PROGMEM = { 
-	0, 1, 13, (PV_ANALOG | 1), (PV_VAR | 25)
+  0, 1, 2, (PV_ANALOG | 1), (PV_VAR | 25), (PV_ANALOG |22), (PV_ANALOG |23)
 };
 
 byte findpinname(char *alias) {

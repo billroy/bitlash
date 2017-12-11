@@ -36,21 +36,23 @@
 #ifndef _BITLASH_H
 #define _BITLASH_H
 
+
 #if defined(__x86_64__) || defined(__i386__)
 #define UNIX_BUILD 1
 #elif defined(__SAM3X8E__)
 #define ARM_BUILD 1
-#elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && defined (CORE_TEENSY)
+#elif (defined(__MK20DX128__) || defined(__MK20DX256__)) && (defined (CORE_TEENSY) || defined (TEENSYDUINO))
   // Teensy 3
   #define ARM_BUILD 2
 #elif defined(PART_LM4F120H5QR) //support Energia.nu - Stellaris Launchpad / Tiva C Series 
 #define ARM_BUILD  4 //support Energia.nu - Stellaris Launchpad / Tiva C Series  
+#elif defined(ESP32)
+#define XTENSA_BUILD 1
 #else
 #define AVR_BUILD 1
 #endif
 
-
-#if defined(AVR_BUILD)
+#if defined(AVR_BUILD) && !defined(ESP32)
 #include "avr/io.h"
 #include "avr/pgmspace.h"
 #include "avr/interrupt.h"
@@ -132,8 +134,10 @@
 	#include "Arduino.h"
 	#define prog_char char PROGMEM
 	#define prog_uchar char PROGMEM
+        #include <HardwareSerial.h>
 #else
-	#include "WProgram.h"
+
+        #include "WProgram.h"
 	#include "WConstants.h"
 #endif
 
@@ -424,13 +428,61 @@ unsigned long millis(void);
 #define strcmp_P strcmp
 #define strlen_P strlen
 #if ARM_BUILD==1
-  #define E2END 4096
-#else
-  // Teensy 3
-  #define E2END 2048
+  #define E2END 4095
+#elif ARM_BUILD==2     // Teensy 3 // 
+  #define E2END 2047
 #endif
 
 #endif
+
+extern void displayBanner(void);
+extern void initlbuf(void);
+extern void pointToError(void);
+extern void cmd_function(void);
+extern void eraseentry(char *id);
+extern void cmd_ls(void);
+extern void cmd_peep(void);
+extern void cmd_help(void);
+extern char find_user_function(char *id);
+extern byte findbuiltin(char *name);
+extern void analogWrite(byte pin, int value);
+extern void oops(int errcode);
+
+/////////////////////////////////// ESP32
+//
+//       ESP32 BUILD
+#if defined(ESP32)
+
+#include <Arduino.h>
+#include <stdint.h>
+#include <setjmp.h>
+#include <HardwareSerial.h>
+#include <EEPROM.h>
+
+extern void displayBanner(void);
+extern void initlbuf(void);
+extern void pointToError(void);
+extern void cmd_function(void);
+extern void eraseentry(char *id);
+extern void cmd_ls(void);
+extern void cmd_peep(void);
+extern void cmd_help(void);
+extern char find_user_function(char *id);
+extern byte findbuiltin(char *name);
+extern void analogWrite(byte pin, int value);
+extern void oops(int errcode);
+
+
+#define NUMPINS 39   
+
+#define E2END SPI_FLASH_SEC_SIZE - 1   // 4096
+extern void eeinit(void);
+extern void eewrite(int addr, uint8_t value);
+extern uint8_t eeread(int addr);
+
+#endif // ESP32
+
+//////////////////////////////////  ESP32 END
 
 
 // numvar is 32 bits on Arduino and 16 bits elsewhere
@@ -519,7 +571,8 @@ int findend(int);
 void eeputs(int);
 
 #define EMPTY ((uint8_t)255)
-#define STARTDB 0
+#define STARTDB 0               // the space to reserve at the begining of EEPROM
+//#define ENDDB  (E2END - xx)   // where xx is the space to reserve at the end of EEPROM
 #define FAIL ((int)-1)
 
 /////////////////////////////////////////////
@@ -720,7 +773,7 @@ extern numvar symval;		// value of current numeric expression
 
 #define USE_GPIORS defined(AVR_BUILD)
 
-#ifndef GPIOR0 || GPIOR1
+#if !defined(GPIOR0) || !defined(GPIOR1)
 	#undef USE_GPIORS
 #endif
 #if (defined USE_GPIORS)
