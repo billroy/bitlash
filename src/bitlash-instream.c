@@ -262,7 +262,12 @@ void returntoparsepoint(parsepoint *p, byte returntoparent) {
 
 void returntoparsepoint(parsepoint *p, byte returntoparent) {
 	// restore parse type and location; for script files, pass name from string pool
-	initparsepoint(p->fetchtype, p->fetchptr, returntoparent ? callername : calleename);
+	/*
+	Monkey-patching: returntoparent ? callername : calleename
+	callername ALWAYS was NULL so this caused crash
+	So I removed callername completely. All functions now works properly, even complicated: execute("print measure(\"DHT\",\"temp\")")
+	*/
+	initparsepoint(p->fetchtype, p->fetchptr, calleename);
 }
 #endif
 
